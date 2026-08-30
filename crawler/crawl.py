@@ -84,6 +84,35 @@ def visible_text(html: str) -> str:
     return " ".join(parser.parts)
 
 
+def publication_date(title: str, url: str) -> datetime | None:
+    """Read a conservative publication date from an official title or URL path."""
+    title_match = re.search(r"(20\d{2})[年./-](\d{1,2})[月./-](\d{1,2})日?", title)
+    if title_match:
+        year, month, day = (int(value) for value in title_match.groups())
+        try:
+            return datetime(year, month, day, tzinfo=timezone.utc)
+        except ValueError:
+            return None
+    path_match = re.search(r"/(20\d{2})(\d{2})/", urlparse(url).path)
+    if path_match:
+        year, month = (int(value) for value in path_match.groups())
+        try:
+            return datetime(year, month, 1, tzinfo=timezone.utc)
+        except ValueError:
+            return None
+    return None
+
+
+def is_recent_candidate(title: str, url: str, max_age_days: object) -> bool:
+    if not isinstance(max_age_days, int) or max_age_days <= 0:
+        return True
+    published = publication_date(title, url)
+    if published is None:
+        return True
+    age_days = (datetime.now(timezone.utc) - published).days
+    return -31 <= age_days <= max_age_days
+
+
 def analyse_road_candidate(title: str, url: str) -> dict[str, object]:
     try:
         content = visible_text(fetch(url))[:120_000]
@@ -109,13 +138,14 @@ def analyse_road_candidate(title: str, url: str) -> dict[str, object]:
     confidence = "high" if top_score >= 5 and len(leg_ids) <= 3 else "medium" if top_score >= 3 else "low"
     date_values = re.findall(r"(20\d{2})[年./-](\d{1,2})[月./-](\d{1,2})日?", evidence)
     dates = [f"{year}-{int(month):02d}-{int(day):02d}" for year, month, day in date_values[:6]]
+    end_date = dates[1] if len(dates) > 1 and dates[1] >= dates[0] else None
     return {
         "suggestedImpact": impact,
         "suggestedDelayHours": delay,
         "suggestedLegIds": leg_ids,
         "mappingConfidence": confidence,
         "suggestedStartsAt": dates[0] if dates else None,
-        "suggestedEndsAt": dates[1] if len(dates) > 1 else None,
+        "suggestedEndsAt": end_date,
         "requiresHumanReview": True,
     }
 
@@ -131,6 +161,8 @@ def discover(source: dict[str, object]) -> list[dict[str, object]]:
             continue
         absolute_url = urljoin(str(source["list_url"]), link["href"])
         if urlparse(absolute_url).hostname not in allowed:
+            continue
+        if not is_recent_candidate(link["title"], absolute_url, source.get("max_age_days")):
             continue
         candidate: dict[str, object] = {
             "sourceId": str(source["id"]),

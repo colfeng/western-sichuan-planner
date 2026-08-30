@@ -74,7 +74,9 @@ The unified weekly crawler writes minimal road and attraction candidates to
 A maintainer must verify the original official page. The crawler suggests dates,
 impact type and affected edge IDs, but they must be reviewed before copying an event into
 `data/reviewed-road-events.json`. Pending records never affect the planner and
-never become opening-status claims automatically.
+never become opening-status claims automatically. The Ngawa road feed keeps only
+links dated within the last 180 days when a publication date can be read, so an
+archive page cannot refill the review pull request with stale notices.
 
 The facility snapshot in `data/osm-service-points.json` is derived from
 OpenStreetMap and remains subject to ODbL 1.0. Presence in the snapshot is not a

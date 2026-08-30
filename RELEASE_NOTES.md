@@ -16,3 +16,5 @@
 - One weekly job also refreshes an attributed OpenStreetMap facility snapshot.
 - Road notices receive machine-generated segment/impact candidates, but human
   review remains mandatory before any route is changed.
+- The Ngawa road source uses its latest listing and excludes detectably stale
+  archive links before they enter the review queue.
