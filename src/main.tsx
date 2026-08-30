@@ -61,7 +61,7 @@ const initialInput: PlannerInput = {
   maxDrive: 6,
   priority: "comfort",
   avoidNight: true,
-  selectedAttractionIds: ["moon-bay", "flower-lake", "jiuzhaigou"],
+  selectedAttractionIds: ["moon-bay", "flower-lake"],
   startDate: defaultStartDate,
   startAnchorId: "chengdu",
   endAnchorId: "chengdu",
