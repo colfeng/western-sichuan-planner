@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { PlannerInput } from "../src/planner.ts";
 import { buildPlanOptions } from "../src/planner.ts";
+import { attractions, routeAnchors } from "../src/data.ts";
 
 const base = (overrides: Partial<PlannerInput> = {}): PlannerInput => ({
   days: 7,
@@ -93,5 +94,24 @@ test("records departure, estimated finish and sunset margin for every day", () =
     assert.equal(day.departureTime, "09:15");
     assert.match(day.estimatedArrivalTime, /^\d{2}:\d{2}$/);
     assert.equal(typeof day.daylightMarginMinutes, "number");
+  }
+});
+
+test("every attraction exposes the same audited information fields", () => {
+  const officialHosts = new Set([
+    "www.djy.gov.cn", "wenchuan.gov.cn", "www.wenchuan.gov.cn", "www.abazhou.gov.cn", "abazhou.gov.cn",
+    "www.sgns.cn", "www.xiaojin.gov.cn", "xiaojin.gov.cn", "www.danba.gov.cn", "www.kangding.gov.cn",
+    "www.luding.gov.cn", "www.yaan.gov.cn", "www.huanglong.com", "www.jiuzhai.com",
+  ]);
+  assert.equal(attractions.length, 82);
+  for (const item of attractions) {
+    assert.ok(routeAnchors[item.anchorId], `${item.id}: unknown anchor`);
+    assert.ok(item.bestMonths.length > 0 && item.bestMonths.every((month) => month >= 1 && month <= 12), `${item.id}: invalid bestMonths`);
+    assert.ok(item.opening.zh && item.opening.en, `${item.id}: missing bilingual opening note`);
+    assert.ok(item.reservation.zh && item.reservation.en, `${item.id}: missing bilingual reservation note`);
+    assert.match(item.verifiedOn, /^\d{4}-\d{2}-\d{2}$/, `${item.id}: invalid review date`);
+    const source = new URL(item.sourceUrl);
+    assert.equal(source.protocol, "https:", `${item.id}: source must use HTTPS`);
+    assert.ok(officialHosts.has(source.hostname), `${item.id}: source host is not on the official whitelist`);
   }
 });

@@ -16,7 +16,6 @@ import {
   Gauge,
   Info,
   Languages,
-  MapPinned,
   MountainSnow,
   Navigation,
   RefreshCw,
@@ -77,7 +76,7 @@ const ui = {
     eyebrow: `${attractions.length}个可选停留 · 多走廊道路图 · 中英双语`,
     heading: "由你选择想看的地方，规划器负责判断怎样走得完。",
     intro: "路线网已覆盖红原、若尔盖、九寨沟、黄龙、黑水、阿坝县、莲宝叶则及川西南部走廊。规划器根据任意起终点、日期日照、驾驶上限、游玩时长、海拔和住宿节点动态连线。",
-    updated: "V0.4统一数据管线 · 规划基线并非实时导航",
+    updated: "V0.4.1景点字段统一审计 · 规划基线并非实时导航",
     controls: "设定旅行约束",
     days: "旅行天数",
     dates: "出发 / 返程",
@@ -158,23 +157,18 @@ const ui = {
     shared: "链接已复制",
     lodgingTitle: "住宿区域比较",
     lodgingIntro: "只比较区域，不推荐具体酒店或商家；住宿供应和价格仍需自行核验。",
-    verified: "资料核验",
     reservation: "预约提醒",
     bestMonths: "推荐月份",
     details: "查看资料详情",
     opening: "开放说明",
-    dataState: "字段状态",
-    audited: "主要字段已核验",
-    basic: "基础记录，待逐字段核验",
     checkedOn: "最后核验",
     sourceLink: "官方来源",
-    unknown: "尚未单独核验，请直接查看官方来源",
     close: "关闭",
     weeklyStatus: "统一周更新状态",
     weeklyStatusBody: updateStatus.sourceResults.length > 0
       ? `最近一次记录检查了 ${updateStatus.successfulSources}/${updateStatus.totalSources} 个官方入口；定时运行可能延迟，候选信息须审核后生效。`
       : `统一周任务已配置，共 ${updateStatus.totalSources} 个官方入口；首次检查结果将在审核合并后显示。`,
-    footer: "独立个人项目 · 安全约束优先于景点数量",
+    footer: "数据与产品维护：colfeng · 安全约束优先于景点数量",
   },
   en: {
     brand: "Western Sichuan Planner",
@@ -186,7 +180,7 @@ const ui = {
     eyebrow: `${attractions.length} selectable stops · Multi-corridor graph · Bilingual`,
     heading: "Choose what you want to see. Let the planner decide what can actually fit.",
     intro: "The graph now covers Hongyuan, Ruoergai, Jiuzhaigou, Huanglong, Heishui, Ngawa County, Lianbaoyeze and the southern corridors. Any start/end, dates, daylight, driving caps, visit time, altitude and overnight nodes affect the route.",
-    updated: "V0.4 unified data pipeline · Planning baseline, not live navigation",
+    updated: "V0.4.1 aligned attraction audit · Planning baseline, not live navigation",
     controls: "Set trip constraints",
     days: "Trip length",
     dates: "Departure / return",
@@ -267,23 +261,18 @@ const ui = {
     shared: "Link copied",
     lodgingTitle: "Compare overnight areas",
     lodgingIntro: "Areas only, never individual hotels or businesses. Verify availability and prices yourself.",
-    verified: "Verified",
     reservation: "Reservation",
     bestMonths: "Best months",
     details: "Open data details",
     opening: "Opening note",
-    dataState: "Field status",
-    audited: "Key fields reviewed",
-    basic: "Basic record; field review pending",
     checkedOn: "Last reviewed",
     sourceLink: "Official source",
-    unknown: "Not independently reviewed; open the official source",
     close: "Close",
     weeklyStatus: "Unified weekly update status",
     weeklyStatusBody: updateStatus.sourceResults.length > 0
       ? `The latest recorded run checked ${updateStatus.successfulSources}/${updateStatus.totalSources} official entry points. Scheduled runs may be delayed and candidates require review.`
       : `The unified weekly job is configured for ${updateStatus.totalSources} official entry points. Its first result will appear after review and merge.`,
-    footer: "Independent project · Safety constraints outrank attraction count",
+    footer: "Data and product maintained by colfeng · Safety constraints outrank attraction count",
   },
 };
 
@@ -606,9 +595,8 @@ function App() {
                           {item.detourHours > 0 && <i><Route size={13} />+{item.detourHours}h</i>}
                         </span>
                         <span className="data-badges">
-                          {item.bestMonths && <span className="season-line">{copy.bestMonths} {item.bestMonths.join("/")}</span>}
-                          {item.reservation && <span className="reservation-line">{copy.reservation}</span>}
-                          <span className={`audit-line ${item.verifiedOn ? "audited" : "basic"}`}>{item.verifiedOn ? copy.audited : copy.basic}</span>
+                          <span className="season-line">{copy.bestMonths} {item.bestMonths.join("/")}</span>
+                          <span className="reservation-line">{copy.reservation}</span>
                         </span>
                       </span>
                       <span className={`effort effort-${item.effort}`}>{text(effortNames[item.effort], locale)}</span>
@@ -793,18 +781,17 @@ function App() {
             <span><Gauge size={17} />{text(effortNames[detailAttraction.effort], locale)}</span>
           </div>
           <dl className="detail-list">
-            <div><dt>{copy.dataState}</dt><dd className={detailAttraction.verifiedOn ? "verified-value" : "pending-value"}>{detailAttraction.verifiedOn ? copy.audited : copy.basic}</dd></div>
-            <div><dt>{copy.bestMonths}</dt><dd>{detailAttraction.bestMonths?.join(" / ") ?? copy.unknown}</dd></div>
-            <div><dt>{copy.opening}</dt><dd>{detailAttraction.opening ? text(detailAttraction.opening, locale) : copy.unknown}</dd></div>
-            <div><dt>{copy.reservation}</dt><dd>{detailAttraction.reservation ? text(detailAttraction.reservation, locale) : copy.unknown}</dd></div>
-            <div><dt>{copy.checkedOn}</dt><dd>{detailAttraction.verifiedOn ?? copy.unknown}</dd></div>
+            <div><dt>{copy.bestMonths}</dt><dd>{detailAttraction.bestMonths.join(" / ")}</dd></div>
+            <div><dt>{copy.opening}</dt><dd>{text(detailAttraction.opening, locale)}</dd></div>
+            <div><dt>{copy.reservation}</dt><dd>{text(detailAttraction.reservation, locale)}</dd></div>
+            <div><dt>{copy.checkedOn}</dt><dd>{detailAttraction.verifiedOn}</dd></div>
           </dl>
           <a className="official-source-button" href={detailAttraction.sourceUrl} target="_blank" rel="noreferrer"><ShieldCheck size={17} />{copy.sourceLink}<ExternalLink size={15} /></a>
           <p className="drawer-disclaimer">{copy.disclaimer}</p>
         </section>
       </div>}
 
-      <footer><span>{copy.footer}</span><span>v0.4 · 2026</span></footer>
+      <footer><span>{copy.footer}</span><span>v0.4.1 · 2026</span></footer>
     </div>
   );
 }
