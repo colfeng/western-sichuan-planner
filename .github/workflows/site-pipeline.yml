@@ -41,7 +41,7 @@ jobs:
       - run: npm ci
 
       - name: Discover official update candidates once
-        if: github.event_name == 'schedule' || inputs.refresh_data || contains(github.event.head_commit.message, '[refresh-data]')
+        if: ${{ github.event_name == 'schedule' || inputs.refresh_data == true || (github.event_name == 'push' && contains(github.event.head_commit.message, '[refresh-data]')) }}
         run: python3 crawler/crawl.py
 
       - name: Validate data
@@ -52,7 +52,7 @@ jobs:
         run: npm run build
 
       - name: Maintain one weekly review pull request
-        if: github.event_name == 'schedule' || inputs.refresh_data || contains(github.event.head_commit.message, '[refresh-data]')
+        if: ${{ github.event_name == 'schedule' || inputs.refresh_data == true || (github.event_name == 'push' && contains(github.event.head_commit.message, '[refresh-data]')) }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
