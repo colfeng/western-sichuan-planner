@@ -1,6 +1,7 @@
 [
   {
     "id": "ganzi-transport",
+    "category": "road",
     "agency_zh": "甘孜州交通运输局",
     "agency_en": "Garzê Prefecture Transport Bureau",
     "list_url": "https://jtj.gzz.gov.cn/zwgk",
@@ -9,10 +10,38 @@
   },
   {
     "id": "aba-government",
+    "category": "road",
     "agency_zh": "阿坝州人民政府",
     "agency_en": "Ngawa Prefecture Government",
     "list_url": "https://www.abazhou.gov.cn/abazhou/c109640/bmxxgk_list.shtml",
     "allowed_domains": ["abazhou.gov.cn", "www.abazhou.gov.cn"],
     "keywords": ["交通管制", "道路施工", "临时管制", "断道", "封闭", "放行", "绕行", "中断交通"]
+  },
+  {
+    "id": "jiuzhaigou-notices",
+    "category": "attraction",
+    "agency_zh": "九寨沟景区官方网站",
+    "agency_en": "Jiuzhaigou official site",
+    "list_url": "https://www.jiuzhai.com/news/notice",
+    "allowed_domains": ["jiuzhai.com", "www.jiuzhai.com"],
+    "keywords": ["公告", "开放", "闭园", "预约", "售罄", "入园", "票务", "限流", "调整"]
+  },
+  {
+    "id": "huanglong-official",
+    "category": "attraction",
+    "agency_zh": "黄龙景区官方网站",
+    "agency_en": "Huanglong official site",
+    "list_url": "https://www.huanglong.com/",
+    "allowed_domains": ["huanglong.com", "www.huanglong.com"],
+    "keywords": ["公告", "开放", "闭园", "预约", "票务", "索道", "调整", "限流"]
+  },
+  {
+    "id": "aba-attractions",
+    "category": "attraction",
+    "agency_zh": "阿坝州人民政府景区介绍",
+    "agency_en": "Ngawa Government attraction directory",
+    "list_url": "https://www.abazhou.gov.cn/abazhou/jqjs/common_list.shtml",
+    "allowed_domains": ["abazhou.gov.cn", "www.abazhou.gov.cn"],
+    "keywords": ["景区", "旅游区", "冰川", "彩林", "九寨沟", "黄龙", "四姑娘山", "莲宝叶则"]
   }
 ]

@@ -14,9 +14,11 @@ import {
   Compass,
   ExternalLink,
   Gauge,
+  Info,
   Languages,
   MapPinned,
   MountainSnow,
+  Navigation,
   RefreshCw,
   Save,
   Share2,
@@ -31,6 +33,7 @@ import {
 import type { Copy, Locale, RegionId, Theme, Vehicle } from "./data";
 import {
   attractions,
+  anchorCoordinates,
   effortNames,
   lodgingAreas,
   regionNames,
@@ -41,6 +44,7 @@ import {
 import type { PlannerInput, Strategy } from "./planner";
 import { buildPlanOptions, getAttraction, getReturnDate } from "./planner";
 import reviewedRoadEvents from "../data/reviewed-road-events.json";
+import updateStatus from "../data/update-status.json";
 import "./styles.css";
 
 const text = (copy: Copy, locale: Locale) => copy[locale];
@@ -53,6 +57,9 @@ const initialInput: PlannerInput = {
   avoidNight: true,
   selectedAttractionIds: ["moon-bay", "flower-lake", "huanglong", "jiuzhaigou"],
   startDate: defaultStartDate,
+  startAnchorId: "chengdu",
+  endAnchorId: "chengdu",
+  departureTime: "08:30",
   vehicle: "sedan",
   evRangeKm: 450,
   lockOrder: false,
@@ -69,11 +76,15 @@ const ui = {
     support: "支持项目",
     eyebrow: `${attractions.length}个可选停留 · 多走廊道路图 · 中英双语`,
     heading: "由你选择想看的地方，规划器负责判断怎样走得完。",
-    intro: "路线网已覆盖红原、若尔盖、九寨沟、黄龙、阿坝县、莲宝叶则及川西南部走廊。规划器根据日期日照、驾驶上限、游玩时长、海拔和住宿节点动态连线。",
-    updated: "V0.3道路图规划基线 · 非实时导航",
+    intro: "路线网已覆盖红原、若尔盖、九寨沟、黄龙、黑水、阿坝县、莲宝叶则及川西南部走廊。规划器根据任意起终点、日期日照、驾驶上限、游玩时长、海拔和住宿节点动态连线。",
+    updated: "V0.4统一数据管线 · 规划基线并非实时导航",
     controls: "设定旅行约束",
     days: "旅行天数",
     dates: "出发 / 返程",
+    endpoints: "起点 / 终点",
+    start: "起点",
+    end: "终点",
+    departure: "每日计划出发",
     vehicle: "车辆类型",
     sedan: "轿车",
     suv: "SUV / 四驱",
@@ -84,7 +95,7 @@ const ui = {
     comfort: "轻松与安全",
     scenery: "景观丰富",
     culture: "人文与村落",
-    avoidNight: "18:30后不走陌生山路",
+    avoidNight: "按当天日落保留30分钟安全余量",
     orderHint: "顺序会影响路线；用箭头调整后将按此顺序计算",
     update: "按这些条件重新规划",
     dirty: "选择有变化，更新后才会应用",
@@ -105,7 +116,7 @@ const ui = {
     feasible: "约束内可完成",
     conflict: "存在硬冲突",
     score: "匹配度",
-    network: "多走廊动态闭环",
+    network: "多走廊动态路线",
     totalDrive: "总驾驶",
     totalDistance: "基线里程",
     suggested: "算法建议",
@@ -121,6 +132,9 @@ const ui = {
     sleepAltitude: "住宿海拔",
     roads: "道路基线",
     daylight: "日照",
+    estimatedWindow: "预计时段",
+    margin: "日落余量",
+    navigate: "在高德核对路线",
     stops: "当天安排",
     transit: "转场与正规休息",
     suggestedStop: "建议",
@@ -130,7 +144,7 @@ const ui = {
     disclaimerTitle: "规划结果不是通行承诺",
     disclaimer: "里程和时间是用于比较方案的基线估计，并非实时导航。出发前24小时必须再次核对交警公告、天气、景区开放状态和正式导航；遇暴雨、浓雾或地灾预警时删减活动。",
     sourceTitle: "规划数据要能回到官方来源",
-    sourceIntro: "景点种子数据来自景区官网与地方政府公开信息；道路公告每周自动发现，但未经人工审核不会改变路线。",
+    sourceIntro: "同一个每周任务检查道路与景区官方入口，并完成数据校验、规划测试和构建。它只生成最小候选记录；未经人工审核，道路候选不会改变路线，景区候选也不会被写成开放事实。",
     humanReview: "人工确认后生效",
     noReviewedEvents: "当前没有生效中的人工审核道路事件",
     original: "查看官方入口",
@@ -147,6 +161,19 @@ const ui = {
     verified: "资料核验",
     reservation: "预约提醒",
     bestMonths: "推荐月份",
+    details: "查看资料详情",
+    opening: "开放说明",
+    dataState: "字段状态",
+    audited: "主要字段已核验",
+    basic: "基础记录，待逐字段核验",
+    checkedOn: "最后核验",
+    sourceLink: "官方来源",
+    unknown: "尚未单独核验，请直接查看官方来源",
+    close: "关闭",
+    weeklyStatus: "统一周更新状态",
+    weeklyStatusBody: updateStatus.sourceResults.length > 0
+      ? `最近一次记录检查了 ${updateStatus.successfulSources}/${updateStatus.totalSources} 个官方入口；定时运行可能延迟，候选信息须审核后生效。`
+      : `统一周任务已配置，共 ${updateStatus.totalSources} 个官方入口；首次检查结果将在审核合并后显示。`,
     footer: "独立个人项目 · 安全约束优先于景点数量",
   },
   en: {
@@ -158,11 +185,15 @@ const ui = {
     support: "Support",
     eyebrow: `${attractions.length} selectable stops · Multi-corridor graph · Bilingual`,
     heading: "Choose what you want to see. Let the planner decide what can actually fit.",
-    intro: "The graph now covers Hongyuan, Ruoergai, Jiuzhaigou, Huanglong, Ngawa County, Lianbaoyeze and the southern corridors. Dates, daylight, driving caps, visit time, altitude and overnight nodes all affect the route.",
-    updated: "V0.3 road-graph baseline · Not live navigation",
+    intro: "The graph now covers Hongyuan, Ruoergai, Jiuzhaigou, Huanglong, Heishui, Ngawa County, Lianbaoyeze and the southern corridors. Any start/end, dates, daylight, driving caps, visit time, altitude and overnight nodes affect the route.",
+    updated: "V0.4 unified data pipeline · Planning baseline, not live navigation",
     controls: "Set trip constraints",
     days: "Trip length",
     dates: "Departure / return",
+    endpoints: "Start / end",
+    start: "Start",
+    end: "End",
+    departure: "Planned daily departure",
     vehicle: "Vehicle",
     sedan: "Sedan",
     suv: "SUV / 4WD",
@@ -173,7 +204,7 @@ const ui = {
     comfort: "Comfort & safety",
     scenery: "Landscape variety",
     culture: "Culture & villages",
-    avoidNight: "No unfamiliar mountain roads after 18:30",
+    avoidNight: "Keep a 30-minute margin before that day's sunset",
     orderHint: "Order affects the route. Using the arrows locks this order.",
     update: "Rebuild with these constraints",
     dirty: "Selections changed; rebuild to apply them",
@@ -194,7 +225,7 @@ const ui = {
     feasible: "Fits constraints",
     conflict: "Hard conflict",
     score: "Match",
-    network: "Dynamic multi-corridor loop",
+    network: "Dynamic multi-corridor route",
     totalDrive: "Total driving",
     totalDistance: "Baseline distance",
     suggested: "Planner suggestions",
@@ -210,6 +241,9 @@ const ui = {
     sleepAltitude: "Sleep altitude",
     roads: "Road baseline",
     daylight: "Daylight",
+    estimatedWindow: "Estimated window",
+    margin: "Sunset margin",
+    navigate: "Check route in Amap",
     stops: "Day plan",
     transit: "Transit and formal rest stops",
     suggestedStop: "Suggested",
@@ -219,7 +253,7 @@ const ui = {
     disclaimerTitle: "A plan is not a promise that the road is open",
     disclaimer: "Distance and time are comparison baselines, not live navigation. Within 24 hours of departure, recheck police notices, weather, attraction status and formal navigation. Drop activities during heavy rain, dense fog or geohazard alerts.",
     sourceTitle: "Planning data should trace back to official sources",
-    sourceIntro: "Seed attraction data comes from official attraction and local-government sources. A weekly job discovers road notices, but none affect routes before human review.",
+    sourceIntro: "One weekly job checks official road and attraction entry points, validates data, tests the planner and builds the site. It stores only minimal candidates: road candidates never affect routes and attraction candidates never become opening claims before review.",
     humanReview: "Active after human review",
     noReviewedEvents: "No human-reviewed road event is currently active",
     original: "Open official source",
@@ -236,17 +270,30 @@ const ui = {
     verified: "Verified",
     reservation: "Reservation",
     bestMonths: "Best months",
+    details: "Open data details",
+    opening: "Opening note",
+    dataState: "Field status",
+    audited: "Key fields reviewed",
+    basic: "Basic record; field review pending",
+    checkedOn: "Last reviewed",
+    sourceLink: "Official source",
+    unknown: "Not independently reviewed; open the official source",
+    close: "Close",
+    weeklyStatus: "Unified weekly update status",
+    weeklyStatusBody: updateStatus.sourceResults.length > 0
+      ? `The latest recorded run checked ${updateStatus.successfulSources}/${updateStatus.totalSources} official entry points. Scheduled runs may be delayed and candidates require review.`
+      : `The unified weekly job is configured for ${updateStatus.totalSources} official entry points. Its first result will appear after review and merge.`,
     footer: "Independent project · Safety constraints outrank attraction count",
   },
 };
 
-const regionFilters: Array<"all" | RegionId> = ["all", "gateway", "aba", "maerkang", "grassland", "jiuzhai", "danba", "kangding", "return"];
+const regionFilters: Array<"all" | RegionId> = ["all", "gateway", "aba", "maerkang", "heishui", "grassland", "jiuzhai", "danba", "kangding", "return"];
 const themeFilters: Array<"all" | Theme> = ["all", "scenery", "culture", "wildlife", "hiking", "rest"];
 
 function loadInitialInput(): PlannerInput {
   try {
     const shared = new URLSearchParams(window.location.search).get("plan");
-    const raw = shared ? decodeURIComponent(window.atob(shared)) : window.localStorage.getItem("western-sichuan-plan-v03");
+    const raw = shared ? decodeURIComponent(window.atob(shared)) : window.localStorage.getItem("western-sichuan-plan-v04") ?? window.localStorage.getItem("western-sichuan-plan-v03");
     if (!raw) return initialInput;
     const value = JSON.parse(raw) as Partial<PlannerInput>;
     if (!Array.isArray(value.selectedAttractionIds)) return initialInput;
@@ -264,6 +311,9 @@ function sameInput(a: PlannerInput, b: PlannerInput): boolean {
     && a.priority === b.priority
     && a.avoidNight === b.avoidNight
     && a.startDate === b.startDate
+    && a.startAnchorId === b.startAnchorId
+    && a.endAnchorId === b.endAnchorId
+    && a.departureTime === b.departureTime
     && a.vehicle === b.vehicle
     && a.evRangeKm === b.evRangeKm
     && a.lockOrder === b.lockOrder
@@ -280,6 +330,7 @@ function App() {
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState(false);
   const [actionNotice, setActionNotice] = useState("");
+  const [detailAttractionId, setDetailAttractionId] = useState<string | null>(null);
   const copy = ui[locale];
   const dirty = !sameInput(draft, applied);
   const heroImage = `${import.meta.env.BASE_URL}images/western-sichuan-road.webp`;
@@ -321,7 +372,7 @@ function App() {
   };
 
   const savePlan = () => {
-    window.localStorage.setItem("western-sichuan-plan-v03", JSON.stringify(applied));
+    window.localStorage.setItem("western-sichuan-plan-v04", JSON.stringify(applied));
     setActionNotice(copy.saved);
     window.setTimeout(() => setActionNotice(""), 1800);
   };
@@ -342,6 +393,17 @@ function App() {
         : [...current.selectedAttractionIds, id],
     }));
   };
+
+  const amapNavigationUrl = (startAnchorId: string, endAnchorId: string) => {
+    const from = anchorCoordinates[startAnchorId];
+    const to = anchorCoordinates[endAnchorId];
+    const fromName = routeAnchors[startAnchorId].name.zh;
+    const toName = routeAnchors[endAnchorId].name.zh;
+    return `https://uri.amap.com/navigation?from=${from.longitude},${from.latitude},${encodeURIComponent(fromName)}&to=${to.longitude},${to.latitude},${encodeURIComponent(toName)}&mode=car&policy=1&callnative=1`;
+  };
+
+  const detailAttraction = detailAttractionId ? getAttraction(detailAttractionId) : undefined;
+  const overnightAnchors = Object.values(routeAnchors).filter((anchor) => anchor.canStay);
 
   return (
     <div className="app-shell">
@@ -370,7 +432,7 @@ function App() {
             <span className="data-stamp"><RefreshCw size={14} /> {copy.updated}</span>
           </div>
           <div className="image-panel" style={{ backgroundImage: `linear-gradient(90deg, rgba(12, 37, 32, .52), rgba(12, 37, 32, .03)), url(${heroImage})` }} role="img" aria-label={locale === "zh" ? "川西雪山与山谷公路" : "An alpine road and snow peaks in Western Sichuan"}>
-            <div className="route-badge"><MountainSnow size={19} /><span>Chengdu<br /><b>四姑娘山 · Danba · Kangding</b></span></div>
+            <div className="route-badge"><MountainSnow size={19} /><span>Western Sichuan<br /><b>九寨沟 · 黑水 · 莲宝叶则</b></span></div>
           </div>
         </section>
 
@@ -382,12 +444,36 @@ function App() {
             </div>
 
             <label>
+              <span>{copy.endpoints}</span>
+              <div className="endpoint-grid">
+                <div className="select-wrap">
+                  <select aria-label={copy.start} value={draft.startAnchorId} onChange={(event) => setDraft({ ...draft, startAnchorId: event.target.value })}>
+                    {overnightAnchors.map((anchor) => <option value={anchor.id} key={`start-${anchor.id}`}>{copy.start} · {text(anchor.name, locale)}</option>)}
+                  </select>
+                  <ChevronDown size={17} />
+                </div>
+                <ArrowRight size={15} />
+                <div className="select-wrap">
+                  <select aria-label={copy.end} value={draft.endAnchorId} onChange={(event) => setDraft({ ...draft, endAnchorId: event.target.value })}>
+                    {overnightAnchors.map((anchor) => <option value={anchor.id} key={`end-${anchor.id}`}>{copy.end} · {text(anchor.name, locale)}</option>)}
+                  </select>
+                  <ChevronDown size={17} />
+                </div>
+              </div>
+            </label>
+
+            <label>
               <span>{copy.dates}</span>
               <div className="date-row">
                 <input type="date" value={draft.startDate} onChange={(event) => setDraft({ ...draft, startDate: event.target.value })} />
                 <ArrowRight size={14} />
                 <output>{getReturnDate(draft)}</output>
               </div>
+            </label>
+
+            <label>
+              <span>{copy.departure}</span>
+              <input className="time-input" type="time" min="05:30" max="12:00" step="900" value={draft.departureTime} onChange={(event) => setDraft({ ...draft, departureTime: event.target.value })} />
             </label>
 
             <label>
@@ -508,21 +594,27 @@ function App() {
               {visibleAttractions.map((item) => {
                 const selected = selectedSet.has(item.id);
                 return (
-                  <button className={`attraction-card ${selected ? "selected" : ""}`} type="button" key={item.id} aria-pressed={selected} onClick={() => toggleAttraction(item.id)}>
-                    <span className="card-check">{selected ? <Check size={14} /> : <span />}</span>
-                    <span className="card-copy">
-                      <b>{text(item.name, locale)}</b>
-                      <small>{text(item.summary, locale)}</small>
-                      <span className="card-metrics">
-                        <i><Clock3 size={12} />{copy.hours} {item.visitHours}h</i>
-                        <i><MountainSnow size={12} />{item.altitude}m</i>
-                        {item.detourHours > 0 && <i><Route size={12} />+{item.detourHours}h</i>}
+                  <article className={`attraction-card ${selected ? "selected" : ""}`} key={item.id}>
+                    <button className="card-select" type="button" aria-pressed={selected} onClick={() => toggleAttraction(item.id)}>
+                      <span className="card-check">{selected ? <Check size={14} /> : <span />}</span>
+                      <span className="card-copy">
+                        <b>{text(item.name, locale)}</b>
+                        <small>{text(item.summary, locale)}</small>
+                        <span className="card-metrics">
+                          <i><Clock3 size={13} />{copy.hours} {item.visitHours}h</i>
+                          <i><MountainSnow size={13} />{item.altitude}m</i>
+                          {item.detourHours > 0 && <i><Route size={13} />+{item.detourHours}h</i>}
+                        </span>
+                        <span className="data-badges">
+                          {item.bestMonths && <span className="season-line">{copy.bestMonths} {item.bestMonths.join("/")}</span>}
+                          {item.reservation && <span className="reservation-line">{copy.reservation}</span>}
+                          <span className={`audit-line ${item.verifiedOn ? "audited" : "basic"}`}>{item.verifiedOn ? copy.audited : copy.basic}</span>
+                        </span>
                       </span>
-                      {item.bestMonths && <span className="season-line">{copy.bestMonths} {item.bestMonths.join("/")}</span>}
-                      {item.reservation && <span className="reservation-line">{copy.reservation}</span>}
-                    </span>
-                    <span className={`effort effort-${item.effort}`}>{text(effortNames[item.effort], locale)}</span>
-                  </button>
+                      <span className={`effort effort-${item.effort}`}>{text(effortNames[item.effort], locale)}</span>
+                    </button>
+                    <button className="detail-button" type="button" onClick={() => setDetailAttractionId(item.id)}><Info size={14} />{copy.details}</button>
+                  </article>
                 );
               })}
               {visibleAttractions.length === 0 && <p className="empty-state">{copy.noMatches}</p>}
@@ -537,7 +629,7 @@ function App() {
               <h2>{copy.planTitle}</h2>
               <p>{copy.planIntro}</p>
             </div>
-            <span className="constraint-summary"><CalendarDays size={16} />{applied.startDate} → {getReturnDate(applied)} · {applied.days}{copy.dayUnit} · ≤ {applied.maxDrive}h/day</span>
+            <span className="constraint-summary"><CalendarDays size={16} />{text(routeAnchors[applied.startAnchorId].name, locale)} → {text(routeAnchors[applied.endAnchorId].name, locale)} · {applied.startDate} · {applied.days}{copy.dayUnit} · {applied.departureTime}</span>
           </div>
 
           <div className="plan-tabs" role="tablist">
@@ -615,6 +707,8 @@ function App() {
                       <span><Sparkles size={15} /> {copy.activities} {day.activityHours}h</span>
                       <span><Gauge size={15} /> {copy.distance} {day.distanceKm}km</span>
                       <span><Sun size={15} /> {copy.daylight} {day.sunrise}–{day.sunset}</span>
+                      <span><Clock3 size={15} /> {copy.estimatedWindow} {day.departureTime}–{day.estimatedArrivalTime}</span>
+                      <span className={day.daylightMarginMinutes >= 0 ? "margin-positive" : "margin-negative"}><Sun size={15} /> {copy.margin} {day.daylightMarginMinutes >= 0 ? "+" : ""}{day.daylightMarginMinutes} min</span>
                     </div>
                     <div className="day-detail">
                       <div>
@@ -631,6 +725,7 @@ function App() {
                       <div><b>{copy.roads}</b><p>{day.roads.join(" · ") || "—"}</p></div>
                       <div><b>{locale === "zh" ? "安排逻辑" : "Planning logic"}</b><p>{day.sleepAltitude > 2600 ? copy.dayReasonAltitude : copy.dayReasonDrive}</p></div>
                     </div>
+                    {day.startAnchorId !== day.endAnchorId && <a className="navigation-link" href={amapNavigationUrl(day.startAnchorId, day.endAnchorId)} target="_blank" rel="noreferrer"><Navigation size={15} />{copy.navigate}<ExternalLink size={13} /></a>}
                   </div>
                 </article>
               ))}
@@ -662,6 +757,10 @@ function App() {
             <span className="step-number">03</span>
             <div><h2>{copy.sourceTitle}</h2><p>{copy.sourceIntro}</p></div>
           </div>
+          <div className="update-status-card">
+            <span className="source-icon"><RefreshCw size={20} /></span>
+            <div><b>{copy.weeklyStatus}</b><p>{copy.weeklyStatusBody}</p><small>{locale === "zh" ? "状态记录" : "Status record"}: {updateStatus.lastAttemptAt.slice(0, 10)}</small></div>
+          </div>
           <div className="source-grid">
             {sourceSummary.map((source) => (
               <article className="source-card" key={source.url}>
@@ -682,7 +781,30 @@ function App() {
         </section>
       </main>
 
-      <footer><span>{copy.footer}</span><span>v0.3 · 2026</span></footer>
+      {detailAttraction && <div className="detail-overlay" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) setDetailAttractionId(null); }}>
+        <section className="detail-drawer" role="dialog" aria-modal="true" aria-labelledby="attraction-detail-title">
+          <button className="drawer-close" type="button" aria-label={copy.close} onClick={() => setDetailAttractionId(null)}><X size={20} /></button>
+          <p className="mini-label">PLACE DATA / 景点资料</p>
+          <h2 id="attraction-detail-title">{text(detailAttraction.name, locale)}</h2>
+          <p className="drawer-summary">{text(detailAttraction.summary, locale)}</p>
+          <div className="drawer-metrics">
+            <span><Clock3 size={17} />{copy.hours} {detailAttraction.visitHours}h</span>
+            <span><MountainSnow size={17} />{copy.altitude} {detailAttraction.altitude}m</span>
+            <span><Gauge size={17} />{text(effortNames[detailAttraction.effort], locale)}</span>
+          </div>
+          <dl className="detail-list">
+            <div><dt>{copy.dataState}</dt><dd className={detailAttraction.verifiedOn ? "verified-value" : "pending-value"}>{detailAttraction.verifiedOn ? copy.audited : copy.basic}</dd></div>
+            <div><dt>{copy.bestMonths}</dt><dd>{detailAttraction.bestMonths?.join(" / ") ?? copy.unknown}</dd></div>
+            <div><dt>{copy.opening}</dt><dd>{detailAttraction.opening ? text(detailAttraction.opening, locale) : copy.unknown}</dd></div>
+            <div><dt>{copy.reservation}</dt><dd>{detailAttraction.reservation ? text(detailAttraction.reservation, locale) : copy.unknown}</dd></div>
+            <div><dt>{copy.checkedOn}</dt><dd>{detailAttraction.verifiedOn ?? copy.unknown}</dd></div>
+          </dl>
+          <a className="official-source-button" href={detailAttraction.sourceUrl} target="_blank" rel="noreferrer"><ShieldCheck size={17} />{copy.sourceLink}<ExternalLink size={15} /></a>
+          <p className="drawer-disclaimer">{copy.disclaimer}</p>
+        </section>
+      </div>}
+
+      <footer><span>{copy.footer}</span><span>v0.4 · 2026</span></footer>
     </div>
   );
 }

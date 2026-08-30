@@ -3,7 +3,7 @@ export type Locale = "zh" | "en";
 export type Copy = { zh: string; en: string };
 export type Theme = "scenery" | "culture" | "wildlife" | "hiking" | "rest";
 export type Effort = "low" | "medium" | "high";
-export type RegionId = "gateway" | "aba" | "siguniang" | "maerkang" | "grassland" | "jiuzhai" | "danba" | "kangding" | "return";
+export type RegionId = "gateway" | "aba" | "siguniang" | "maerkang" | "heishui" | "grassland" | "jiuzhai" | "danba" | "kangding" | "return";
 export type Vehicle = "sedan" | "suv" | "ev";
 
 export type RouteAnchor = {
@@ -58,6 +58,7 @@ export const regionNames: Record<RegionId, Copy> = {
   aba: c("卧龙·四姑娘山", "Wolong · Siguniang"),
   siguniang: c("汶川·四姑娘山", "Wenchuan · Siguniang"),
   maerkang: c("理县·马尔康·阿坝县", "Li County · Barkam · Ngawa County"),
+  heishui: c("黑水·冰川彩林", "Heishui · glaciers and forests"),
   grassland: c("红原·若尔盖", "Hongyuan · Ruoergai"),
   jiuzhai: c("松潘·黄龙·九寨沟", "Songpan · Huanglong · Jiuzhaigou"),
   danba: c("丹巴段", "Danba section"),
@@ -97,6 +98,7 @@ const anchors: RouteAnchor[] = [
   { id: "tangke", name: c("唐克", "Tangke"), altitude: 3440, canStay: true, region: "grassland", latitude: 33.42 },
   { id: "ruoergai", name: c("若尔盖", "Ruoergai"), altitude: 3440, canStay: true, region: "grassland", latitude: 33.58 },
   { id: "maoxian", name: c("茂县", "Mao County"), altitude: 1580, canStay: true, region: "jiuzhai", latitude: 31.68 },
+  { id: "heishui", name: c("黑水", "Heishui"), altitude: 2350, canStay: true, region: "heishui", latitude: 32.06 },
   { id: "songpan", name: c("松潘", "Songpan"), altitude: 2850, canStay: true, region: "jiuzhai", latitude: 32.65 },
   { id: "chuanzhusi", name: c("川主寺", "Chuanzhusi"), altitude: 2980, canStay: true, region: "jiuzhai", latitude: 32.78 },
   { id: "huanglong", name: c("黄龙", "Huanglong"), altitude: 3200, canStay: false, region: "jiuzhai", latitude: 32.74 },
@@ -111,6 +113,38 @@ const anchors: RouteAnchor[] = [
 ];
 
 export const routeAnchors = Object.fromEntries(anchors.map((anchor) => [anchor.id, anchor]));
+
+export const anchorCoordinates: Record<string, { longitude: number; latitude: number }> = {
+  chengdu: { longitude: 104.0665, latitude: 30.5728 },
+  dujiangyan: { longitude: 103.6469, latitude: 31.0015 },
+  yingxiu: { longitude: 103.485, latitude: 31.061 },
+  wenchuan: { longitude: 103.59, latitude: 31.476 },
+  wolong: { longitude: 103.17, latitude: 31.039 },
+  balang: { longitude: 102.95, latitude: 30.95 },
+  siguniang: { longitude: 102.84, latitude: 31.0 },
+  xiaojin: { longitude: 102.36, latitude: 30.999 },
+  lixian: { longitude: 103.17, latitude: 31.44 },
+  miyaluo: { longitude: 102.81, latitude: 31.66 },
+  maerkang: { longitude: 102.22, latitude: 31.9 },
+  "aba-county": { longitude: 101.7, latitude: 32.9 },
+  lianbaoyeze: { longitude: 101.12, latitude: 33.1 },
+  hongyuan: { longitude: 102.55, latitude: 32.79 },
+  tangke: { longitude: 102.48, latitude: 33.42 },
+  ruoergai: { longitude: 102.96, latitude: 33.58 },
+  maoxian: { longitude: 103.85, latitude: 31.68 },
+  heishui: { longitude: 102.99, latitude: 32.06 },
+  songpan: { longitude: 103.6, latitude: 32.65 },
+  chuanzhusi: { longitude: 103.61, latitude: 32.78 },
+  huanglong: { longitude: 103.83, latitude: 32.74 },
+  jiuzhaigou: { longitude: 103.92, latitude: 33.26 },
+  danba: { longitude: 101.89, latitude: 30.88 },
+  bamei: { longitude: 101.5, latitude: 30.5 },
+  tagong: { longitude: 101.54, latitude: 30.32 },
+  xinduqiao: { longitude: 101.49, latitude: 30.04 },
+  kangding: { longitude: 101.96, latitude: 30.05 },
+  luding: { longitude: 102.23, latitude: 29.91 },
+  yaan: { longitude: 103.0, latitude: 30.01 },
+};
 
 const leg = (id: string, from: string, to: string, hours: number, km: number, road: string, evSupport: RouteLeg["evSupport"] = "good"): RouteLeg => ({ id, from, to, hours, km, road, evSupport });
 
@@ -134,6 +168,8 @@ export const roadLegs: RouteLeg[] = [
   leg("tk-reg", "tangke", "ruoergai", 1.4, 85, "G213"),
   leg("reg-sp", "ruoergai", "songpan", 2.7, 165, "G213"),
   leg("wc-mx", "wenchuan", "maoxian", 1.7, 105, "G213"),
+  leg("mx-hs", "maoxian", "heishui", 3.0, 185, "G347", "limited"),
+  leg("hs-hy", "heishui", "hongyuan", 4.0, 225, "G347 / G248", "limited"),
   leg("mx-sp", "maoxian", "songpan", 2.6, 160, "G213"),
   leg("sp-czs", "songpan", "chuanzhusi", 0.5, 25, "G213"),
   leg("czs-hl", "chuanzhusi", "huanglong", 1.2, 55, "G544", "limited"),
@@ -224,6 +260,21 @@ export const attractions: Attraction[] = [
   attraction("shennianchi", "jiuzhaigou", c("神仙池", "Shenxianchi"), "jiuzhai", ["scenery", "hiking"], 6, 2.2, 95, 3000, "medium", c("与九寨沟主景区不同方向，需额外留出完整时间。", "A separate direction from the main Jiuzhaigou park and requires substantial extra time."), "https://www.abazhou.gov.cn/abazhou/c109755/202205/caedf2d5745a4ff0a27cfa2d2c8684a6.shtml", { bestMonths: [5,6,7,8,9,10], verifiedOn: "2026-08-30" }),
   attraction("qiang-city", "maoxian", c("中国古羌城", "Ancient Qiang City"), "jiuzhai", ["culture"], 3, 0.4, 15, 1600, "low", c("适合作为九寨沟方向进出时的低海拔人文停留。", "A lower-altitude cultural stop when entering or leaving the Jiuzhaigou corridor."), "https://www.abazhou.gov.cn/", { bestMonths: [3,4,5,6,7,8,9,10,11], verifiedOn: "2026-08-30" }),
   attraction("diexi", "maoxian", c("叠溪—松坪沟", "Diexi · Songpinggou"), "jiuzhai", ["scenery", "culture"], 6, 1.7, 75, 2400, "medium", c("需要大半日支线时间，地灾或强降雨预警时应取消。", "Requires most of a day; cancel during geohazard or heavy-rain warnings."), "https://www.abazhou.gov.cn/", { bestMonths: [4,5,6,7,8,9,10,11], verifiedOn: "2026-08-30" }),
+  attraction("sanjiang-eco", "yingxiu", c("汶川三江生态旅游区", "Wenchuan Sanjiang"), "aba", ["scenery", "rest"], 5, 2.0, 85, 1500, "medium", c("映秀方向的支线自然景区，适合增加一晚而不是压入长途转场日。", "A nature side trip from Yingxiu, best with an extra night rather than a long transfer day."), "https://www.abazhou.gov.cn/abazhou/jqjs/common_list.shtml", { bestMonths: [4,5,6,7,8,9,10], opening: c("开放范围受天气与景区公告影响", "Open areas depend on weather and official notices"), reservation: c("出发前从官方入口核验购票与预约", "Verify ticketing and reservations through the official source"), verifiedOn: "2026-08-30" }),
+  attraction("qiangren-valley", "wenchuan", c("汶川羌人谷", "Wenchuan Qiangren Valley"), "aba", ["culture", "scenery"], 3.5, 0.8, 35, 1700, "low", c("以羌族村落和河谷为主，参观时尊重居民空间与现场规则。", "A Qiang cultural valley where visitors should respect residents and on-site rules."), "https://www.abazhou.gov.cn/", { bestMonths: [4,5,6,7,8,9,10], opening: c("具体开放项目以属地公告为准", "Specific open activities follow local notices"), verifiedOn: "2026-08-30" }),
+  attraction("ganbao-village", "lixian", c("甘堡藏寨", "Ganbao Tibetan Village"), "maerkang", ["culture", "rest"], 2.5, 0.4, 16, 1900, "low", c("G317沿线的人文停留，可与理县城区或桃坪羌寨择一组合。", "A cultural stop along G317, best combined selectively with Li County or Taoping."), "https://www.abazhou.gov.cn/", { bestMonths: [4,5,6,7,8,9,10], opening: c("公共区域与经营项目开放状态分别核验", "Verify public areas and operated activities separately"), verifiedOn: "2026-08-30" }),
+  attraction("guergou", "miyaluo", c("古尔沟河谷休整", "Guergou valley rest"), "maerkang", ["rest", "scenery"], 2, 0.3, 12, 2400, "low", c("仅作为住宿区域和河谷休整，不推荐具体温泉酒店或商家。", "An overnight and valley-rest area without endorsing individual hot-spring hotels."), "https://www.abazhou.gov.cn/", { bestMonths: [1,2,3,4,5,6,7,8,9,10,11,12], opening: c("公共区域全年可到访，经营项目自行核验", "Public areas are generally accessible; verify operated services independently"), verifiedOn: "2026-08-30" }),
+  attraction("lianghekou-memorial", "xiaojin", c("两河口会议纪念地", "Lianghekou Meeting Memorial"), "aba", ["culture"], 2, 0.8, 35, 2800, "low", c("红色历史主题停留，纪念场馆开放时间需在出发前核验。", "A historic memorial stop; verify museum opening hours before departure."), "https://www.abazhou.gov.cn/abazhou/jqjs/common_list.shtml", { bestMonths: [4,5,6,7,8,9,10], opening: c("纪念场馆开放以官方或属地公告为准", "Museum access follows official or local notices"), verifiedOn: "2026-08-30" }),
+  attraction("dagu-glacier", "heishui", c("达古冰川", "Dagu Glacier"), "heishui", ["scenery", "hiking"], 7, 0.8, 35, 4860, "high", c("索道上站海拔极高，应单独安排一日并保留因天气取消的余地。", "The upper cableway station is extremely high; reserve a full day and a weather cancellation option."), "https://abazhou.gov.cn/abazhou/jqjs/common_list.shtml", { bestMonths: [1,2,3,5,6,7,8,9,10,11,12], opening: c("景区及索道运行以官方当日公告为准", "Park and cableway operation follow same-day official notices"), reservation: c("出发前核验实名购票与入园时段", "Verify real-name ticketing and entry windows before departure"), verifiedOn: "2026-08-30" }),
+  attraction("naizigou", "heishui", c("奶子沟彩林", "Naizigou Forest"), "heishui", ["scenery"], 4, 0.8, 38, 2600, "low", c("秋季色彩最集中；只在正规停车点停留，不把省道路肩当观景台。", "Most colourful in autumn; use formal parking rather than road shoulders."), "https://abazhou.gov.cn/abazhou/jqjs/common_list.shtml", { bestMonths: [9,10,11], opening: c("沿线开放与交通状态需结合属地公告", "Access and traffic status require local notice checks"), verifiedOn: "2026-08-30" }),
+  attraction("san-ao-snow-mountain", "heishui", c("三奥雪山景区", "San'ao Snow Mountain"), "heishui", ["scenery", "hiking"], 8, 1.0, 45, 3600, "high", c("登山与长线徒步不等同普通观光，需使用正规线路并评估天气和体力。", "Mountaineering and long hikes require managed routes plus weather and fitness assessment."), "https://abazhou.gov.cn/abazhou/jqjs/common_list.shtml", { bestMonths: [5,6,7,8,9,10], opening: c("线路开放和活动许可必须查官方公告", "Route access and activity permission require official confirmation"), reservation: c("高强度活动可能需要另行预约或向导", "Demanding activities may require separate booking or a guide"), verifiedOn: "2026-08-30" }),
+  attraction("luhua-meeting", "heishui", c("芦花会议纪念地", "Luhua Meeting Memorial"), "heishui", ["culture"], 2, 0.3, 12, 2350, "low", c("适合与黑水县城住宿组合的人文历史停留。", "A cultural and historic stop suited to a Heishui overnight."), "https://www.abazhou.gov.cn/", { bestMonths: [4,5,6,7,8,9,10,11], opening: c("场馆开放时间以属地公告为准", "Museum hours follow local notices"), verifiedOn: "2026-08-30" }),
+  attraction("waqie-pagodas", "hongyuan", c("瓦切塔林", "Waqie Pagoda Forest"), "grassland", ["culture", "scenery"], 2, 0.7, 32, 3450, "low", c("宗教文化场所，遵守现场礼仪、拍摄和无人机规定。", "A religious cultural site: follow etiquette, photography and drone rules."), "https://www.abazhou.gov.cn/", { bestMonths: [5,6,7,8,9,10], opening: c("开放范围以现场和属地公告为准", "Accessible areas follow on-site and local notices"), verifiedOn: "2026-08-30" }),
+  attraction("long-march-monument", "songpan", c("红军长征纪念碑碑园", "Long March Monument Park"), "jiuzhai", ["culture"], 2, 0.3, 12, 3000, "low", c("川主寺附近的人文停留，可与短转场日组合。", "A cultural stop near Chuanzhusi that fits a shorter transfer day."), "https://www.abazhou.gov.cn/", { bestMonths: [4,5,6,7,8,9,10], opening: c("园区及展馆开放时间分别核验", "Verify park and exhibition-hall hours separately"), verifiedOn: "2026-08-30" }),
+  attraction("zhangzha-rest", "jiuzhaigou", c("漳扎镇与沟口休整", "Zhangzha and park entrance rest"), "jiuzhai", ["rest", "culture"], 1.5, 0, 0, 2000, "low", c("用于提前抵达、确认预约和补给，不包含具体酒店餐厅推荐。", "For early arrival, reservation checks and supplies, without individual hotel or restaurant endorsements."), "https://www.jiuzhai.com/", { bestMonths: [1,2,3,4,5,6,7,8,9,10,11,12], opening: c("公共区域可到访，经营项目自行核验", "Public areas are accessible; verify operated services independently"), verifiedOn: "2026-08-30" }),
+  attraction("pingtou-qiang", "maoxian", c("坪头羌寨", "Pingtou Qiang Village"), "jiuzhai", ["culture", "rest"], 2.5, 0.5, 20, 1700, "low", c("茂县附近的羌族村落停留，注意居民生活空间和停车秩序。", "A Qiang village stop near Mao County; respect residents and parking rules."), "https://www.abazhou.gov.cn/", { bestMonths: [4,5,6,7,8,9,10], opening: c("公共区域与经营体验需分别核验", "Verify public areas and operated experiences separately"), verifiedOn: "2026-08-30" }),
+  attraction("moxi-town", "luding", c("磨西古镇", "Moxi Old Town"), "return", ["culture", "rest"], 2.5, 1.8, 80, 1600, "low", c("海螺沟方向支线上的住宿与历史停留，不与疲劳返程硬塞。", "An overnight and historic stop on the Hailuogou branch, not for a rushed return day."), "https://www.luding.gov.cn/", { bestMonths: [3,4,5,6,7,8,9,10,11], opening: c("公共街区与场馆开放状态分别核验", "Verify public streets and venues separately"), verifiedOn: "2026-08-30" }),
+  attraction("mengding-mountain", "yaan", c("蒙顶山", "Mengding Mountain"), "return", ["scenery", "culture", "hiking"], 5, 1.2, 48, 1450, "medium", c("适合作为返程前增加一晚的茶文化与低山徒步活动。", "A tea-culture and lower-mountain outing best with an extra night before returning."), "https://www.yaan.gov.cn/", { bestMonths: [3,4,5,6,7,8,9,10,11], opening: c("景区开放和索道状态以官方公告为准", "Park and cableway status follow official notices"), reservation: c("节假日前核验购票与预约要求", "Verify holiday ticketing and reservation requirements"), verifiedOn: "2026-08-30" }),
 ];
 
 export const lodgingAreas: LodgingArea[] = [
@@ -232,6 +283,7 @@ export const lodgingAreas: LodgingArea[] = [
   { anchorId: "maerkang", name: c("马尔康城区", "Barkam urban area"), services: c("西部走廊的重要补给节点", "A major resupply node on the western corridor"), tradeoff: c("前往莲宝叶则仍需长距离驾驶", "Lianbaoyeze still requires a long onward drive") },
   { anchorId: "aba-county", name: c("阿坝县城区", "Ngawa County town"), services: c("莲宝叶则往返的合理基地", "A practical base for Lianbaoyeze"), tradeoff: c("住宿海拔约3290米", "Sleeping altitude is about 3,290 m") },
   { anchorId: "hongyuan", name: c("红原县城", "Hongyuan town"), services: c("草原线路补给较集中", "Concentrated supplies on the grassland corridor"), tradeoff: c("高海拔且冬季天气风险高", "High altitude with elevated winter weather risk") },
+  { anchorId: "heishui", name: c("黑水县城", "Heishui town"), services: c("达古冰川与彩林走廊的合理住宿基地", "A practical base for Dagu Glacier and the forest corridor"), tradeoff: c("前往北部草原的部分道路弯多且补给有限", "Some onward roads to the northern grasslands are winding with limited supplies") },
   { anchorId: "ruoergai", name: c("若尔盖县城", "Ruoergai town"), services: c("花湖和北部草原的住宿节点", "An overnight node for Flower Lake and northern grasslands"), tradeoff: c("距黄龙、九寨沟仍需转场", "Still requires a transfer to Huanglong or Jiuzhaigou") },
   { anchorId: "songpan", name: c("松潘城区", "Songpan town"), services: c("可连接若尔盖、黄龙和九寨沟", "Connects Ruoergai, Huanglong and Jiuzhaigou"), tradeoff: c("节假日道路与停车压力较大", "Holiday traffic and parking can be heavy") },
   { anchorId: "jiuzhaigou", name: c("漳扎镇/沟口住宿区域", "Zhangzha / park entrance area"), services: c("便于次日按预约时段入园", "Convenient for the next day's reserved entry"), tradeoff: c("旺季价格与容量波动，本项目不推荐具体酒店", "Peak-season prices and capacity vary; this project names no individual hotels") },
@@ -270,7 +322,7 @@ export const sourceSummary = [
   },
   {
     agency: c("甘孜州交通运输局 · 阿坝州人民政府", "Garzê Transport Bureau · Ngawa Government"),
-    scope: c("道路施工、封闭、放行和绕行候选公告", "Candidate notices for works, closures, reopening and detours"),
+    scope: c("统一周任务发现道路公告与景区更新候选；只保留标题、来源和链接", "The unified weekly job discovers road notices and attraction updates, storing only titles, sources and links"),
     url: "https://jtj.gzz.gov.cn/zwgk",
     cadence: c("每周自动发现", "Discovered weekly"),
   },

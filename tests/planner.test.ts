@@ -10,6 +10,9 @@ const base = (overrides: Partial<PlannerInput> = {}): PlannerInput => ({
   avoidNight: true,
   selectedAttractionIds: ["moon-bay", "flower-lake"],
   startDate: "2026-09-15",
+  startAnchorId: "chengdu",
+  endAnchorId: "chengdu",
+  departureTime: "08:30",
   vehicle: "sedan",
   evRangeKm: 450,
   lockOrder: false,
@@ -68,4 +71,27 @@ test("winter travel produces a seasonal warning without claiming closure", () =>
 test("EV range warning uses a conservative fraction of rated range", () => {
   const option = buildPlanOptions(base({ vehicle: "ev", evRangeKm: 250, selectedAttractionIds: ["jiuzhaigou"] }))[0];
   assert.ok(option.warnings.some((warning) => warning.code.startsWith("ev-")));
+});
+
+test("supports different start and end anchors on the same graph", () => {
+  const option = buildPlanOptions(base({
+    days: 6,
+    startAnchorId: "wenchuan",
+    endAnchorId: "jiuzhaigou",
+    selectedAttractionIds: ["dagu-glacier", "huanglong"],
+  }))[0];
+  assert.equal(option.routeAnchorIds[0], "wenchuan");
+  assert.equal(option.routeAnchorIds.at(-1), "jiuzhaigou");
+  assert.ok(option.routeAnchorIds.includes("heishui"));
+  assert.ok(option.routeAnchorIds.includes("huanglong"));
+});
+
+test("records departure, estimated finish and sunset margin for every day", () => {
+  const option = buildPlanOptions(base({ departureTime: "09:15" }))[0];
+  assert.ok(option.schedule.length > 0);
+  for (const day of option.schedule) {
+    assert.equal(day.departureTime, "09:15");
+    assert.match(day.estimatedArrivalTime, /^\d{2}:\d{2}$/);
+    assert.equal(typeof day.daylightMarginMinutes, "number");
+  }
 });

@@ -1,11 +1,11 @@
 import type { Attraction, Copy, RouteLeg, Vehicle } from "./data.ts";
-import { attractions, c, roadLegs, routeAnchors, strategySuggestions } from "./data.ts";
+import { anchorCoordinates, attractions, c, roadLegs, routeAnchors, strategySuggestions } from "./data.ts";
 
 export type Strategy = keyof typeof strategySuggestions;
 export type RoadEvent = { id: string; legIds: string[]; impact: "closed" | "restricted" | "delay"; delayHours?: number; startsAt: string; endsAt: string; title: Copy };
-export type PlannerInput = { days: number; maxDrive: number; priority: Strategy; avoidNight: boolean; selectedAttractionIds: string[]; startDate: string; vehicle: Vehicle; evRangeKm: number; lockOrder: boolean; roadEvents?: RoadEvent[] };
+export type PlannerInput = { days: number; maxDrive: number; priority: Strategy; avoidNight: boolean; selectedAttractionIds: string[]; startDate: string; startAnchorId: string; endAnchorId: string; departureTime: string; vehicle: Vehicle; evRangeKm: number; lockOrder: boolean; roadEvents?: RoadEvent[] };
 export type PlanWarning = { code: string; severity: "warn" | "block"; day?: number; message: Copy };
-export type PlanDay = { day: number; date: string; sunrise: string; sunset: string; daylightHours: number; startAnchorId: string; endAnchorId: string; viaAnchorIds: string[]; driveHours: number; distanceKm: number; activityHours: number; dutyHours: number; sleepAltitude: number; attractionIds: string[]; roads: string[] };
+export type PlanDay = { day: number; date: string; sunrise: string; sunset: string; daylightHours: number; departureTime: string; estimatedArrivalTime: string; daylightMarginMinutes: number; startAnchorId: string; endAnchorId: string; viaAnchorIds: string[]; driveHours: number; distanceKm: number; activityHours: number; dutyHours: number; sleepAltitude: number; attractionIds: string[]; roads: string[] };
 export type PlanOption = { id: Strategy; title: Copy; subtitle: Copy; routeKind: "network"; routeAnchorIds: string[]; schedule: PlanDay[]; warnings: PlanWarning[]; feasible: boolean; score: number; selectedAttractionIds: string[]; suggestedAttractionIds: string[]; minimumDays: number | null; totalDriveHours: number; totalDistanceKm: number; activeRoadEventCount: number };
 type Task = { kind: "travel" | "visit"; fromAnchorId: string; toAnchorId: string; driveHours: number; distanceKm: number; activityHours: number; road?: string; attractionId?: string; effort?: Attraction["effort"] };
 type Segment = { start: number; end: number };
@@ -21,12 +21,13 @@ const strategyCopy: Record<Strategy, { title: Copy; subtitle: Copy }> = {
 };
 
 function addDays(date: string, amount: number): string { const value = new Date(`${date}T12:00:00Z`); value.setUTCDate(value.getUTCDate() + amount); return value.toISOString().slice(0, 10); }
-function daylight(date: string, latitude: number) {
+const timeToHours = (value: string) => { const [hours, minutes] = value.split(":").map(Number); return hours + minutes / 60; };
+const hoursToTime = (value: number) => { const normalized = ((value % 24) + 24) % 24; const totalMinutes = Math.round(normalized * 60); return `${String(Math.floor(totalMinutes / 60) % 24).padStart(2, "0")}:${String(totalMinutes % 60).padStart(2, "0")}`; };
+function daylight(date: string, latitude: number, longitude: number) {
   const d = new Date(`${date}T12:00:00Z`); const start = Date.UTC(d.getUTCFullYear(), 0, 0); const dayOfYear = Math.floor((d.getTime() - start) / 86400000);
   const declination = -23.44 * Math.cos((2 * Math.PI * (dayOfYear + 10)) / 365); const lat = latitude * Math.PI / 180; const dec = declination * Math.PI / 180;
-  const angle = Math.acos(Math.max(-1, Math.min(1, -Math.tan(lat) * Math.tan(dec)))); const hours = 24 * angle / Math.PI; const sunrise = 12 - hours / 2; const sunset = 12 + hours / 2;
-  const display = (value: number) => `${String(Math.floor(value)).padStart(2, "0")}:${String(Math.round((value % 1) * 60)).padStart(2, "0")}`;
-  return { hours: round(hours), sunrise: display(sunrise), sunset: display(sunset) };
+  const angle = Math.acos(Math.max(-1, Math.min(1, -Math.tan(lat) * Math.tan(dec)))); const hours = 24 * angle / Math.PI; const solarNoon = 12 + (120 - longitude) / 15; const sunrise = solarNoon - hours / 2; const sunset = solarNoon + hours / 2;
+  return { hours: round(hours), sunrise: hoursToTime(sunrise), sunset: hoursToTime(sunset) };
 }
 function activeEvents(input: PlannerInput): RoadEvent[] { const end = addDays(input.startDate, input.days - 1); return (input.roadEvents ?? []).filter((event) => event.startsAt.slice(0, 10) <= end && event.endsAt.slice(0, 10) >= input.startDate); }
 
@@ -51,19 +52,20 @@ function shortestPath(from: string, to: string, input: PlannerInput): PathResult
 }
 
 function orderedAnchors(ids: string[], input: PlannerInput): string[] {
-  const anchors = unique(ids.map((id) => attractionById.get(id)?.anchorId).filter((id): id is string => Boolean(id))); if (input.lockOrder || anchors.length < 3) return anchors;
-  const remaining = [...anchors]; const result: string[] = []; let current = "chengdu";
+  const anchors = unique(ids.map((id) => attractionById.get(id)?.anchorId).filter((id): id is string => Boolean(id))).filter((id) => id !== input.startAnchorId && id !== input.endAnchorId); if (input.lockOrder || anchors.length < 3) return anchors;
+  const remaining = [...anchors]; const result: string[] = []; let current = input.startAnchorId;
   while (remaining.length) { let bestIndex = 0; let bestCost = Infinity; remaining.forEach((anchor, index) => { const path = shortestPath(current, anchor, input); if (path && path.cost < bestCost) { bestIndex = index; bestCost = path.cost; } }); current = remaining.splice(bestIndex, 1)[0]; result.push(current); }
   return result;
 }
 function buildRoute(ids: string[], input: PlannerInput): RouteLeg[] | null {
-  const stops = ["chengdu", ...orderedAnchors(ids, input), "chengdu"]; const result: RouteLeg[] = [];
+  const stops = [input.startAnchorId, ...orderedAnchors(ids, input), input.endAnchorId]; const result: RouteLeg[] = [];
   for (let index = 1; index < stops.length; index += 1) { const path = shortestPath(stops[index - 1], stops[index], input); if (!path) return null; result.push(...path.legs); }
   return result;
 }
-function buildTasks(legs: RouteLeg[], attractionIds: string[]): Task[] {
+function buildTasks(legs: RouteLeg[], attractionIds: string[], startAnchorId: string): Task[] {
   const byAnchor = new Map<string, Attraction[]>(); for (const id of attractionIds) { const item = attractionById.get(id); if (item) byAnchor.set(item.anchorId, [...(byAnchor.get(item.anchorId) ?? []), item]); }
-  const visited = new Set<string>(); const tasks: Task[] = [];
+  const visited = new Set<string>([startAnchorId]); const tasks: Task[] = [];
+  for (const item of byAnchor.get(startAnchorId) ?? []) tasks.push({ kind: "visit", fromAnchorId: item.anchorId, toAnchorId: item.anchorId, driveHours: item.detourHours, distanceKm: item.detourKm, activityHours: item.visitHours, attractionId: item.id, effort: item.effort });
   for (const routeLeg of legs) {
     tasks.push({ kind: "travel", fromAnchorId: routeLeg.from, toAnchorId: routeLeg.to, driveHours: routeLeg.hours, distanceKm: routeLeg.km, activityHours: 0, road: routeLeg.road });
     if (!visited.has(routeLeg.to)) { for (const item of byAnchor.get(routeLeg.to) ?? []) tasks.push({ kind: "visit", fromAnchorId: item.anchorId, toAnchorId: item.anchorId, driveHours: item.detourHours, distanceKm: item.detourKm, activityHours: item.visitHours, attractionId: item.id, effort: item.effort }); visited.add(routeLeg.to); }
@@ -74,9 +76,9 @@ function summarize(tasks: Task[], start: number, end: number) {
   const slice = tasks.slice(start, end); return { startAnchorId: slice[0].fromAnchorId, endAnchorId: slice.at(-1)!.toAnchorId, viaAnchorIds: unique(slice.filter((task) => task.kind === "travel").map((task) => task.toAnchorId)), driveHours: slice.reduce((sum, task) => sum + task.driveHours, 0), distanceKm: slice.reduce((sum, task) => sum + task.distanceKm, 0), activityHours: slice.reduce((sum, task) => sum + task.activityHours, 0), attractionIds: slice.flatMap((task) => task.attractionId ? [task.attractionId] : []), roads: unique(slice.flatMap((task) => task.road ? [task.road] : [])), highEffort: slice.filter((task) => task.effort === "high").length };
 }
 function segmentCost(tasks: Task[], start: number, end: number, day: number, input: PlannerInput, strategy: Strategy, target: number): number {
-  const value = summarize(tasks, start, end); const light = daylight(addDays(input.startDate, day), routeAnchors[value.endAnchorId].latitude); const duty = value.driveHours + value.activityHours; const dutyLimit = input.avoidNight ? Math.max(7.2, light.hours - 1.2) : 10.5; const gain = routeAnchors[value.endAnchorId].altitude - routeAnchors[value.startAnchorId].altitude;
+  const value = summarize(tasks, start, end); const coordinate = anchorCoordinates[value.endAnchorId]; const light = daylight(addDays(input.startDate, day), coordinate.latitude, coordinate.longitude); const duty = value.driveHours + value.activityHours; const daylightLimit = timeToHours(light.sunset) - 0.5 - timeToHours(input.departureTime); const dutyLimit = input.avoidNight ? Math.max(0.5, daylightLimit) : 10.5; const gain = routeAnchors[value.endAnchorId].altitude - routeAnchors[value.startAnchorId].altitude;
   let cost = Math.pow(duty - target, 2) * 1.5; cost += Math.pow(Math.max(0, value.driveHours - input.maxDrive), 2) * (strategy === "comfort" ? 180 : 140); cost += Math.pow(Math.max(0, duty - dutyLimit), 2) * 150;
-  if (day === 0 && routeAnchors[value.endAnchorId].altitude > 2800) cost += 140; if (gain > 1500 && routeAnchors[value.endAnchorId].altitude > 2600) cost += 80; cost += value.highEffort * (strategy === "comfort" ? 50 : 22); return cost;
+  if (day === 0 && routeAnchors[input.startAnchorId].altitude < 2000 && routeAnchors[value.endAnchorId].altitude > 2800) cost += 140; if (gain > 1500 && routeAnchors[value.endAnchorId].altitude > 2600) cost += 80; cost += value.highEffort * (strategy === "comfort" ? 50 : 22); return cost;
 }
 function partition(tasks: Task[], input: PlannerInput, strategy: Strategy): Segment[] | null {
   if (tasks.length < input.days) return null; const target = tasks.reduce((sum, task) => sum + task.driveHours + task.activityHours, 0) / input.days;
@@ -85,28 +87,33 @@ function partition(tasks: Task[], input: PlannerInput, strategy: Strategy): Segm
   if (!dp[input.days][tasks.length]) return null; const result: Segment[] = []; let end = tasks.length; for (let day = input.days; day > 0; day -= 1) { const start = dp[day][end]!.prev; result.unshift({ start, end }); end = start; } return result;
 }
 function scheduleFrom(tasks: Task[], segments: Segment[], input: PlannerInput): PlanDay[] {
-  return segments.map((segment, index) => { const value = summarize(tasks, segment.start, segment.end); const date = addDays(input.startDate, index); const light = daylight(date, routeAnchors[value.endAnchorId].latitude); return { day: index + 1, date, sunrise: light.sunrise, sunset: light.sunset, daylightHours: light.hours, startAnchorId: value.startAnchorId, endAnchorId: value.endAnchorId, viaAnchorIds: value.viaAnchorIds, driveHours: round(value.driveHours), distanceKm: Math.round(value.distanceKm), activityHours: round(value.activityHours), dutyHours: round(value.driveHours + value.activityHours), sleepAltitude: routeAnchors[value.endAnchorId].altitude, attractionIds: value.attractionIds, roads: value.roads }; });
+  return segments.map((segment, index) => { const value = summarize(tasks, segment.start, segment.end); const date = addDays(input.startDate, index); const coordinate = anchorCoordinates[value.endAnchorId]; const light = daylight(date, coordinate.latitude, coordinate.longitude); const dutyHours = round(value.driveHours + value.activityHours); const arrivalHours = timeToHours(input.departureTime) + dutyHours; const safeSunset = timeToHours(light.sunset) - 0.5; return { day: index + 1, date, sunrise: light.sunrise, sunset: light.sunset, daylightHours: light.hours, departureTime: input.departureTime, estimatedArrivalTime: hoursToTime(arrivalHours), daylightMarginMinutes: Math.round((safeSunset - arrivalHours) * 60), startAnchorId: value.startAnchorId, endAnchorId: value.endAnchorId, viaAnchorIds: value.viaAnchorIds, driveHours: round(value.driveHours), distanceKm: Math.round(value.distanceKm), activityHours: round(value.activityHours), dutyHours, sleepAltitude: routeAnchors[value.endAnchorId].altitude, attractionIds: value.attractionIds, roads: value.roads }; });
 }
 function warningsFor(schedule: PlanDay[], input: PlannerInput): PlanWarning[] {
   const warnings: PlanWarning[] = []; const month = new Date(`${input.startDate}T12:00:00Z`).getUTCMonth() + 1;
   for (const day of schedule) {
-    const limit = input.avoidNight ? Math.max(7.2, day.daylightHours - 1.2) : 10.5; const gain = day.sleepAltitude - routeAnchors[day.startAnchorId].altitude;
+    const limit = input.avoidNight ? Math.max(0.5, timeToHours(day.sunset) - 0.5 - timeToHours(input.departureTime)) : 10.5; const gain = day.sleepAltitude - routeAnchors[day.startAnchorId].altitude;
     if (day.driveHours > input.maxDrive + 0.05) warnings.push({ code: `drive-${day.day}`, severity: "block", day: day.day, message: c(`第${day.day}天驾驶${day.driveHours}小时，超过${input.maxDrive}小时上限。`, `Day ${day.day} has ${day.driveHours} driving hours, above the ${input.maxDrive}-hour cap.`) });
-    if (day.dutyHours > limit + 0.05) warnings.push({ code: `light-${day.day}`, severity: "block", day: day.day, message: c(`第${day.day}天总活动${day.dutyHours}小时，超过该日期约${limit.toFixed(1)}小时的保守日照窗口。`, `Day ${day.day} totals ${day.dutyHours} hours, beyond the conservative ${limit.toFixed(1)}-hour daylight window for that date.`) });
-    if (day.day === 1 && day.sleepAltitude > 2800) warnings.push({ code: "first-night", severity: "block", day: 1, message: c("第一晚直接住到2800米以上，建议增加低海拔过渡夜。", "The first night is above 2,800 m; add a lower-altitude transition night.") }); else if (gain > 1500 && day.sleepAltitude > 2600) warnings.push({ code: `gain-${day.day}`, severity: "warn", day: day.day, message: c(`第${day.day}天住宿海拔上升约${gain}米。`, `Sleeping altitude rises by about ${gain} m on day ${day.day}.`) });
+    if (day.dutyHours > limit + 0.05) warnings.push({ code: `light-${day.day}`, severity: "block", day: day.day, message: c(`第${day.day}天预计${day.estimatedArrivalTime}完成，超过日落前30分钟的保守窗口。`, `Day ${day.day} is estimated to finish at ${day.estimatedArrivalTime}, beyond the conservative 30-minute pre-sunset margin.`) });
+    if (timeToHours(input.departureTime) < timeToHours(day.sunrise) - 0.25) warnings.push({ code: `early-${day.day}`, severity: "warn", day: day.day, message: c(`第${day.day}天${input.departureTime}出发早于估算日出${day.sunrise}。`, `Day ${day.day} departs at ${input.departureTime}, before the estimated ${day.sunrise} sunrise.`) });
+    if (day.day === 1 && routeAnchors[input.startAnchorId].altitude < 2000 && day.sleepAltitude > 2800) warnings.push({ code: "first-night", severity: "block", day: 1, message: c("从低海拔起点出发，第一晚直接住到2800米以上，建议增加低海拔过渡夜。", "Starting low and sleeping above 2,800 m on the first night calls for a lower-altitude transition night.") }); else if (gain > 1500 && day.sleepAltitude > 2600) warnings.push({ code: `gain-${day.day}`, severity: "warn", day: day.day, message: c(`第${day.day}天住宿海拔上升约${gain}米。`, `Sleeping altitude rises by about ${gain} m on day ${day.day}.`) });
     if (input.vehicle === "ev" && day.distanceKm > input.evRangeKm * 0.65) warnings.push({ code: `ev-${day.day}`, severity: "warn", day: day.day, message: c(`第${day.day}天基线里程达到续航的65%以上，必须另用合规导航核验充电站和冬季续航。`, `Day ${day.day} exceeds 65% of stated range; verify chargers and winter range in a licensed navigation service.`) });
     for (const id of day.attractionIds) { const item = attractionById.get(id); if (item?.bestMonths?.length && !item.bestMonths.includes(month)) warnings.push({ code: `season-${id}`, severity: "warn", day: day.day, message: c(`${item.name.zh}不在种子数据标注的推荐月份内；这不是闭园判断，请查官方公告。`, `${item.name.en} is outside the seed-data preferred months. This is not a closure determination; check the official notice.`) }); if (item?.effort === "high") warnings.push({ code: `effort-${id}`, severity: "warn", day: day.day, message: c(`${item.name.zh}属于高海拔或高强度项目。`, `${item.name.en} is a high-altitude or demanding activity.`) }); }
   }
   for (const event of activeEvents(input)) warnings.push({ code: `event-${event.id}`, severity: "warn", message: c(`审核道路公告已参与计算：${event.title.zh}`, `Reviewed road notice applied: ${event.title.en}`) }); return warnings;
 }
-function rawPlan(input: PlannerInput, strategy: Strategy, ids: string[]) { const legs = buildRoute(ids, input); if (!legs) return null; const tasks = buildTasks(legs, ids); const segments = partition(tasks, input, strategy); if (!segments) return null; const schedule = scheduleFrom(tasks, segments, input); return { legs, schedule, warnings: warningsFor(schedule, input) }; }
-function normalizeInput(input: PlannerInput): PlannerInput { return { ...input, startDate: input.startDate || new Date().toISOString().slice(0, 10), vehicle: input.vehicle || "sedan", evRangeKm: input.evRangeKm || 450, lockOrder: Boolean(input.lockOrder) }; }
+function rawPlan(input: PlannerInput, strategy: Strategy, ids: string[]) { const legs = buildRoute(ids, input); if (!legs) return null; const tasks = buildTasks(legs, ids, input.startAnchorId); const endAnchorId = legs.at(-1)?.to ?? input.endAnchorId; while (tasks.length < input.days) tasks.push({ kind: "visit", fromAnchorId: endAnchorId, toAnchorId: endAnchorId, driveHours: 0, distanceKm: 0, activityHours: 0.1 }); const segments = partition(tasks, input, strategy); if (!segments) return null; const schedule = scheduleFrom(tasks, segments, input); return { legs, schedule, warnings: warningsFor(schedule, input) }; }
+function normalizeInput(input: PlannerInput): PlannerInput { const startAnchorId = routeAnchors[input.startAnchorId] ? input.startAnchorId : "chengdu"; const endAnchorId = routeAnchors[input.endAnchorId] ? input.endAnchorId : startAnchorId; return { ...input, startDate: input.startDate || new Date().toISOString().slice(0, 10), startAnchorId, endAnchorId, departureTime: /^\d{2}:\d{2}$/.test(input.departureTime) ? input.departureTime : "08:30", vehicle: input.vehicle || "sedan", evRangeKm: input.evRangeKm || 450, lockOrder: Boolean(input.lockOrder) }; }
 function minimumDays(input: PlannerInput, strategy: Strategy, ids: string[]): number | null { for (let days = input.days; days <= 14; days += 1) { const raw = rawPlan({ ...input, days }, strategy, ids); if (raw && !raw.warnings.some((warning) => warning.severity === "block")) return days; } return null; }
 function makeOption(sourceInput: PlannerInput, strategy: Strategy): PlanOption {
-  const input = normalizeInput(sourceInput); const required = unique(input.selectedAttractionIds).filter((id) => attractionById.has(id)); let suggested = strategySuggestions[strategy].filter((id) => !required.includes(id)).slice(0, Math.max(1, Math.min(3, input.days - 3))); let ids = [...required, ...suggested]; let raw = rawPlan(input, strategy, ids);
+  const input = normalizeInput(sourceInput); const required = unique(input.selectedAttractionIds).filter((id) => attractionById.has(id)); const requiredRoute = buildRoute(required, input); const requiredDrive = requiredRoute?.reduce((sum, leg) => sum + leg.hours, 0) ?? Infinity; let suggested = strategySuggestions[strategy].filter((id) => {
+    if (required.includes(id)) return false;
+    const route = buildRoute([...required, id], input);
+    return Boolean(route) && route!.reduce((sum, leg) => sum + leg.hours, 0) <= requiredDrive + 2.5;
+  }).slice(0, Math.max(1, Math.min(3, input.days - 3))); let ids = [...required, ...suggested]; let raw = rawPlan(input, strategy, ids);
   while (raw && raw.warnings.some((item) => item.severity === "block") && suggested.length) { suggested = suggested.slice(0, -1); ids = [...required, ...suggested]; raw = rawPlan(input, strategy, ids); }
-  if (!raw) return { id: strategy, ...strategyCopy[strategy], routeKind: "network", routeAnchorIds: ["chengdu"], schedule: [], warnings: [{ code: "no-route", severity: "block", message: c("当前天数或审核后的道路状态无法形成完整闭环。", "The current duration or reviewed road status cannot form a complete loop.") }], feasible: false, score: 0, selectedAttractionIds: required, suggestedAttractionIds: [], minimumDays: minimumDays(input, strategy, required), totalDriveHours: 0, totalDistanceKm: 0, activeRoadEventCount: activeEvents(input).length };
-  const blocking = raw.warnings.some((item) => item.severity === "block"); const totalDriveHours = round(raw.schedule.reduce((sum, day) => sum + day.driveHours, 0)); const totalDistanceKm = raw.schedule.reduce((sum, day) => sum + day.distanceKm, 0); const routeAnchorIds = raw.legs.length ? [raw.legs[0].from, ...raw.legs.map((leg) => leg.to)] : ["chengdu"];
+  if (!raw) return { id: strategy, ...strategyCopy[strategy], routeKind: "network", routeAnchorIds: [input.startAnchorId, input.endAnchorId], schedule: [], warnings: [{ code: "no-route", severity: "block", message: c("当前起终点、天数或审核后的道路状态无法形成完整路线。", "The current endpoints, duration or reviewed road status cannot form a complete route.") }], feasible: false, score: 0, selectedAttractionIds: required, suggestedAttractionIds: [], minimumDays: minimumDays(input, strategy, required), totalDriveHours: 0, totalDistanceKm: 0, activeRoadEventCount: activeEvents(input).length };
+  const blocking = raw.warnings.some((item) => item.severity === "block"); const totalDriveHours = round(raw.schedule.reduce((sum, day) => sum + day.driveHours, 0)); const totalDistanceKm = raw.schedule.reduce((sum, day) => sum + day.distanceKm, 0); const routeAnchorIds = raw.legs.length ? [raw.legs[0].from, ...raw.legs.map((leg) => leg.to)] : [input.startAnchorId];
   return { id: strategy, ...strategyCopy[strategy], routeKind: "network", routeAnchorIds, schedule: raw.schedule, warnings: raw.warnings, feasible: !blocking, score: Math.max(0, Math.min(99, 96 - raw.warnings.length * 4)), selectedAttractionIds: required, suggestedAttractionIds: suggested, minimumDays: blocking ? minimumDays(input, strategy, required) : input.days, totalDriveHours, totalDistanceKm, activeRoadEventCount: activeEvents(input).length };
 }
 export function buildPlanOptions(input: PlannerInput): PlanOption[] { const normalized = normalizeInput(input); return unique([normalized.priority, "comfort", "scenery", "culture"] as Strategy[]).map((strategy) => makeOption(normalized, strategy)); }

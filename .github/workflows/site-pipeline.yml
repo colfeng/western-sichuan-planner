@@ -1,0 +1,99 @@
+name: Western Sichuan site pipeline
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      refresh_data:
+        description: "Discover official road and attraction updates"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    # Monday 11:17 in China Standard Time (03:17 UTC).
+    - cron: "17 3 * * 1"
+
+permissions:
+  contents: write
+  pull-requests: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: western-sichuan-${{ github.event_name == 'schedule' && 'weekly-refresh' || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: npm ci
+
+      - name: Discover official update candidates once
+        if: github.event_name == 'schedule' || inputs.refresh_data
+        run: python3 crawler/crawl.py
+
+      - name: Validate data
+        run: python3 crawler/validate.py
+      - name: Test planner
+        run: npm test
+      - name: Build site
+        run: npm run build
+
+      - name: Maintain one weekly review pull request
+        if: github.event_name == 'schedule' || inputs.refresh_data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- data/pending-updates.json data/update-status.json; then
+            echo "No source or candidate changes."
+            exit 0
+          fi
+          branch="automation/weekly-data-refresh"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+          git add data/pending-updates.json data/update-status.json
+          git commit -m "data: refresh official update candidates"
+          git push --force-with-lease origin "$branch"
+          if [ -z "$(gh pr list --base main --head "$branch" --state open --json number --jq '.[0].number')" ]; then
+            gh pr create \
+              --base main \
+              --head "$branch" \
+              --title "每周官方数据候选更新 / Weekly official-data refresh" \
+              --body "同一次周任务已完成道路与景区官方页面发现、数据校验、规划测试和生产构建。请只核对新增候选及来源；pending 记录不会自动影响路线或宣称景区开放。"
+          else
+            gh pr comment "$branch" --body "本周候选、来源检查状态和质量验证已更新到同一审核 PR。"
+          fi
+
+      - uses: actions/configure-pages@v5
+        if: github.event_name == 'push'
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name == 'push'
+        with:
+          path: dist
+
+  deploy:
+    if: github.event_name == 'push'
+    needs: quality-and-build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
