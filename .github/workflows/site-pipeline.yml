@@ -41,7 +41,7 @@ jobs:
       - run: npm ci
 
       - name: Discover official update candidates once
-        if: github.event_name == 'schedule' || inputs.refresh_data
+        if: github.event_name == 'schedule' || inputs.refresh_data || contains(github.event.head_commit.message, '[refresh-data]')
         run: python3 crawler/crawl.py
 
       - name: Validate data
@@ -52,11 +52,11 @@ jobs:
         run: npm run build
 
       - name: Maintain one weekly review pull request
-        if: github.event_name == 'schedule' || inputs.refresh_data
+        if: github.event_name == 'schedule' || inputs.refresh_data || contains(github.event.head_commit.message, '[refresh-data]')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if git diff --quiet -- data/pending-updates.json data/update-status.json; then
+          if git diff --quiet -- data/pending-updates.json data/update-status.json data/osm-service-points.json; then
             echo "No source or candidate changes."
             exit 0
           fi
@@ -64,7 +64,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$branch"
-          git add data/pending-updates.json data/update-status.json
+          git add data/pending-updates.json data/update-status.json data/osm-service-points.json
           git commit -m "data: refresh official update candidates"
           git push --force-with-lease origin "$branch"
           if [ -z "$(gh pr list --base main --head "$branch" --state open --json number --jq '.[0].number')" ]; then

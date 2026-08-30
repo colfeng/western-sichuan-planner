@@ -40,7 +40,7 @@ export type Attraction = {
   sourceUrl: string;
   bestMonths: number[];
   opening: Copy;
-  reservation: Copy;
+  reservation?: Copy;
   verifiedOn: string;
 };
 
@@ -49,6 +49,8 @@ export type LodgingArea = {
   name: Copy;
   services: Copy;
   tradeoff: Copy;
+  stayAdvice?: Copy;
+  dining?: Copy;
 };
 
 export const c = (zh: string, en: string): Copy => ({ zh, en });
@@ -218,16 +220,11 @@ const attraction = (
     : culturalVenue
       ? c("室内场馆或宗教空间按当日开放和值守安排进入；外部公共区域可达不代表内部场馆开放。", "Indoor venues and religious spaces follow same-day opening and staffing arrangements; access to the surrounding public area does not imply indoor access.")
       : c("景区开放时段可能随季节、天气和临时管控调整；本页不缓存固定时刻，出发前以官方当日公告为准。", "Opening windows may change with season, weather and temporary controls. This site does not cache fixed hours; use the same-day official notice.");
-  const defaultReservation = publicStop
-    ? c("公共区域不使用统一预约；博物馆、寺院内部、收费交通或经营体验按各自官方规则办理。", "Public areas use no single reservation. Museums, temple interiors, paid transport and operated experiences follow their own official rules.")
-    : culturalVenue
-      ? c("本页不提供统一预约入口；团体参观、讲解或特殊活动须在到访前通过属地官方渠道确认。", "This site provides no universal booking channel. Confirm group visits, guided tours and special activities through the local official channel before arrival.")
-      : c("收费景区应从官方售票入口核验实名、分时或限流要求；确认购票或预约成功后再纳入当天行程。", "For paid attractions, verify real-name, timed-entry and capacity rules through the official ticket channel, and schedule the visit only after confirmation.");
   return {
     id, anchorId, name, region, themes, visitHours, detourHours, detourKm, altitude, effort, summary, sourceUrl,
     bestMonths: details.bestMonths ?? regionalMonths[region],
     opening: details.opening ?? defaultOpening,
-    reservation: details.reservation ?? defaultReservation,
+    ...(details.reservation ? { reservation: details.reservation } : {}),
     verifiedOn: details.verifiedOn ?? "2026-08-30",
   };
 };
@@ -242,6 +239,8 @@ const XIAOJIN_HISTORY = "https://xiaojin.gov.cn/xjxrmzf/c100133/201505/ce0f456f9
 const MAERKANG_TRAVEL = "https://www.abazhou.gov.cn/abazhou/c101960/202509/51c193b81fdb4badbc8bf565e8ba4660.shtml";
 const LUDING_TRAVEL = "https://www.luding.gov.cn/zrzy/article/682818";
 const YAAN_ROUTES = "https://www.yaan.gov.cn/mob/openinfo.html?id=d8d8dac404384ad383deabb7e5670dc7";
+const ABA_3A = "https://www.abazhou.gov.cn/abazhou/c101955/202210/060d9a189f9f4133af19b4ff0a671c4e.shtml";
+const ABA_ROAD_SERVICES = "https://abazhou.gov.cn/abazhou/c109639/202510/fec568fd9a5449cc908ea2cca0f0c431.shtml";
 
 export const attractions: Attraction[] = [
   attraction("dujiangyan-irrigation", "dujiangyan", c("都江堰水利工程", "Dujiangyan Irrigation System"), "gateway", ["culture", "scenery"], 3, 0.4, 16, 730, "low", c("适合在进山前安排的半日人文景点。", "A half-day heritage stop before entering the mountains."), "https://www.djy.gov.cn/dyjgb_rmzfwz/c181378/lymap.shtml"),
@@ -253,9 +252,9 @@ export const attractions: Attraction[] = [
   attraction("gengda-valley", "wolong", c("耿达河谷慢游", "Gengda valley slow stop"), "aba", ["scenery", "rest"], 1.5, 0.3, 12, 1600, "low", c("仅在正规停车区域停留，不设置路肩拍照点。", "Stop only in formal parking areas, never on the road shoulder."), ABA_ROUTES),
   attraction("balang-viewpoint", "balang", c("巴朗山沿线正规观景点", "Balang corridor formal viewpoints"), "aba", ["scenery"], 0.7, 0.2, 6, 3600, "medium", c("受天气影响明显，雨雾时应直接取消。", "Highly weather-sensitive; skip it in rain or fog."), "https://www.sgns.cn/"),
   attraction("maobiliang", "balang", c("猫鼻梁观景台", "Maobiliang Viewpoint"), "aba", ["scenery", "rest"], 0.5, 0.1, 3, 3500, "low", c("短暂停留即可，不在道路出入口聚集。", "Keep the stop short and keep access lanes clear."), "https://www.sgns.cn/"),
-  attraction("shuangqiao", "siguniang", c("双桥沟", "Shuangqiao Valley"), "aba", ["scenery"], 6, 0.3, 12, 3200, "low", c("配套较完善，但仍需考虑快速升高海拔。", "Well serviced, but the rapid altitude gain still matters."), SGNS),
-  attraction("changping", "siguniang", c("长坪沟", "Changping Valley"), "aba", ["scenery", "hiking"], 7, 0.2, 8, 3300, "medium", c("接近整日活动，不宜当天继续长距离赶路。", "A near full-day outing; do not add a long drive afterward."), SGNS),
-  attraction("haizi", "siguniang", c("海子沟", "Haizi Valley"), "aba", ["scenery", "hiking"], 8, 0.2, 8, 3400, "high", c("高海拔长线徒步，需要独立整日和体力评估。", "A demanding high-altitude hike requiring a full day and fitness check."), "https://www.sgns.cn/understand/hzg"),
+  attraction("shuangqiao", "siguniang", c("双桥沟", "Shuangqiao Valley"), "aba", ["scenery"], 6, 0.3, 12, 3200, "low", c("配套较完善，但仍需考虑快速升高海拔。", "Well serviced, but the rapid altitude gain still matters."), SGNS, { reservation: c("按四姑娘山官方购票规则提前核验实名和入园时段。", "Verify real-name ticketing and the entry window through the Mount Siguniang official channel.") }),
+  attraction("changping", "siguniang", c("长坪沟", "Changping Valley"), "aba", ["scenery", "hiking"], 7, 0.2, 8, 3300, "medium", c("接近整日活动，不宜当天继续长距离赶路。", "A near full-day outing; do not add a long drive afterward."), SGNS, { reservation: c("按四姑娘山官方购票规则提前核验实名和入园时段。", "Verify real-name ticketing and the entry window through the Mount Siguniang official channel.") }),
+  attraction("haizi", "siguniang", c("海子沟", "Haizi Valley"), "aba", ["scenery", "hiking"], 8, 0.2, 8, 3400, "high", c("高海拔长线徒步，需要独立整日和体力评估。", "A demanding high-altitude hike requiring a full day and fitness check."), "https://www.sgns.cn/understand/hzg", { reservation: c("除景区票务外，长线户外活动还应按官方规则确认登记或许可。", "Besides park ticketing, confirm any registration or permission required for long outdoor routes.") }),
   attraction("siguniang-town", "siguniang", c("四姑娘山镇慢行", "Mount Siguniang Town walk"), "aba", ["culture", "rest"], 1.2, 0, 0, 3200, "low", c("适合作为高海拔抵达后的低强度活动。", "A low-intensity activity after arriving at altitude."), "https://www.sgns.cn/"),
   attraction("dawei-meeting", "xiaojin", c("达维会师纪念地", "Dawei historical memorial"), "aba", ["culture"], 1.5, 0.5, 20, 2700, "low", c("把红色历史内容放入小金段的短停。", "Adds a concise historical stop to the Xiaojin section."), XIAOJIN_HISTORY),
   attraction("wori-tusi", "xiaojin", c("沃日土司官寨", "Wori Tusi Manor"), "aba", ["culture", "scenery"], 1.8, 0.5, 22, 2500, "low", c("适合人文优先方案，需核对当日开放情况。", "A culture-focused stop; verify opening status for the day."), "https://xiaojin.gov.cn/xjxrmzf/c100050/202004/eee0647e57ae42ebbb979e1fc9a9eeff.shtml"),
@@ -326,6 +325,24 @@ export const attractions: Attraction[] = [
   attraction("pingtou-qiang", "maoxian", c("坪头羌寨", "Pingtou Qiang Village"), "jiuzhai", ["culture", "rest"], 2.5, 0.5, 20, 1700, "low", c("茂县附近的羌族村落停留，注意居民生活空间和停车秩序。", "A Qiang village stop near Mao County; respect residents and parking rules."), ABA_ROUTES, { bestMonths: [4,5,6,7,8,9,10], opening: c("公共村寨区域可通行；展陈和经营体验按当日安排。", "Public village areas are accessible; exhibitions and operated experiences follow same-day arrangements."), verifiedOn: "2026-08-30" }),
   attraction("moxi-town", "luding", c("磨西古镇", "Moxi Old Town"), "return", ["culture", "rest"], 2.5, 1.8, 80, 1600, "low", c("海螺沟方向支线上的住宿与历史停留，不与疲劳返程硬塞。", "An overnight and historic stop on the Hailuogou branch, not for a rushed return day."), LUDING_TRAVEL, { bestMonths: [3,4,5,6,7,8,9,10,11], opening: c("公共街区不设统一开放时段；场馆和经营项目按当日安排。", "Public streets have no single opening window; venues and operated activities follow same-day arrangements."), verifiedOn: "2026-08-30" }),
   attraction("mengding-mountain", "yaan", c("蒙顶山", "Mengding Mountain"), "return", ["scenery", "culture", "hiking"], 5, 1.2, 48, 1450, "medium", c("适合作为返程前增加一晚的茶文化与低山徒步活动。", "A tea-culture and lower-mountain outing best with an extra night before returning."), YAAN_ROUTES, { bestMonths: [3,4,5,6,7,8,9,10,11], opening: c("景区开放和索道状态以官方当日公告为准。", "Park and cableway status follow same-day official notices."), reservation: c("节假日前从景区官方售票入口核验购票与预约要求。", "Before holidays, verify ticketing and reservations through the official ticket channel."), verifiedOn: "2026-08-30" }),
+  attraction("changlie-mountain", "maerkang", c("昌列山生态文化景区", "Changlie Mountain Eco-cultural Area"), "maerkang", ["culture", "scenery", "hiking"], 4, 0.8, 30, 3000, "medium", c("马尔康城郊的山地人文支线，道路弯多，不应在疲劳或雨雾时勉强上山。", "A mountainous cultural side trip near Barkam; the road has many bends, so skip it when tired or in rain and fog."), ABA_3A, { bestMonths: [4,5,6,7,8,9,10] }),
+  attraction("maomuchu", "maerkang", c("毛木初景区", "Maomuchu Scenic Area"), "maerkang", ["scenery", "hiking"], 5, 1.4, 50, 2860, "medium", c("梭磨乡方向的海子与森林支线，建议在马尔康多住一晚后安排。", "A lake-and-forest side trip toward Suomo, best with an extra Barkam night."), ABA_3A, { bestMonths: [5,6,7,8,9,10] }),
+  attraction("jiajin-mountain", "xiaojin", c("夹金山旅游景区", "Jiajin Mountain Scenic Area"), "aba", ["scenery", "culture", "hiking"], 5, 2.0, 80, 3500, "high", c("高山垭口与长征主题支线；开放和通行方式变化时必须以交警与属地公告为准。", "A high-pass and Long March side trip; follow current police and local access notices."), ABA_3A, { bestMonths: [5,6,7,8,9,10] }),
+  attraction("majia-valley", "xiaojin", c("两河口玛嘉沟", "Lianghekou Majia Valley"), "aba", ["scenery", "hiking"], 8, 2.5, 105, 3500, "high", c("沟内海拔约3090至3900米，是独立整日徒步支线，不与四姑娘山沟区叠加。", "A full-day hiking branch rising from about 3,090 to 3,900 m; do not stack it with a Mount Siguniang valley."), ABA_3A, { bestMonths: [5,6,7,8,9,10] }),
+  attraction("wenshan-yuji", "lixian", c("汶山石纽山禹迹景区", "Wenshan Shiniu Yu Heritage Area"), "maerkang", ["culture", "scenery"], 3, 0.8, 32, 2000, "low", c("羌族村寨、山地生态与禹文化组合，适合在理县低海拔过渡日安排。", "A combination of Qiang villages, mountain ecology and Yu heritage for a lower-altitude Li County transition day."), ABA_3A, { bestMonths: [4,5,6,7,8,9,10] }),
+  attraction("jiarong-castle", "lixian", c("嘉绒古堡生态文化景区", "Jiarong Castle Eco-cultural Area"), "maerkang", ["culture", "scenery", "rest"], 3.5, 1.1, 42, 2200, "low", c("下孟乡方向的村寨组合，尊重居民空间并在正规区域停车。", "A village cluster toward Xiameng; respect residents and use formal parking."), ABA_3A, { bestMonths: [4,5,6,7,8,9,10] }),
+  attraction("guantian-village", "lixian", c("和美官田景区", "Hemei Guantian Village"), "maerkang", ["culture", "rest"], 2, 0.4, 15, 2000, "low", c("理县近郊的农耕与藏居短停，可与较短转场日组合。", "A farming and Tibetan-dwelling stop near Li County that fits a shorter transfer day."), ABA_3A, { bestMonths: [4,5,6,7,8,9,10] }),
+  attraction("aba-farming", "aba-county", c("坝上农耕生态景区", "Bashang Farming Eco Area"), "maerkang", ["culture", "scenery", "rest"], 2.5, 0.4, 15, 3290, "low", c("阿坝县城近郊的季节性农田景观，非花期不作为主要景点。", "A seasonal farming landscape near Ngawa County; do not treat it as a main attraction outside bloom season."), ABA_3A, { bestMonths: [6,7,8] }),
+  attraction("nomadic-culture", "aba-county", c("游牧味道民俗文化景区", "Nomadic Culture Area"), "maerkang", ["culture", "rest"], 2.5, 0.7, 28, 3300, "low", c("以非遗和游牧文化为主，具体展演与经营体验按当日安排。", "Focused on intangible heritage and nomadic culture; performances and operated experiences follow same-day arrangements."), ABA_3A, { bestMonths: [5,6,7,8,9,10] }),
+  attraction("rammed-earth-village", "aba-county", c("夯土古寨文化景区", "Rammed-earth Ancient Village"), "maerkang", ["culture", "scenery"], 3, 0.8, 32, 3350, "low", c("阿坝县近郊夯土建筑与民俗支线，村寨参观不进入居民私人空间。", "A rammed-earth architecture and culture side trip; do not enter private residential areas."), ABA_3A, { bestMonths: [5,6,7,8,9,10] }),
+  attraction("baxi-meeting", "ruoergai", c("巴西会议旧址", "Baxi Meeting Site"), "grassland", ["culture"], 3, 1.2, 66, 3300, "low", c("若尔盖东部的长征历史支线，可与县城住宿日组合但需预留往返时间。", "A Long March history branch east of Ruoergai; combine with a town overnight and allow return time."), ABA_3A, { bestMonths: [5,6,7,8,9,10] }),
+  attraction("yake-music-pasture", "hongyuan", c("雅克音乐牧场", "Yake Music Pasture"), "grassland", ["culture", "scenery", "rest"], 2, 0.3, 15, 3500, "low", c("红原县城北侧的草原文化短停；节庆活动与日常开放不是同一概念。", "A grassland-culture stop north of Hongyuan; festival events do not imply ordinary daily access."), ABA_3A, { bestMonths: [6,7,8,9] }),
+  attraction("zhaogong-eco", "yingxiu", c("赵公福地生态旅游区", "Zhaogong Eco-tourism Area"), "aba", ["scenery", "hiking"], 4, 1.5, 60, 1500, "medium", c("汶川漩口方向山地生态支线，强降雨和地灾预警时取消。", "A mountain-ecology branch toward Xuankou; cancel during heavy rain or geohazard warnings."), ABA_3A, { bestMonths: [4,5,6,7,8,9,10] }),
+  attraction("buwa-cultural", "wenchuan", c("布瓦文化旅游区", "Buwa Cultural Area"), "aba", ["culture", "scenery", "rest"], 3, 0.7, 28, 1700, "low", c("汶川县城北部的羌族碉楼和观景短停，适合与县城住宿组合。", "A Qiang watchtower and viewpoint stop north of Wenchuan town, suitable with a town overnight."), ABA_3A, { bestMonths: [3,4,5,6,7,8,9,10,11] }),
+  attraction("chibusu-qiang", "maoxian", c("赤不苏原生态羌文化园", "Chibusu Qiang Cultural Area"), "jiuzhai", ["culture", "scenery"], 4, 1.8, 75, 2000, "medium", c("茂县西北部羌族村寨与峡谷支线，应增加半日至一日，不塞入九寨长转场。", "A Qiang village and canyon branch northwest of Mao County; allow half to one full day rather than adding it to a long Jiuzhaigou transfer."), ABA_3A, { bestMonths: [4,5,6,7,8,9,10] }),
+  attraction("anxiang-snow", "maoxian", c("安乡冰雪运动休闲区", "Anxiang Snow Recreation Area"), "jiuzhai", ["scenery", "hiking"], 5, 1.7, 70, 2800, "medium", c("冰雪项目强季节性，普通观景与滑雪营业状态必须分开核验。", "Snow activities are highly seasonal; verify ordinary sightseeing and ski operations separately."), ABA_3A, { bestMonths: [1,2,3,12] }),
+  attraction("qixiagou", "songpan", c("奇峡沟", "Qixia Valley"), "jiuzhai", ["scenery", "hiking"], 5, 1.4, 55, 3100, "medium", c("松潘方向山谷支线，适合作为黄龙或牟尼沟的替代选项，不在同一天叠加。", "A Songpan valley branch best treated as an alternative to Huanglong or Munigou, not stacked on the same day."), ABA_ROAD_SERVICES, { bestMonths: [5,6,7,8,9,10] }),
+  attraction("minjiang-source", "chuanzhusi", c("岷江源湿地科普馆", "Minjiang Source Wetland Science Centre"), "jiuzhai", ["wildlife", "culture", "rest"], 2, 0.4, 16, 3000, "low", c("川主寺附近的湿地科普短停，适合与短转场组合，室内开放需当天确认。", "A wetland-science stop near Chuanzhusi that fits a short transfer day; confirm indoor opening that day."), ABA_ROAD_SERVICES, { bestMonths: [5,6,7,8,9,10] }),
 ];
 
 export const lodgingAreas: LodgingArea[] = [
@@ -340,7 +357,35 @@ export const lodgingAreas: LodgingArea[] = [
   { anchorId: "jiuzhaigou", name: c("漳扎镇/沟口住宿区域", "Zhangzha / park entrance area"), services: c("便于次日按预约时段入园", "Convenient for the next day's reserved entry"), tradeoff: c("旺季价格与容量波动，本项目不推荐具体酒店", "Peak-season prices and capacity vary; this project names no individual hotels") },
 ];
 
+export function overnightGuide(anchorId: string): Required<LodgingArea> {
+  const anchor = routeAnchors[anchorId];
+  const configured = lodgingAreas.find((area) => area.anchorId === anchorId);
+  const place = anchor?.name ?? c("计划住宿地", "planned overnight stop");
+  return {
+    anchorId,
+    name: configured?.name ?? c(`${place.zh}城区或镇区`, `${place.en} town area`),
+    services: configured?.services ?? c("选择城区或镇区内交通方便、可停车的住宿片区", "Use a central town area with practical access and parking"),
+    tradeoff: configured?.tradeoff ?? c("具体房态、价格、供氧和停车条件需在预订平台自行核验", "Verify room availability, price, oxygen provision and parking on a booking service"),
+    stayAdvice: configured?.stayAdvice ?? c("优先选择有正规停车位、可取消、近主干道且不需夜间走窄路的住宿。", "Prefer cancellable lodging with formal parking, main-road access and no narrow-road night approach."),
+    dining: configured?.dining ?? c(`抵达${place.zh}城区或镇区后再用晚餐；不要把偏远景区门口当作稳定餐饮点。`, `Have dinner after reaching ${place.en} town; do not rely on a remote park entrance for dependable meals.`),
+  };
+}
+
+export const featuredAttractionIds = ["lianbaoyeze", "jiuzhaigou", "huanglong", "shuangqiao", "flower-lake", "moon-bay", "dagu-glacier", "bipenggou"] as const;
+
 export const sourceSummary = [
+  {
+    agency: c("阿坝州政府公路服务设施清单", "Ngawa Government road-service list"),
+    scope: c("公路服务区、停车区、厕所、热水与应急保通中心", "Road service areas, parking, toilets, water and emergency-maintenance centres"),
+    url: ABA_ROAD_SERVICES,
+    cadence: c("公告更新时复核", "Rechecked when notices change"),
+  },
+  {
+    agency: c("OpenStreetMap 贡献者", "OpenStreetMap contributors"),
+    scope: c("每周设施快照：加油、充电、厕所、医院和诊所；ODbL署名共享", "Weekly facility snapshot for fuel, charging, toilets, hospitals and clinics under ODbL"),
+    url: "https://www.openstreetmap.org/copyright",
+    cadence: c("每周自动更新", "Updated weekly"),
+  },
   {
     agency: c("四姑娘山景区官方网站", "Mount Siguniang official site"),
     scope: c("三沟介绍、游览方式与官方线路", "Valley descriptions, visit modes and official itineraries"),

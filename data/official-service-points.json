@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-08-30",
+  "sourceUrl": "https://abazhou.gov.cn/abazhou/c109639/202510/fec568fd9a5449cc908ea2cca0f0c431.shtml",
+  "points": [
+    { "id": "g213-miansi", "nameZh": "汶川绵虒养护站停车区", "nameEn": "Wenchuan Miansi maintenance parking area", "road": "G213", "kilometer": "K2120+000", "legIds": ["wc-mx"], "types": ["rest", "toilet"] },
+    { "id": "g213-diexi", "nameZh": "茂县叠溪公路停车区", "nameEn": "Mao County Diexi road parking area", "road": "G213", "kilometer": "K2006+609", "legIds": ["mx-sp"], "types": ["rest", "toilet"] },
+    { "id": "g213-taiping", "nameZh": "茂县太平养护站停车区", "nameEn": "Mao County Taiping maintenance parking area", "road": "G213", "kilometer": "K1993+900", "legIds": ["mx-sp"], "types": ["rest", "toilet"] },
+    { "id": "g213-zhenping", "nameZh": "松潘镇坪养护站停车区", "nameEn": "Songpan Zhenping maintenance parking area", "road": "G213", "kilometer": "K1983+050", "legIds": ["mx-sp"], "types": ["rest", "toilet"] },
+    { "id": "g213-gaotunzi", "nameZh": "松潘高屯子养护站停车区", "nameEn": "Songpan Gaotunzi maintenance parking area", "road": "G213", "kilometer": "K1917+100", "legIds": ["reg-sp"], "types": ["rest", "toilet"] },
+    { "id": "g213-lianghekou", "nameZh": "松潘两河口养护站服务区", "nameEn": "Songpan Lianghekou maintenance service area", "road": "G213", "kilometer": "K1891+850", "legIds": ["reg-sp"], "types": ["rest", "toilet"] },
+    { "id": "g213-jiangdong", "nameZh": "若尔盖姜冬养护站停车区", "nameEn": "Ruoergai Jiangdong maintenance parking area", "road": "G213", "kilometer": "K1823+676", "legIds": ["reg-sp"], "types": ["rest", "toilet"] },
+    { "id": "g213-flower-lake", "nameZh": "若尔盖花湖养护站停车区", "nameEn": "Ruoergai Flower Lake maintenance parking area", "road": "G213", "kilometer": "K1707+700", "legIds": ["tk-reg", "reg-sp"], "types": ["rest", "toilet"] },
+    { "id": "g248-tangke", "nameZh": "若尔盖唐克养护站服务区", "nameEn": "Ruoergai Tangke maintenance service area", "road": "G248", "kilometer": "K690+610", "legIds": ["hy-tk", "tk-reg"], "types": ["rest", "toilet"] },
+    { "id": "g248-yake", "nameZh": "红原雅克养护站停车区", "nameEn": "Hongyuan Yake maintenance parking area", "road": "G248", "kilometer": "K757+300", "legIds": ["hy-tk"], "types": ["rest", "toilet"] },
+    { "id": "g248-moon-bay", "nameZh": "红原月亮湾公路服务区", "nameEn": "Hongyuan Moon Bay road service area", "road": "G248", "kilometer": "K767+400", "legIds": ["hy-tk"], "types": ["rest", "toilet"] },
+    { "id": "g248-anqu", "nameZh": "红原安曲养护站停车区", "nameEn": "Hongyuan Anqu maintenance parking area", "road": "G248", "kilometer": "K798+100", "legIds": ["mek-hy", "myl-hy"], "types": ["rest", "toilet"] },
+    { "id": "g248-longriba", "nameZh": "红原龙日坝养护站停车区", "nameEn": "Hongyuan Longriba maintenance parking area", "road": "G248", "kilometer": "K818+600", "legIds": ["mek-hy", "myl-hy"], "types": ["rest", "toilet"] },
+    { "id": "g248-shuajingsi", "nameZh": "红原刷经寺公路养护和应急保通中心", "nameEn": "Hongyuan Shuajingsi road maintenance and emergency centre", "road": "G248", "kilometer": "K878+100", "legIds": ["mek-hy", "myl-hy"], "types": ["rest", "toilet", "rescue"] },
+    { "id": "g248-songgang", "nameZh": "马尔康松岗公路养护和应急保通中心", "nameEn": "Barkam Songgang road maintenance and emergency centre", "road": "G248", "kilometer": "K960+050", "legIds": ["mek-hy"], "types": ["rest", "toilet", "rescue"] },
+    { "id": "g317-shiziping", "nameZh": "理县狮子坪公路养护和应急保通中心", "nameEn": "Li County Shiziping road maintenance and emergency centre", "road": "G317", "kilometer": "K229+000", "legIds": ["lx-myl"], "types": ["rest", "toilet", "rescue"] },
+    { "id": "g347-charlie", "nameZh": "阿坝县查理养护站停车区", "nameEn": "Ngawa County Charlie maintenance parking area", "road": "G347", "kilometer": "K2931+800", "legIds": ["hs-hy", "mek-ab"], "types": ["rest", "toilet", "water"] },
+    { "id": "g544-tama", "nameZh": "塔玛养护站服务区", "nameEn": "Tama maintenance service area", "road": "G544", "kilometer": "K92+700", "legIds": ["czs-jzg"], "types": ["rest", "toilet"] },
+    { "id": "g544-chaoyang", "nameZh": "朝阳养护站停车区", "nameEn": "Chaoyang maintenance parking area", "road": "G544", "kilometer": "K2+100", "legIds": ["czs-jzg", "czs-hl"], "types": ["rest", "toilet"] },
+    { "id": "g544-shaba", "nameZh": "沙坝养护站停车区", "nameEn": "Shaba maintenance parking area", "road": "G544", "kilometer": "K44+000", "legIds": ["czs-jzg"], "types": ["rest", "toilet"] },
+    { "id": "g544-shangsizhai", "nameZh": "上四寨停车区", "nameEn": "Shangsizhai parking area", "road": "G544", "kilometer": "K65+300", "legIds": ["czs-jzg"], "types": ["rest", "toilet"] },
+    { "id": "s665-waqie", "nameZh": "红原瓦切养护站服务区", "nameEn": "Hongyuan Waqie maintenance service area", "road": "S665", "kilometer": "K840+700", "legIds": ["hy-tk", "czs-hl"], "types": ["rest", "toilet", "water"] }
+  ]
+}

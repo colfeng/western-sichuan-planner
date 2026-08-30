@@ -72,6 +72,13 @@ test("winter travel produces a seasonal warning without claiming closure", () =>
 test("EV range warning uses a conservative fraction of rated range", () => {
   const option = buildPlanOptions(base({ vehicle: "ev", evRangeKm: 250, selectedAttractionIds: ["jiuzhaigou"] }))[0];
   assert.ok(option.warnings.some((warning) => warning.code.startsWith("ev-")));
+  assert.ok(option.schedule.every((day) => day.evPlan));
+  assert.equal(option.schedule[0].evPlan?.safeBudgetKm, 162);
+});
+
+test("combines compatible short stops on the same day", () => {
+  const option = buildPlanOptions(base({ days: 6, selectedAttractionIds: ["zhuokeji", "xisuo-village", "maerkang-town"] }))[0];
+  assert.ok(option.schedule.some((day) => day.attractionIds.length >= 2));
 });
 
 test("supports different start and end anchors on the same graph", () => {
@@ -94,6 +101,9 @@ test("records departure, estimated finish and sunset margin for every day", () =
     assert.equal(day.departureTime, "09:15");
     assert.match(day.estimatedArrivalTime, /^\d{2}:\d{2}$/);
     assert.equal(typeof day.daylightMarginMinutes, "number");
+    assert.ok(day.restHours >= 0);
+    assert.ok(day.mealHours >= 0);
+    assert.ok(Array.isArray(day.legIds));
   }
 });
 
@@ -103,15 +113,20 @@ test("every attraction exposes the same audited information fields", () => {
     "www.sgns.cn", "www.xiaojin.gov.cn", "xiaojin.gov.cn", "www.danba.gov.cn", "www.kangding.gov.cn",
     "www.luding.gov.cn", "www.yaan.gov.cn", "www.huanglong.com", "www.jiuzhai.com",
   ]);
-  assert.equal(attractions.length, 82);
+  assert.equal(attractions.length, 100);
+  let reservationCount = 0;
   for (const item of attractions) {
     assert.ok(routeAnchors[item.anchorId], `${item.id}: unknown anchor`);
     assert.ok(item.bestMonths.length > 0 && item.bestMonths.every((month) => month >= 1 && month <= 12), `${item.id}: invalid bestMonths`);
     assert.ok(item.opening.zh && item.opening.en, `${item.id}: missing bilingual opening note`);
-    assert.ok(item.reservation.zh && item.reservation.en, `${item.id}: missing bilingual reservation note`);
+    if (item.reservation) {
+      reservationCount += 1;
+      assert.ok(item.reservation.zh && item.reservation.en, `${item.id}: incomplete bilingual reservation note`);
+    }
     assert.match(item.verifiedOn, /^\d{4}-\d{2}-\d{2}$/, `${item.id}: invalid review date`);
     const source = new URL(item.sourceUrl);
     assert.equal(source.protocol, "https:", `${item.id}: source must use HTTPS`);
     assert.ok(officialHosts.has(source.hostname), `${item.id}: source host is not on the official whitelist`);
   }
+  assert.ok(reservationCount > 0 && reservationCount < attractions.length, "reservation notes should appear only where required");
 });
