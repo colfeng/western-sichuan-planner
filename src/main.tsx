@@ -3,11 +3,14 @@ import { createRoot } from "react-dom/client";
 import {
   AlertTriangle,
   ArrowRight,
+  ArrowUp,
+  ArrowDown,
   CalendarDays,
   Check,
   ChevronDown,
   Clock3,
   Coffee,
+  Car,
   Compass,
   ExternalLink,
   Gauge,
@@ -15,33 +18,45 @@ import {
   MapPinned,
   MountainSnow,
   RefreshCw,
+  Save,
+  Share2,
+  Printer,
+  Sun,
   Route,
   Search,
   ShieldCheck,
   Sparkles,
   X,
 } from "lucide-react";
-import type { Copy, Locale, RegionId, Theme } from "./data";
+import type { Copy, Locale, RegionId, Theme, Vehicle } from "./data";
 import {
   attractions,
   effortNames,
+  lodgingAreas,
   regionNames,
   routeAnchors,
   sourceSummary,
   themeNames,
 } from "./data";
 import type { PlannerInput, Strategy } from "./planner";
-import { buildPlanOptions, getAttraction } from "./planner";
+import { buildPlanOptions, getAttraction, getReturnDate } from "./planner";
+import reviewedRoadEvents from "../data/reviewed-road-events.json";
 import "./styles.css";
 
 const text = (copy: Copy, locale: Locale) => copy[locale];
+const defaultStartDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
 
 const initialInput: PlannerInput = {
-  days: 5,
-  maxDrive: 5,
+  days: 8,
+  maxDrive: 6,
   priority: "comfort",
   avoidNight: true,
-  selectedAttractionIds: ["shuangqiao", "jiaju"],
+  selectedAttractionIds: ["moon-bay", "flower-lake", "huanglong", "jiuzhaigou"],
+  startDate: defaultStartDate,
+  vehicle: "sedan",
+  evRangeKm: 450,
+  lockOrder: false,
+  roadEvents: reviewedRoadEvents.events,
 };
 
 const ui = {
@@ -52,18 +67,25 @@ const ui = {
     places: "选择景点",
     sources: "数据来源",
     support: "支持项目",
-    eyebrow: "36个可选停留 · 约束规划 · 中英双语",
+    eyebrow: `${attractions.length}个可选停留 · 多走廊道路图 · 中英双语`,
     heading: "由你选择想看的地方，规划器负责判断怎样走得完。",
-    intro: "首条走廊覆盖成都、卧龙、四姑娘山、丹巴，并可扩展至塔公—康定环线。结果根据驾驶上限、游玩时长、海拔和住宿节点实时分日。",
-    updated: "V0.2规划基线 · 非实时导航",
+    intro: "路线网已覆盖红原、若尔盖、九寨沟、黄龙、阿坝县、莲宝叶则及川西南部走廊。规划器根据日期日照、驾驶上限、游玩时长、海拔和住宿节点动态连线。",
+    updated: "V0.3道路图规划基线 · 非实时导航",
     controls: "设定旅行约束",
     days: "旅行天数",
+    dates: "出发 / 返程",
+    vehicle: "车辆类型",
+    sedan: "轿车",
+    suv: "SUV / 四驱",
+    ev: "纯电动车",
+    range: "标称续航",
     drive: "单日最多驾驶",
     priority: "主要偏好",
     comfort: "轻松与安全",
     scenery: "景观丰富",
     culture: "人文与村落",
     avoidNight: "18:30后不走陌生山路",
+    orderHint: "顺序会影响路线；用箭头调整后将按此顺序计算",
     update: "按这些条件重新规划",
     dirty: "选择有变化，更新后才会应用",
     applied: "新约束已进入计算",
@@ -83,8 +105,7 @@ const ui = {
     feasible: "约束内可完成",
     conflict: "存在硬冲突",
     score: "匹配度",
-    compact: "丹巴—泸定短环线",
-    grand: "塔公—康定大环线",
+    network: "多走廊动态闭环",
     totalDrive: "总驾驶",
     totalDistance: "基线里程",
     suggested: "算法建议",
@@ -99,6 +120,7 @@ const ui = {
     distance: "约",
     sleepAltitude: "住宿海拔",
     roads: "道路基线",
+    daylight: "日照",
     stops: "当天安排",
     transit: "转场与正规休息",
     suggestedStop: "建议",
@@ -110,10 +132,21 @@ const ui = {
     sourceTitle: "规划数据要能回到官方来源",
     sourceIntro: "景点种子数据来自景区官网与地方政府公开信息；道路公告每周自动发现，但未经人工审核不会改变路线。",
     humanReview: "人工确认后生效",
+    noReviewedEvents: "当前没有生效中的人工审核道路事件",
     original: "查看官方入口",
     supportTitle: "帮助这个独立项目继续维护",
     supportBody: "本站并非慈善组织。未来的自愿支持将用于数据维护和持续开发，不属于慈善捐赠，不提供公益捐赠票据，也不会影响免费功能。",
     comingSoon: "支持通道尚未开放",
+    save: "保存到本机",
+    share: "复制分享链接",
+    print: "打印 / PDF",
+    saved: "已保存",
+    shared: "链接已复制",
+    lodgingTitle: "住宿区域比较",
+    lodgingIntro: "只比较区域，不推荐具体酒店或商家；住宿供应和价格仍需自行核验。",
+    verified: "资料核验",
+    reservation: "预约提醒",
+    bestMonths: "推荐月份",
     footer: "独立个人项目 · 安全约束优先于景点数量",
   },
   en: {
@@ -123,18 +156,25 @@ const ui = {
     places: "Choose places",
     sources: "Sources",
     support: "Support",
-    eyebrow: "36 selectable stops · Constraint planning · Bilingual",
+    eyebrow: `${attractions.length} selectable stops · Multi-corridor graph · Bilingual`,
     heading: "Choose what you want to see. Let the planner decide what can actually fit.",
-    intro: "The first corridor covers Chengdu, Wolong, Mount Siguniang and Danba, with an optional Tagong–Kangding loop. Days are rebuilt from driving caps, visit time, altitude and viable overnight nodes.",
-    updated: "V0.2 planning baseline · Not live navigation",
+    intro: "The graph now covers Hongyuan, Ruoergai, Jiuzhaigou, Huanglong, Ngawa County, Lianbaoyeze and the southern corridors. Dates, daylight, driving caps, visit time, altitude and overnight nodes all affect the route.",
+    updated: "V0.3 road-graph baseline · Not live navigation",
     controls: "Set trip constraints",
     days: "Trip length",
+    dates: "Departure / return",
+    vehicle: "Vehicle",
+    sedan: "Sedan",
+    suv: "SUV / 4WD",
+    ev: "Battery EV",
+    range: "Rated range",
     drive: "Daily driving cap",
     priority: "Main preference",
     comfort: "Comfort & safety",
     scenery: "Landscape variety",
     culture: "Culture & villages",
     avoidNight: "No unfamiliar mountain roads after 18:30",
+    orderHint: "Order affects the route. Using the arrows locks this order.",
     update: "Rebuild with these constraints",
     dirty: "Selections changed; rebuild to apply them",
     applied: "New constraints are now calculated",
@@ -154,8 +194,7 @@ const ui = {
     feasible: "Fits constraints",
     conflict: "Hard conflict",
     score: "Match",
-    compact: "Danba–Luding compact loop",
-    grand: "Tagong–Kangding grand loop",
+    network: "Dynamic multi-corridor loop",
     totalDrive: "Total driving",
     totalDistance: "Baseline distance",
     suggested: "Planner suggestions",
@@ -170,6 +209,7 @@ const ui = {
     distance: "Approx.",
     sleepAltitude: "Sleep altitude",
     roads: "Road baseline",
+    daylight: "Daylight",
     stops: "Day plan",
     transit: "Transit and formal rest stops",
     suggestedStop: "Suggested",
@@ -181,34 +221,65 @@ const ui = {
     sourceTitle: "Planning data should trace back to official sources",
     sourceIntro: "Seed attraction data comes from official attraction and local-government sources. A weekly job discovers road notices, but none affect routes before human review.",
     humanReview: "Active after human review",
+    noReviewedEvents: "No human-reviewed road event is currently active",
     original: "Open official source",
     supportTitle: "Help maintain this independent project",
     supportBody: "This is not a charitable organization. Future voluntary support will fund data maintenance and development. It is not a charitable donation, carries no tax-deductible receipt and never changes access to free features.",
     comingSoon: "Support channel not open yet",
+    save: "Save locally",
+    share: "Copy share link",
+    print: "Print / PDF",
+    saved: "Saved",
+    shared: "Link copied",
+    lodgingTitle: "Compare overnight areas",
+    lodgingIntro: "Areas only, never individual hotels or businesses. Verify availability and prices yourself.",
+    verified: "Verified",
+    reservation: "Reservation",
+    bestMonths: "Best months",
     footer: "Independent project · Safety constraints outrank attraction count",
   },
 };
 
-const regionFilters: Array<"all" | RegionId> = ["all", "gateway", "aba", "danba", "kangding", "return"];
+const regionFilters: Array<"all" | RegionId> = ["all", "gateway", "aba", "maerkang", "grassland", "jiuzhai", "danba", "kangding", "return"];
 const themeFilters: Array<"all" | Theme> = ["all", "scenery", "culture", "wildlife", "hiking", "rest"];
+
+function loadInitialInput(): PlannerInput {
+  try {
+    const shared = new URLSearchParams(window.location.search).get("plan");
+    const raw = shared ? decodeURIComponent(window.atob(shared)) : window.localStorage.getItem("western-sichuan-plan-v03");
+    if (!raw) return initialInput;
+    const value = JSON.parse(raw) as Partial<PlannerInput>;
+    if (!Array.isArray(value.selectedAttractionIds)) return initialInput;
+    return { ...initialInput, ...value, selectedAttractionIds: value.selectedAttractionIds.filter((id) => typeof id === "string") };
+  } catch {
+    return initialInput;
+  }
+}
+
+const startingInput = loadInitialInput();
 
 function sameInput(a: PlannerInput, b: PlannerInput): boolean {
   return a.days === b.days
     && a.maxDrive === b.maxDrive
     && a.priority === b.priority
     && a.avoidNight === b.avoidNight
-    && [...a.selectedAttractionIds].sort().join("|") === [...b.selectedAttractionIds].sort().join("|");
+    && a.startDate === b.startDate
+    && a.vehicle === b.vehicle
+    && a.evRangeKm === b.evRangeKm
+    && a.lockOrder === b.lockOrder
+    && a.selectedAttractionIds.join("|") === b.selectedAttractionIds.join("|");
 }
 
 function App() {
   const [locale, setLocale] = useState<Locale>("zh");
-  const [draft, setDraft] = useState<PlannerInput>(initialInput);
-  const [applied, setApplied] = useState<PlannerInput>(initialInput);
+  const [draft, setDraft] = useState<PlannerInput>(startingInput);
+  const [applied, setApplied] = useState<PlannerInput>(startingInput);
   const [activeStrategy, setActiveStrategy] = useState<Strategy>("comfort");
   const [regionFilter, setRegionFilter] = useState<"all" | RegionId>("all");
   const [themeFilter, setThemeFilter] = useState<"all" | Theme>("all");
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState(false);
+  const [actionNotice, setActionNotice] = useState("");
   const copy = ui[locale];
   const dirty = !sameInput(draft, applied);
   const heroImage = `${import.meta.env.BASE_URL}images/western-sichuan-road.webp`;
@@ -236,6 +307,31 @@ function App() {
     setActiveStrategy(draft.priority);
     setNotice(true);
     window.setTimeout(() => setNotice(false), 2400);
+  };
+
+  const moveAttraction = (id: string, direction: -1 | 1) => {
+    setDraft((current) => {
+      const values = [...current.selectedAttractionIds];
+      const index = values.indexOf(id);
+      const next = index + direction;
+      if (index < 0 || next < 0 || next >= values.length) return current;
+      [values[index], values[next]] = [values[next], values[index]];
+      return { ...current, selectedAttractionIds: values, lockOrder: true };
+    });
+  };
+
+  const savePlan = () => {
+    window.localStorage.setItem("western-sichuan-plan-v03", JSON.stringify(applied));
+    setActionNotice(copy.saved);
+    window.setTimeout(() => setActionNotice(""), 1800);
+  };
+
+  const sharePlan = async () => {
+    const encoded = window.btoa(encodeURIComponent(JSON.stringify(applied)));
+    const url = `${window.location.origin}${window.location.pathname}?plan=${encodeURIComponent(encoded)}`;
+    await navigator.clipboard.writeText(url);
+    setActionNotice(copy.shared);
+    window.setTimeout(() => setActionNotice(""), 1800);
   };
 
   const toggleAttraction = (id: string) => {
@@ -286,15 +382,45 @@ function App() {
             </div>
 
             <label>
+              <span>{copy.dates}</span>
+              <div className="date-row">
+                <input type="date" value={draft.startDate} onChange={(event) => setDraft({ ...draft, startDate: event.target.value })} />
+                <ArrowRight size={14} />
+                <output>{getReturnDate(draft)}</output>
+              </div>
+            </label>
+
+            <label>
               <span>{copy.days}</span>
               <div className="segmented days-segmented" role="group" aria-label={copy.days}>
-                {[3, 4, 5, 6, 7].map((value) => (
+                {[3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
                   <button type="button" key={value} className={draft.days === value ? "active" : ""} onClick={() => setDraft({ ...draft, days: value })}>
                     {value}{locale === "zh" ? "天" : "d"}
                   </button>
                 ))}
               </div>
             </label>
+
+            <label>
+              <span>{copy.vehicle}</span>
+              <div className="select-wrap">
+                <Car size={16} className="select-leading" />
+                <select className="with-leading" value={draft.vehicle} onChange={(event) => setDraft({ ...draft, vehicle: event.target.value as Vehicle })}>
+                  <option value="sedan">{copy.sedan}</option>
+                  <option value="suv">{copy.suv}</option>
+                  <option value="ev">{copy.ev}</option>
+                </select>
+                <ChevronDown size={17} />
+              </div>
+            </label>
+
+            {draft.vehicle === "ev" && <label>
+              <span>{copy.range}</span>
+              <div className="range-row">
+                <input type="range" min="250" max="700" step="25" value={draft.evRangeKm} onChange={(event) => setDraft({ ...draft, evRangeKm: Number(event.target.value) })} />
+                <output>{draft.evRangeKm} km</output>
+              </div>
+            </label>}
 
             <label>
               <span>{copy.drive}</span>
@@ -363,12 +489,18 @@ function App() {
               <div className="selected-strip">
                 <span>{copy.selected}</span>
                 <div>
-                  {draft.selectedAttractionIds.map((id) => {
+                  {draft.selectedAttractionIds.map((id, index) => {
                     const item = getAttraction(id);
-                    return item ? <button type="button" key={id} onClick={() => toggleAttraction(id)}>{text(item.name, locale)}<X size={12} /></button> : null;
+                    return item ? <span className="selected-item" key={id}>
+                      <b>{index + 1}. {text(item.name, locale)}</b>
+                      <button type="button" disabled={index === 0} aria-label="Move up" onClick={() => moveAttraction(id, -1)}><ArrowUp size={11} /></button>
+                      <button type="button" disabled={index === draft.selectedAttractionIds.length - 1} aria-label="Move down" onClick={() => moveAttraction(id, 1)}><ArrowDown size={11} /></button>
+                      <button type="button" aria-label="Remove" onClick={() => toggleAttraction(id)}><X size={11} /></button>
+                    </span> : null;
                   })}
                 </div>
                 <button className="clear-button" type="button" onClick={() => setDraft({ ...draft, selectedAttractionIds: [] })}>{copy.clear}</button>
+                <small className="order-hint">{copy.orderHint}</small>
               </div>
             )}
 
@@ -386,6 +518,8 @@ function App() {
                         <i><MountainSnow size={12} />{item.altitude}m</i>
                         {item.detourHours > 0 && <i><Route size={12} />+{item.detourHours}h</i>}
                       </span>
+                      {item.bestMonths && <span className="season-line">{copy.bestMonths} {item.bestMonths.join("/")}</span>}
+                      {item.reservation && <span className="reservation-line">{copy.reservation}</span>}
                     </span>
                     <span className={`effort effort-${item.effort}`}>{text(effortNames[item.effort], locale)}</span>
                   </button>
@@ -403,7 +537,7 @@ function App() {
               <h2>{copy.planTitle}</h2>
               <p>{copy.planIntro}</p>
             </div>
-            <span className="constraint-summary"><CalendarDays size={16} />{applied.days}{copy.dayUnit} · ≤ {applied.maxDrive}h/day · {activePlan.selectedAttractionIds.length} {copy.mustSee}</span>
+            <span className="constraint-summary"><CalendarDays size={16} />{applied.startDate} → {getReturnDate(applied)} · {applied.days}{copy.dayUnit} · ≤ {applied.maxDrive}h/day</span>
           </div>
 
           <div className="plan-tabs" role="tablist">
@@ -423,15 +557,22 @@ function App() {
                 <p>{text(activePlan.subtitle, locale)}</p>
               </div>
               <div className="plan-stats">
-                <span><b>{activePlan.routeKind === "compact" ? copy.compact : copy.grand}</b><small>{copy.routeOverview}</small></span>
+                <span><b>{copy.network}</b><small>{copy.routeOverview}</small></span>
                 <span><b>{activePlan.totalDriveHours} h</b><small>{copy.totalDrive}</small></span>
                 <span><b>{activePlan.totalDistanceKm} km</b><small>{copy.totalDistance}</small></span>
               </div>
             </div>
 
+            <div className="plan-actions">
+              <button type="button" onClick={savePlan}><Save size={15} />{copy.save}</button>
+              <button type="button" onClick={sharePlan}><Share2 size={15} />{copy.share}</button>
+              <button type="button" onClick={() => window.print()}><Printer size={15} />{copy.print}</button>
+              {actionNotice && <span role="status"><Check size={14} />{actionNotice}</span>}
+            </div>
+
             <div className="route-strip" aria-label={copy.routeOverview}>
               {activePlan.routeAnchorIds.map((anchorId, index) => (
-                <div className="route-node" key={anchorId}>
+                <div className="route-node" key={`${anchorId}-${index}`}>
                   <span className={activePlan.schedule.some((day) => day.endAnchorId === anchorId && day.day < applied.days) ? "overnight" : ""} />
                   <b>{text(routeAnchors[anchorId].name, locale)}</b>
                   {index < activePlan.routeAnchorIds.length - 1 && <i />}
@@ -464,7 +605,7 @@ function App() {
                   <div className="day-content">
                     <div className="day-topline">
                       <div>
-                        <p>{text(routeAnchors[day.startAnchorId].name, locale)} → {text(routeAnchors[day.endAnchorId].name, locale)}</p>
+                        <p>{day.date} · {text(routeAnchors[day.startAnchorId].name, locale)} → {text(routeAnchors[day.endAnchorId].name, locale)}</p>
                         <h3>{day.attractionIds.length > 0 ? day.attractionIds.map((id) => text(getAttraction(id)!.name, locale)).join(" · ") : copy.transit}</h3>
                       </div>
                       <span className="sleep-badge"><MountainSnow size={14} />{copy.sleepAltitude} {day.sleepAltitude}m</span>
@@ -473,6 +614,7 @@ function App() {
                       <span><Clock3 size={15} /> {copy.pureDrive} {day.driveHours}h</span>
                       <span><Sparkles size={15} /> {copy.activities} {day.activityHours}h</span>
                       <span><Gauge size={15} /> {copy.distance} {day.distanceKm}km</span>
+                      <span><Sun size={15} /> {copy.daylight} {day.sunrise}–{day.sunset}</span>
                     </div>
                     <div className="day-detail">
                       <div>
@@ -494,6 +636,19 @@ function App() {
               ))}
               {activePlan.schedule.length === 0 && <p className="empty-schedule">{text(activePlan.warnings[0].message, locale)}</p>}
             </div>
+
+            <section className="lodging-panel">
+              <div><h3>{copy.lodgingTitle}</h3><p>{copy.lodgingIntro}</p></div>
+              <div className="lodging-grid">
+                {lodgingAreas.filter((area) => activePlan.schedule.some((day) => day.endAnchorId === area.anchorId)).map((area) => (
+                  <article key={area.anchorId}>
+                    <b>{text(area.name, locale)} · {routeAnchors[area.anchorId].altitude}m</b>
+                    <p><Check size={12} />{text(area.services, locale)}</p>
+                    <p><AlertTriangle size={12} />{text(area.tradeoff, locale)}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
           </div>
         </section>
 
@@ -527,7 +682,7 @@ function App() {
         </section>
       </main>
 
-      <footer><span>{copy.footer}</span><span>v0.2 · 2026</span></footer>
+      <footer><span>{copy.footer}</span><span>v0.3 · 2026</span></footer>
     </div>
   );
 }

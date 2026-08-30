@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -11,6 +12,8 @@ from urllib.parse import urlparse
 ROOT = Path(__file__).resolve().parents[1]
 sources = json.loads((ROOT / "crawler" / "sources.json").read_text(encoding="utf-8"))
 events = json.loads((ROOT / "data" / "pending-events.json").read_text(encoding="utf-8"))
+reviewed = json.loads((ROOT / "data" / "reviewed-road-events.json").read_text(encoding="utf-8"))
+known_leg_ids = set(re.findall(r'leg\("([^"]+)"', (ROOT / "src" / "data.ts").read_text(encoding="utf-8")))
 allowed_hosts = {host for source in sources for host in source["allowed_domains"]}
 forbidden_fields = {"html", "body", "fullText", "fullContent", "imageData"}
 allowed_statuses = {"pending", "approved", "rejected", "expired"}
@@ -40,4 +43,24 @@ for index, event in enumerate(events):
 if errors:
     raise SystemExit("\n".join(errors))
 
-print(f"Validated {len(events)} candidate road events.")
+if reviewed.get("schemaVersion") != 1 or not isinstance(reviewed.get("events"), list):
+    raise SystemExit("reviewed-road-events.json must use schemaVersion 1 and an events array")
+for index, event in enumerate(reviewed["events"]):
+    label = f"reviewed[{index}]"
+    required = {"id", "legIds", "impact", "startsAt", "endsAt", "title"}
+    if not required.issubset(event):
+        errors.append(f"{label}: missing required fields")
+    if event.get("impact") not in {"closed", "restricted", "delay"}:
+        errors.append(f"{label}: invalid impact")
+    if not isinstance(event.get("legIds"), list) or not event.get("legIds"):
+        errors.append(f"{label}: legIds must be a non-empty array")
+    elif unknown := set(event["legIds"]) - known_leg_ids:
+        errors.append(f"{label}: unknown road-edge IDs: {sorted(unknown)}")
+    title = event.get("title", {})
+    if not isinstance(title, dict) or not title.get("zh") or not title.get("en"):
+        errors.append(f"{label}: bilingual title is required")
+
+if errors:
+    raise SystemExit("\n".join(errors))
+
+print(f"Validated {len(events)} candidate and {len(reviewed['events'])} reviewed road events.")

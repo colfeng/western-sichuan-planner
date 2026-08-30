@@ -3,7 +3,8 @@ export type Locale = "zh" | "en";
 export type Copy = { zh: string; en: string };
 export type Theme = "scenery" | "culture" | "wildlife" | "hiking" | "rest";
 export type Effort = "low" | "medium" | "high";
-export type RegionId = "gateway" | "aba" | "danba" | "kangding" | "return";
+export type RegionId = "gateway" | "aba" | "siguniang" | "maerkang" | "grassland" | "jiuzhai" | "danba" | "kangding" | "return";
+export type Vehicle = "sedan" | "suv" | "ev";
 
 export type RouteAnchor = {
   id: string;
@@ -11,6 +12,7 @@ export type RouteAnchor = {
   altitude: number;
   canStay: boolean;
   region: RegionId;
+  latitude: number;
 };
 
 export type RouteLeg = {
@@ -19,6 +21,8 @@ export type RouteLeg = {
   hours: number;
   km: number;
   road: string;
+  id: string;
+  evSupport: "good" | "limited";
 };
 
 export type Attraction = {
@@ -34,13 +38,28 @@ export type Attraction = {
   effort: Effort;
   summary: Copy;
   sourceUrl: string;
+  bestMonths?: number[];
+  opening?: Copy;
+  reservation?: Copy;
+  verifiedOn?: string;
+};
+
+export type LodgingArea = {
+  anchorId: string;
+  name: Copy;
+  services: Copy;
+  tradeoff: Copy;
 };
 
 export const c = (zh: string, en: string): Copy => ({ zh, en });
 
 export const regionNames: Record<RegionId, Copy> = {
   gateway: c("成都门户", "Chengdu gateway"),
-  aba: c("阿坝段", "Ngawa section"),
+  aba: c("卧龙·四姑娘山", "Wolong · Siguniang"),
+  siguniang: c("汶川·四姑娘山", "Wenchuan · Siguniang"),
+  maerkang: c("理县·马尔康·阿坝县", "Li County · Barkam · Ngawa County"),
+  grassland: c("红原·若尔盖", "Hongyuan · Ruoergai"),
+  jiuzhai: c("松潘·黄龙·九寨沟", "Songpan · Huanglong · Jiuzhaigou"),
   danba: c("丹巴段", "Danba section"),
   kangding: c("康定环线", "Kangding loop"),
   return: c("泸定·雅安返程", "Luding · Ya'an return"),
@@ -61,53 +80,72 @@ export const effortNames: Record<Effort, Copy> = {
 };
 
 const anchors: RouteAnchor[] = [
-  { id: "chengdu-start", name: c("成都", "Chengdu"), altitude: 500, canStay: true, region: "gateway" },
-  { id: "dujiangyan", name: c("都江堰", "Dujiangyan"), altitude: 720, canStay: true, region: "gateway" },
-  { id: "yingxiu", name: c("映秀", "Yingxiu"), altitude: 900, canStay: true, region: "aba" },
-  { id: "wolong", name: c("卧龙", "Wolong"), altitude: 2000, canStay: true, region: "aba" },
-  { id: "balang", name: c("巴朗山沿线", "Balang corridor"), altitude: 3500, canStay: false, region: "aba" },
-  { id: "siguniang", name: c("四姑娘山镇", "Mount Siguniang Town"), altitude: 3200, canStay: true, region: "aba" },
-  { id: "xiaojin", name: c("小金", "Xiaojin"), altitude: 2360, canStay: true, region: "aba" },
-  { id: "danba", name: c("丹巴", "Danba"), altitude: 1900, canStay: true, region: "danba" },
-  { id: "bamei", name: c("八美", "Bamei"), altitude: 3500, canStay: true, region: "kangding" },
-  { id: "tagong", name: c("塔公", "Tagong"), altitude: 3730, canStay: true, region: "kangding" },
-  { id: "xinduqiao", name: c("新都桥", "Xinduqiao"), altitude: 3460, canStay: true, region: "kangding" },
-  { id: "kangding", name: c("康定", "Kangding"), altitude: 2560, canStay: true, region: "kangding" },
-  { id: "luding", name: c("泸定", "Luding"), altitude: 1330, canStay: true, region: "return" },
-  { id: "yaan", name: c("雅安", "Ya'an"), altitude: 600, canStay: true, region: "return" },
-  { id: "chengdu-end", name: c("成都", "Chengdu"), altitude: 500, canStay: true, region: "gateway" },
+  { id: "chengdu", name: c("成都", "Chengdu"), altitude: 500, canStay: true, region: "gateway", latitude: 30.57 },
+  { id: "dujiangyan", name: c("都江堰", "Dujiangyan"), altitude: 720, canStay: true, region: "gateway", latitude: 31.00 },
+  { id: "yingxiu", name: c("映秀", "Yingxiu"), altitude: 900, canStay: true, region: "siguniang", latitude: 31.06 },
+  { id: "wenchuan", name: c("汶川", "Wenchuan"), altitude: 1325, canStay: true, region: "siguniang", latitude: 31.48 },
+  { id: "wolong", name: c("卧龙", "Wolong"), altitude: 2000, canStay: true, region: "siguniang", latitude: 31.04 },
+  { id: "balang", name: c("巴朗山沿线", "Balang corridor"), altitude: 3500, canStay: false, region: "siguniang", latitude: 30.93 },
+  { id: "siguniang", name: c("四姑娘山镇", "Mount Siguniang Town"), altitude: 3200, canStay: true, region: "siguniang", latitude: 31.00 },
+  { id: "xiaojin", name: c("小金", "Xiaojin"), altitude: 2360, canStay: true, region: "siguniang", latitude: 31.00 },
+  { id: "lixian", name: c("理县", "Li County"), altitude: 1888, canStay: true, region: "maerkang", latitude: 31.44 },
+  { id: "miyaluo", name: c("米亚罗·古尔沟", "Miyaluo · Guergou"), altitude: 2700, canStay: true, region: "maerkang", latitude: 31.66 },
+  { id: "maerkang", name: c("马尔康", "Barkam"), altitude: 2600, canStay: true, region: "maerkang", latitude: 31.90 },
+  { id: "aba-county", name: c("阿坝县", "Ngawa County"), altitude: 3290, canStay: true, region: "maerkang", latitude: 32.90 },
+  { id: "lianbaoyeze", name: c("莲宝叶则", "Lianbaoyeze"), altitude: 4100, canStay: false, region: "maerkang", latitude: 33.10 },
+  { id: "hongyuan", name: c("红原", "Hongyuan"), altitude: 3500, canStay: true, region: "grassland", latitude: 32.79 },
+  { id: "tangke", name: c("唐克", "Tangke"), altitude: 3440, canStay: true, region: "grassland", latitude: 33.42 },
+  { id: "ruoergai", name: c("若尔盖", "Ruoergai"), altitude: 3440, canStay: true, region: "grassland", latitude: 33.58 },
+  { id: "maoxian", name: c("茂县", "Mao County"), altitude: 1580, canStay: true, region: "jiuzhai", latitude: 31.68 },
+  { id: "songpan", name: c("松潘", "Songpan"), altitude: 2850, canStay: true, region: "jiuzhai", latitude: 32.65 },
+  { id: "chuanzhusi", name: c("川主寺", "Chuanzhusi"), altitude: 2980, canStay: true, region: "jiuzhai", latitude: 32.78 },
+  { id: "huanglong", name: c("黄龙", "Huanglong"), altitude: 3200, canStay: false, region: "jiuzhai", latitude: 32.74 },
+  { id: "jiuzhaigou", name: c("九寨沟口", "Jiuzhaigou entrance"), altitude: 2000, canStay: true, region: "jiuzhai", latitude: 33.26 },
+  { id: "danba", name: c("丹巴", "Danba"), altitude: 1900, canStay: true, region: "danba", latitude: 30.88 },
+  { id: "bamei", name: c("八美", "Bamei"), altitude: 3500, canStay: true, region: "kangding", latitude: 30.50 },
+  { id: "tagong", name: c("塔公", "Tagong"), altitude: 3730, canStay: true, region: "kangding", latitude: 30.32 },
+  { id: "xinduqiao", name: c("新都桥", "Xinduqiao"), altitude: 3460, canStay: true, region: "kangding", latitude: 30.04 },
+  { id: "kangding", name: c("康定", "Kangding"), altitude: 2560, canStay: true, region: "kangding", latitude: 30.05 },
+  { id: "luding", name: c("泸定", "Luding"), altitude: 1330, canStay: true, region: "return", latitude: 29.91 },
+  { id: "yaan", name: c("雅安", "Ya'an"), altitude: 600, canStay: true, region: "return", latitude: 30.01 },
 ];
 
 export const routeAnchors = Object.fromEntries(anchors.map((anchor) => [anchor.id, anchor]));
 
-const leg = (from: string, to: string, hours: number, km: number, road: string): RouteLeg => ({ from, to, hours, km, road });
+const leg = (id: string, from: string, to: string, hours: number, km: number, road: string, evSupport: RouteLeg["evSupport"] = "good"): RouteLeg => ({ id, from, to, hours, km, road, evSupport });
 
-const outboundLegs: RouteLeg[] = [
-  leg("chengdu-start", "dujiangyan", 1.2, 70, "S9 / G4217"),
-  leg("dujiangyan", "yingxiu", 0.8, 45, "G4217"),
-  leg("yingxiu", "wolong", 1.2, 55, "G350"),
-  leg("wolong", "balang", 1.3, 58, "G350"),
-  leg("balang", "siguniang", 1.0, 42, "G350"),
-  leg("siguniang", "xiaojin", 1.2, 55, "G350"),
-  leg("xiaojin", "danba", 2.2, 105, "G350"),
-];
-
-export const compactRoute: RouteLeg[] = [
-  ...outboundLegs,
-  leg("danba", "luding", 4.0, 200, "S211"),
-  leg("luding", "yaan", 1.7, 105, "G4218"),
-  leg("yaan", "chengdu-end", 1.9, 140, "G5"),
-];
-
-export const grandRoute: RouteLeg[] = [
-  ...outboundLegs,
-  leg("danba", "bamei", 3.3, 150, "G350"),
-  leg("bamei", "tagong", 0.7, 35, "G248"),
-  leg("tagong", "xinduqiao", 1.4, 65, "G248 / G318"),
-  leg("xinduqiao", "kangding", 1.8, 78, "G318"),
-  leg("kangding", "luding", 1.1, 55, "G4218 / G318"),
-  leg("luding", "yaan", 1.7, 105, "G4218"),
-  leg("yaan", "chengdu-end", 1.9, 140, "G5"),
+export const roadLegs: RouteLeg[] = [
+  leg("cd-djy", "chengdu", "dujiangyan", 1.2, 70, "S9 / G4217"),
+  leg("djy-yx", "dujiangyan", "yingxiu", 0.8, 45, "G4217"),
+  leg("yx-wc", "yingxiu", "wenchuan", 0.8, 45, "G4217"),
+  leg("yx-wl", "yingxiu", "wolong", 1.2, 55, "G350"),
+  leg("wl-bl", "wolong", "balang", 1.3, 58, "G350", "limited"),
+  leg("bl-sgn", "balang", "siguniang", 1.0, 42, "G350", "limited"),
+  leg("sgn-xj", "siguniang", "xiaojin", 1.2, 55, "G350"),
+  leg("xj-db", "xiaojin", "danba", 2.2, 105, "G350", "limited"),
+  leg("wc-lx", "wenchuan", "lixian", 1.4, 80, "G317"),
+  leg("lx-myl", "lixian", "miyaluo", 1.5, 85, "G317"),
+  leg("myl-mek", "miyaluo", "maerkang", 2.4, 145, "G317"),
+  leg("mek-ab", "maerkang", "aba-county", 3.8, 230, "G248 / S220", "limited"),
+  leg("ab-lbyz", "aba-county", "lianbaoyeze", 1.4, 75, "S452", "limited"),
+  leg("mek-hy", "maerkang", "hongyuan", 3.3, 200, "G248"),
+  leg("myl-hy", "miyaluo", "hongyuan", 3.1, 185, "G248"),
+  leg("hy-tk", "hongyuan", "tangke", 2.2, 135, "G248"),
+  leg("tk-reg", "tangke", "ruoergai", 1.4, 85, "G213"),
+  leg("reg-sp", "ruoergai", "songpan", 2.7, 165, "G213"),
+  leg("wc-mx", "wenchuan", "maoxian", 1.7, 105, "G213"),
+  leg("mx-sp", "maoxian", "songpan", 2.6, 160, "G213"),
+  leg("sp-czs", "songpan", "chuanzhusi", 0.5, 25, "G213"),
+  leg("czs-hl", "chuanzhusi", "huanglong", 1.2, 55, "G544", "limited"),
+  leg("czs-jzg", "chuanzhusi", "jiuzhaigou", 2.0, 120, "G544"),
+  leg("db-bm", "danba", "bamei", 3.3, 150, "G350", "limited"),
+  leg("bm-tg", "bamei", "tagong", 0.7, 35, "G248"),
+  leg("tg-xdq", "tagong", "xinduqiao", 1.4, 65, "G248 / G318"),
+  leg("xdq-kd", "xinduqiao", "kangding", 1.8, 78, "G318"),
+  leg("kd-ld", "kangding", "luding", 1.1, 55, "G4218 / G318"),
+  leg("db-ld", "danba", "luding", 4.0, 200, "S211", "limited"),
+  leg("ld-ya", "luding", "yaan", 1.7, 105, "G4218"),
+  leg("ya-cd", "yaan", "chengdu", 1.9, 140, "G5"),
 ];
 
 const attraction = (
@@ -123,7 +161,8 @@ const attraction = (
   effort: Effort,
   summary: Copy,
   sourceUrl: string,
-): Attraction => ({ id, anchorId, name, region, themes, visitHours, detourHours, detourKm, altitude, effort, summary, sourceUrl });
+  details: Partial<Pick<Attraction, "bestMonths" | "opening" | "reservation" | "verifiedOn">> = {},
+): Attraction => ({ id, anchorId, name, region, themes, visitHours, detourHours, detourKm, altitude, effort, summary, sourceUrl, ...details });
 
 const SGNS = "https://www.sgns.cn/play/line";
 const DANBA = "https://www.danba.gov.cn/czdb/article/719505";
@@ -166,6 +205,36 @@ export const attractions: Attraction[] = [
   attraction("hailuogou", "luding", c("海螺沟支线", "Hailuogou side trip"), "return", ["scenery"], 7, 2.8, 105, 1600, "medium", c("需要额外一日更合理，不应作为短暂停靠。", "Best given an extra day rather than treated as a brief stop."), "https://www.luding.gov.cn/"),
   attraction("bifengxia", "yaan", c("碧峰峡", "Bifengxia"), "return", ["scenery", "wildlife"], 5, 1.2, 45, 1100, "medium", c("适合延长一天，不建议放在疲劳返程末段。", "Works with an extra day, not at the end of a tiring return."), "https://www.yaan.gov.cn/"),
   attraction("shangli-town", "yaan", c("上里古镇", "Shangli Ancient Town"), "return", ["culture", "rest"], 3, 1, 42, 900, "low", c("需要从主返程线往返，适合作为雅安住宿日活动。", "Requires a return detour and works best with a Ya'an overnight."), "https://www.yaan.gov.cn/"),
+  attraction("taoping-qiang", "lixian", c("桃坪羌寨", "Taoping Qiang Village"), "maerkang", ["culture"], 2.5, 0.5, 24, 1500, "low", c("可作为进入理县走廊的人文停留，开放状态以官方当日信息为准。", "A cultural stop on the Li County corridor; verify same-day opening information."), "https://www.abazhou.gov.cn/", { bestMonths: [4,5,6,7,8,9,10], verifiedOn: "2026-08-30" }),
+  attraction("bipenggou", "lixian", c("毕棚沟", "Bipenggou"), "maerkang", ["scenery", "hiking"], 6, 1.2, 50, 3000, "medium", c("建议单独预留大半天；秋色季和冰雪期体验差异明显。", "Allow most of a day; autumn colours and winter conditions are very different."), "https://www.abazhou.gov.cn/", { bestMonths: [5,6,7,8,9,10,11], opening: c("开放时间随季节和天气调整", "Hours vary by season and weather"), verifiedOn: "2026-08-30" }),
+  attraction("miyaluo-autumn", "miyaluo", c("米亚罗秋色走廊", "Miyaluo autumn corridor"), "maerkang", ["scenery"], 2.5, 0.4, 18, 2700, "low", c("季节性很强，只设置正规停车点，不把公路沿线当景区。", "Highly seasonal; use formal parking and do not treat road shoulders as viewpoints."), "https://www.abazhou.gov.cn/", { bestMonths: [9,10,11], verifiedOn: "2026-08-30" }),
+  attraction("zhuokeji", "maerkang", c("卓克基土司官寨", "Zhuokeji Tusi Manor"), "maerkang", ["culture"], 3, 0.4, 16, 2700, "low", c("马尔康走廊的核心人文停留，需核对预约和开放公告。", "A key cultural stop near Barkam; check reservations and opening notices."), "https://www.abazhou.gov.cn/", { opening: c("以景区当日公告为准", "Subject to same-day official notice"), verifiedOn: "2026-08-30" }),
+  attraction("maerkang-town", "maerkang", c("马尔康城区休整", "Barkam rest stop"), "maerkang", ["rest", "culture"], 1.5, 0, 0, 2600, "low", c("适合作为补给和降低第二天连续驾驶压力的住宿点。", "A practical overnight and resupply stop that reduces next-day driving pressure."), "https://www.abazhou.gov.cn/", { bestMonths: [4,5,6,7,8,9,10], verifiedOn: "2026-08-30" }),
+  attraction("lianbaoyeze", "lianbaoyeze", c("莲宝叶则", "Lianbaoyeze"), "maerkang", ["scenery", "hiking"], 6, 0.5, 20, 4200, "high", c("超高海拔景区，建议住阿坝县往返，不在景区节点过夜。", "A very high-altitude visit; make it a return trip from Ngawa County rather than sleeping at the scenic node."), "https://www.abazhou.gov.cn/abazhou/c101955/202508/42e0b97f3ae84165964b24f9e5c5f760.shtml", { bestMonths: [5,6,7,8,9,10], opening: c("冬季和恶劣天气可能调整，须查官方公告", "Winter and severe weather may change access; check official notices"), reservation: c("出发前核验实名购票要求", "Verify real-name ticket requirements before departure"), verifiedOn: "2026-08-30" }),
+  attraction("moon-bay", "hongyuan", c("红原月亮湾", "Hongyuan Moon Bay"), "grassland", ["scenery", "rest"], 2.5, 0.3, 12, 3500, "low", c("草原河湾景观，适合作为红原住宿日前后的低强度活动。", "A grassland river bend suited to a low-intensity stop around a Hongyuan overnight."), "https://www.abazhou.gov.cn/abazhou/c109755/202205/caedf2d5745a4ff0a27cfa2d2c8684a6.shtml", { bestMonths: [5,6,7,8,9,10], verifiedOn: "2026-08-30" }),
+  attraction("omtang", "hongyuan", c("俄么塘花海", "Omtang Flower Sea"), "grassland", ["scenery"], 4, 1.2, 55, 3500, "medium", c("花期型景点，非花期不应因名称而默认推荐。", "A bloom-dependent attraction that should not be assumed worthwhile out of season."), "https://www.abazhou.gov.cn/abazhou/c109755/202205/caedf2d5745a4ff0a27cfa2d2c8684a6.shtml", { bestMonths: [6,7], opening: c("季节性开放，以官方公告为准", "Seasonal; follow official opening notices"), verifiedOn: "2026-08-30" }),
+  attraction("hongyuan-grassland", "hongyuan", c("红原草原正规观景点", "Hongyuan grassland viewpoints"), "grassland", ["scenery", "rest"], 1.5, 0.2, 8, 3500, "low", c("仅选正规停车区域，避免在国省道随意停车。", "Use formal parking only; never stop casually on national or provincial roads."), "https://www.abazhou.gov.cn/", { bestMonths: [5,6,7,8,9,10], verifiedOn: "2026-08-30" }),
+  attraction("yellow-river-bend", "tangke", c("黄河九曲第一湾", "First Bend of the Yellow River"), "grassland", ["scenery"], 3, 0.4, 18, 3450, "medium", c("日落观景会与避免夜路冲突，规划器不会默认安排日落后返程。", "Sunset viewing conflicts with avoiding night driving, so the planner does not assume a post-sunset return."), "https://www.abazhou.gov.cn/abazhou/c109755/202205/caedf2d5745a4ff0a27cfa2d2c8684a6.shtml", { bestMonths: [5,6,7,8,9,10], verifiedOn: "2026-08-30" }),
+  attraction("flower-lake", "ruoergai", c("若尔盖花湖", "Ruoergai Flower Lake"), "grassland", ["scenery", "wildlife"], 4.5, 1.0, 45, 3460, "medium", c("湿地生态景区，按栈道和景区规则游览，不进入保护区。", "A wetland visit: stay on managed paths and outside protected areas."), "https://www.abazhou.gov.cn/abazhou/c109755/202205/caedf2d5745a4ff0a27cfa2d2c8684a6.shtml", { bestMonths: [5,6,7,8,9], opening: c("受生态保护和季节安排影响", "Subject to conservation and seasonal arrangements"), verifiedOn: "2026-08-30" }),
+  attraction("ruoergai-town", "ruoergai", c("若尔盖县城休整", "Ruoergai rest stop"), "grassland", ["rest"], 1.2, 0, 0, 3440, "low", c("作为高原北部补给和住宿节点，不对应具体商家推荐。", "A northern plateau resupply and overnight node, without recommending individual businesses."), "https://www.abazhou.gov.cn/", { bestMonths: [5,6,7,8,9,10], verifiedOn: "2026-08-30" }),
+  attraction("songpan-old-town", "songpan", c("松潘古城", "Songpan Old Town"), "jiuzhai", ["culture", "rest"], 2.5, 0.2, 8, 2850, "low", c("可与当日较短转场组合，开放区域与收费项目现场核验。", "Works with a shorter transfer day; verify open areas and paid activities on site."), "https://www.abazhou.gov.cn/", { bestMonths: [4,5,6,7,8,9,10], verifiedOn: "2026-08-30" }),
+  attraction("huanglong", "huanglong", c("黄龙风景区", "Huanglong Scenic Area"), "jiuzhai", ["scenery", "hiking"], 7, 0.5, 18, 3500, "high", c("高海拔整日景区；索道也不能消除高反风险。", "A full-day high-altitude visit; the cableway does not remove altitude risk."), "https://www.huanglong.com/cn/jqjs/hljq?id=4584", { bestMonths: [5,6,7,8,9,10,11], opening: c("开放与索道运行以黄龙官网公告为准", "Opening and cableway status follow Huanglong official notices"), reservation: c("出发前从官方入口核验购票预约", "Verify booking through the official channel before departure"), verifiedOn: "2026-08-30" }),
+  attraction("munigou", "songpan", c("牟尼沟", "Munigou"), "jiuzhai", ["scenery", "hiking"], 5, 1.2, 50, 3000, "medium", c("松潘支线景区，适合替代而不是叠加黄龙整日游。", "A Songpan side trip best treated as an alternative to, not an addition to, a full Huanglong day."), "https://www.abazhou.gov.cn/", { bestMonths: [5,6,7,8,9,10], verifiedOn: "2026-08-30" }),
+  attraction("jiuzhaigou", "jiuzhaigou", c("九寨沟风景区", "Jiuzhaigou National Park"), "jiuzhai", ["scenery"], 9, 0.4, 15, 2600, "medium", c("必须作为整日活动安排，不与当天长距离返程叠加。", "Treat this as a full-day visit and do not add a long return drive."), "https://www.jiuzhai.com/intelligent-service/tickets", { bestMonths: [4,5,6,7,8,9,10,11], opening: c("旺季与淡季入园时段不同，以官网当日公告为准", "Entry windows differ by season; follow the current official notice"), reservation: c("实名预约；官方提示无预约不出行", "Real-name reservation; official guidance says do not travel without one"), verifiedOn: "2026-08-30" }),
+  attraction("shennianchi", "jiuzhaigou", c("神仙池", "Shenxianchi"), "jiuzhai", ["scenery", "hiking"], 6, 2.2, 95, 3000, "medium", c("与九寨沟主景区不同方向，需额外留出完整时间。", "A separate direction from the main Jiuzhaigou park and requires substantial extra time."), "https://www.abazhou.gov.cn/abazhou/c109755/202205/caedf2d5745a4ff0a27cfa2d2c8684a6.shtml", { bestMonths: [5,6,7,8,9,10], verifiedOn: "2026-08-30" }),
+  attraction("qiang-city", "maoxian", c("中国古羌城", "Ancient Qiang City"), "jiuzhai", ["culture"], 3, 0.4, 15, 1600, "low", c("适合作为九寨沟方向进出时的低海拔人文停留。", "A lower-altitude cultural stop when entering or leaving the Jiuzhaigou corridor."), "https://www.abazhou.gov.cn/", { bestMonths: [3,4,5,6,7,8,9,10,11], verifiedOn: "2026-08-30" }),
+  attraction("diexi", "maoxian", c("叠溪—松坪沟", "Diexi · Songpinggou"), "jiuzhai", ["scenery", "culture"], 6, 1.7, 75, 2400, "medium", c("需要大半日支线时间，地灾或强降雨预警时应取消。", "Requires most of a day; cancel during geohazard or heavy-rain warnings."), "https://www.abazhou.gov.cn/", { bestMonths: [4,5,6,7,8,9,10,11], verifiedOn: "2026-08-30" }),
+];
+
+export const lodgingAreas: LodgingArea[] = [
+  { anchorId: "wenchuan", name: c("汶川县城", "Wenchuan town"), services: c("补给和医疗相对完整，海拔较低", "Relatively complete supplies and medical access at lower altitude"), tradeoff: c("距北部草原和九寨沟仍较远", "Still far from the northern grasslands and Jiuzhaigou") },
+  { anchorId: "lixian", name: c("理县城区", "Li County town"), services: c("适合渐进升高海拔", "Useful for gradual altitude gain"), tradeoff: c("旺季住宿容量需提前核验", "Peak-season capacity needs advance checking") },
+  { anchorId: "maerkang", name: c("马尔康城区", "Barkam urban area"), services: c("西部走廊的重要补给节点", "A major resupply node on the western corridor"), tradeoff: c("前往莲宝叶则仍需长距离驾驶", "Lianbaoyeze still requires a long onward drive") },
+  { anchorId: "aba-county", name: c("阿坝县城区", "Ngawa County town"), services: c("莲宝叶则往返的合理基地", "A practical base for Lianbaoyeze"), tradeoff: c("住宿海拔约3290米", "Sleeping altitude is about 3,290 m") },
+  { anchorId: "hongyuan", name: c("红原县城", "Hongyuan town"), services: c("草原线路补给较集中", "Concentrated supplies on the grassland corridor"), tradeoff: c("高海拔且冬季天气风险高", "High altitude with elevated winter weather risk") },
+  { anchorId: "ruoergai", name: c("若尔盖县城", "Ruoergai town"), services: c("花湖和北部草原的住宿节点", "An overnight node for Flower Lake and northern grasslands"), tradeoff: c("距黄龙、九寨沟仍需转场", "Still requires a transfer to Huanglong or Jiuzhaigou") },
+  { anchorId: "songpan", name: c("松潘城区", "Songpan town"), services: c("可连接若尔盖、黄龙和九寨沟", "Connects Ruoergai, Huanglong and Jiuzhaigou"), tradeoff: c("节假日道路与停车压力较大", "Holiday traffic and parking can be heavy") },
+  { anchorId: "jiuzhaigou", name: c("漳扎镇/沟口住宿区域", "Zhangzha / park entrance area"), services: c("便于次日按预约时段入园", "Convenient for the next day's reserved entry"), tradeoff: c("旺季价格与容量波动，本项目不推荐具体酒店", "Peak-season prices and capacity vary; this project names no individual hotels") },
 ];
 
 export const sourceSummary = [
@@ -188,6 +257,18 @@ export const sourceSummary = [
     cadence: c("按需核对", "Checked as needed"),
   },
   {
+    agency: c("九寨沟景区官方网站", "Jiuzhaigou official site"),
+    scope: c("实名预约、入园时段、票务和临时公告", "Real-name booking, entry windows, tickets and temporary notices"),
+    url: "https://www.jiuzhai.com/news/notice",
+    cadence: c("出发前复核", "Recheck before departure"),
+  },
+  {
+    agency: c("黄龙景区官方网站", "Huanglong official site"),
+    scope: c("景区介绍、开放与索道运行入口", "Scenic-area, opening and cableway information"),
+    url: "https://www.huanglong.com/",
+    cadence: c("出发前复核", "Recheck before departure"),
+  },
+  {
     agency: c("甘孜州交通运输局 · 阿坝州人民政府", "Garzê Transport Bureau · Ngawa Government"),
     scope: c("道路施工、封闭、放行和绕行候选公告", "Candidate notices for works, closures, reopening and detours"),
     url: "https://jtj.gzz.gov.cn/zwgk",
@@ -196,7 +277,7 @@ export const sourceSummary = [
 ];
 
 export const strategySuggestions = {
-  comfort: ["maobiliang", "shuangqiao", "xiaojin-supply", "jiaju", "danba-town", "luding-bridge"],
-  scenery: ["maobiliang", "shuangqiao", "zhonglu", "moshi-park", "tagong-grassland", "xinduqiao-corridor", "luding-bridge"],
-  culture: ["yingxiu-memorial", "wolong-museum", "dawei-meeting", "jiaju", "suopo", "tagong-monastery", "kangding-old-town", "luding-bridge"],
+  comfort: ["qiang-city", "songpan-old-town", "maerkang-town", "moon-bay", "xiaojin-supply", "luding-bridge"],
+  scenery: ["moon-bay", "flower-lake", "yellow-river-bend", "miyaluo-autumn", "shuangqiao", "tagong-grassland"],
+  culture: ["yingxiu-memorial", "taoping-qiang", "zhuokeji", "songpan-old-town", "jiaju", "tagong-monastery"],
 } as const;
