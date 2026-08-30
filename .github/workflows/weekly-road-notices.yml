@@ -1,0 +1,41 @@
+name: Discover official road notices
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
+      timezone: "Asia/Shanghai"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Discover candidate notices
+        run: python3 crawler/crawl.py
+      - name: Validate minimal official-source records
+        run: python3 crawler/validate.py
+      - name: Create review pull request when data changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- data/pending-events.json; then
+            echo "No new candidate notices."
+            exit 0
+          fi
+          branch="automation/road-notices-${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add data/pending-events.json
+          git commit -m "data: discover official road notices"
+          git push origin "$branch"
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "道路公告候选更新 / Road notice candidates" \
+            --body "自动任务发现了新的官方公告候选。请核对原文；合并本PR只表示进入人工审核队列，待审核记录不会影响规划算法。"

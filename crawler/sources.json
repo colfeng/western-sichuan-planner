@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ganzi-transport",
+    "agency_zh": "甘孜州交通运输局",
+    "agency_en": "Garzê Prefecture Transport Bureau",
+    "list_url": "https://jtj.gzz.gov.cn/zwgk",
+    "allowed_domains": ["jtj.gzz.gov.cn", "www.gzz.gov.cn"],
+    "keywords": ["交通管制", "道路施工", "临时管制", "断道", "封闭", "放行", "绕行", "中断交通"]
+  },
+  {
+    "id": "aba-government",
+    "agency_zh": "阿坝州人民政府",
+    "agency_en": "Ngawa Prefecture Government",
+    "list_url": "https://www.abazhou.gov.cn/abazhou/c109640/bmxxgk_list.shtml",
+    "allowed_domains": ["abazhou.gov.cn", "www.abazhou.gov.cn"],
+    "keywords": ["交通管制", "道路施工", "临时管制", "断道", "封闭", "放行", "绕行", "中断交通"]
+  }
+]
