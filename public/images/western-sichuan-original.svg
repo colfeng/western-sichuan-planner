@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Western Sichuan mountain road</title>
+  <desc id="desc">An original vector illustration of snow peaks, layered valleys and a winding alpine road.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9fc6d0"/>
+      <stop offset="0.58" stop-color="#dce3d5"/>
+      <stop offset="1" stop-color="#f2d5ae"/>
+    </linearGradient>
+    <linearGradient id="far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#637f7b"/>
+      <stop offset="1" stop-color="#385c54"/>
+    </linearGradient>
+    <linearGradient id="near" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#557567"/>
+      <stop offset="1" stop-color="#173f36"/>
+    </linearGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#63736d"/>
+      <stop offset="1" stop-color="#263d38"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1290" cy="170" r="86" fill="#f6ddad" opacity="0.75"/>
+  <path d="M0 525 178 365 292 438 480 214 618 395 774 174 955 409 1112 246 1286 423 1456 302 1600 430 1600 900 0 900Z" fill="#8ca6a0"/>
+  <path d="m178 365 45 64 69 9-40 30-74-20-63 46Zm302-151 73 113 65 68-101-34-63 26-55 11Zm294-40 91 128 90 107-116-50-71 35-76 20Zm338 72 80 95 94 82-111-43-63 32-67 3Zm344 56 65 72 79 56-92-27-52 22-64-5Z" fill="#f5f1e7" opacity="0.96"/>
+  <path d="M0 588 238 466 414 550 650 404 862 566 1052 442 1272 563 1430 458 1600 542 1600 900 0 900Z" fill="url(#far)"/>
+  <path d="M0 679 224 552 410 662 609 516 800 674 1031 527 1248 672 1422 552 1600 649 1600 900 0 900Z" fill="url(#near)"/>
+  <path d="M0 704c166-33 262-23 356 21 112 52 188 47 292 15 119-36 214-28 328 39 107 62 213 65 337 13 99-42 191-41 287-5v113H0Z" fill="#2d5147" opacity="0.88"/>
+  <path d="M1110 900c-15-85-76-122-172-153-102-34-96-78 12-112 85-27 91-60 42-93l92-32c96 83 68 145-42 190-40 16-39 35 17 55 137 49 204 91 233 145Z" fill="url(#road)"/>
+  <path d="M1180 900c-23-78-77-109-159-137-94-32-97-77 4-117 72-28 82-65 31-105" fill="none" stroke="#f1d59a" stroke-width="9" stroke-dasharray="42 34" stroke-linecap="round" opacity="0.95"/>
+  <path d="M0 746c161-26 286-7 382 44 88 46 175 49 260 23" fill="none" stroke="#81a59d" stroke-width="12" opacity="0.55"/>
+  <g fill="#153b32" opacity="0.9">
+    <path d="m92 673 24-73 24 73h-17v44h-15v-44Z"/>
+    <path d="m178 665 21-65 22 65h-15v39h-14v-39Z"/>
+    <path d="m1336 643 28-88 29 88h-20v54h-18v-54Z"/>
+    <path d="m1470 626 25-78 26 78h-18v48h-16v-48Z"/>
+  </g>
+</svg>

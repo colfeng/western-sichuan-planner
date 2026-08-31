@@ -25,7 +25,11 @@
     "agency_en": "Jiuzhaigou official site",
     "list_url": "https://www.jiuzhai.com/news/notice",
     "allowed_domains": ["jiuzhai.com", "www.jiuzhai.com"],
-    "keywords": ["公告", "开放", "闭园", "预约", "售罄", "入园", "票务", "限流", "调整"]
+    "keywords": ["公告", "开放", "闭园", "预约", "售罄", "入园", "票务", "限流", "调整"],
+    "max_age_days": 180,
+    "attraction_targets": [
+      { "ids": ["jiuzhaigou"], "keywords": ["九寨沟"] }
+    ]
   },
   {
     "id": "huanglong-official",
@@ -34,7 +38,11 @@
     "agency_en": "Huanglong official site",
     "list_url": "https://www.huanglong.com/",
     "allowed_domains": ["huanglong.com", "www.huanglong.com"],
-    "keywords": ["公告", "开放", "闭园", "预约", "票务", "索道", "调整", "限流"]
+    "keywords": ["公告", "开放", "闭园", "预约", "票务", "索道", "调整", "限流"],
+    "max_age_days": 180,
+    "attraction_targets": [
+      { "ids": ["huanglong"], "keywords": ["黄龙"] }
+    ]
   },
   {
     "id": "daocheng-notices",
@@ -44,7 +52,10 @@
     "list_url": "https://www.daocheng.gov.cn/lydt",
     "allowed_domains": ["daocheng.gov.cn", "www.daocheng.gov.cn"],
     "keywords": ["亚丁", "景区", "开放", "闭园", "暂停", "恢复", "预约", "票务", "交通", "管制", "调整"],
-    "max_age_days": 180
+    "max_age_days": 180,
+    "attraction_targets": [
+      { "ids": ["yading-scenic-area"], "keywords": ["稻城亚丁", "亚丁景区", "亚丁"] }
+    ]
   },
   {
     "id": "aba-attractions",

@@ -345,7 +345,9 @@ footer { width: min(1440px, calc(100% - 48px)); margin: 0 auto; padding: 23px 0 
 
 .detail-overlay { position: fixed; z-index: 50; inset: 0; display: flex; justify-content: flex-end; background: rgba(8,27,23,.52); backdrop-filter: blur(3px); }
 .detail-drawer { position: relative; width: min(520px, 100%); height: 100%; overflow-y: auto; background: var(--paper); padding: clamp(30px, 5vw, 56px); box-shadow: -22px 0 70px rgba(8,27,23,.2); }
+.detail-drawer:focus { outline: none; }
 .drawer-close { position: absolute; right: 22px; top: 20px; width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: white; cursor: pointer; }
+.drawer-close:focus-visible { outline: 3px solid rgba(217,137,53,.45); outline-offset: 3px; }
 .detail-drawer h2 { margin: 0; padding-right: 38px; font-size: 30px; letter-spacing: -.035em; }
 .drawer-summary { color: var(--muted); line-height: 1.75; font-size: 13px; }
 .drawer-metrics { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0; }
@@ -372,8 +374,10 @@ footer { width: min(1440px, calc(100% - 48px)); margin: 0 auto; padding: 23px 0 
 .elevation-line { fill: none; stroke: #2c745f; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
 .elevation-dot { fill: #fff; stroke: #2c745f; stroke-width: 2; }
 .elevation-dot.labeled { fill: #d98935; stroke: #fff; stroke-width: 2; }
+.exposure-line { stroke: #d98935; stroke-width: 1.5; stroke-dasharray: 3 3; opacity: .75; }
+.exposure-dot { fill: #d98935; stroke: #fff; stroke-width: 2; }
 .elevation-label { fill: #536761; font-size: 7px; font-weight: 700; }
-.profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.profile-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .profile-stats span { padding: 10px; border-radius: 9px; background: #edf3ef; }
 .profile-stats b, .profile-stats small { display: block; }
 .profile-stats b { font-size: 13px; }
@@ -485,6 +489,7 @@ footer { width: min(1440px, calc(100% - 48px)); margin: 0 auto; padding: 23px 0 
   .detail-drawer { padding: 62px 22px 30px; }
   .insights-drawer { padding-inline: 16px; }
   .insight-card { padding: 14px 11px; }
+  .profile-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .detail-list > div { grid-template-columns: 1fr; gap: 5px; }
 }
 

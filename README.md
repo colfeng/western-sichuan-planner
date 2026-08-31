@@ -4,10 +4,10 @@ A bilingual, safety-first self-driving itinerary planner for Western Sichuan.
 
 一个中英双语、以安全约束为核心的川西自驾行程规划器。
 
-## V0.8.0 scope / V0.8.0 范围
+## V0.8.1 scope / V0.8.1 范围
 
 - Static React site deployed with GitHub Pages
-- 144 selectable stops across 10 regions, including Hongyuan, Ruoergai,
+- 142 selectable stops across 10 regions, including Hongyuan, Ruoergai,
   Jiuzhaigou, Huanglong, Lianbaoyeze and Daocheng Yading
 - 34 planning anchors and 40 bidirectional road edges instead of fixed loops
 - User-selectable start and end anchors, planned daily departure time, estimated
@@ -34,8 +34,8 @@ A bilingual, safety-first self-driving itinerary planner for Western Sichuan.
   time; the sequence is explicitly not presented as a geographic map
 - A chronological breakfast-to-check-in agenda separates morning and afternoon
   driving, visits, formal rests, lunch, dinner and the overnight area
-- The hero photograph is served as a broadly compatible local JPEG with meaningful
-  alternative text
+- The hero uses original project-authored SVG artwork with documented provenance;
+  earlier raster files with undocumented provenance are no longer distributed
 - Every attraction has aligned season, opening, review-date and official-source
   fields; reservation guidance appears only when a reservation or permission
   requirement has been identified
@@ -52,9 +52,10 @@ A bilingual, safety-first self-driving itinerary planner for Western Sichuan.
 - EV plans split each day into battery legs and name every required charging town.
   A day is blocked when no reachable charging town fits the conservative budget;
   snapshot candidates remain explicitly unverified until checked live
-- An accessible side drawer shows a schematic route-node elevation profile,
-  daily drive/visit/rest/charge allocation and sleeping-altitude progression;
-  it is explicitly not continuous terrain or navigation-grade elevation
+- A keyboard-accessible side drawer shows a schematic route-node elevation
+  profile, planned attraction exposure altitude, daily drive/visit/rest/charge
+  allocation and sleeping-altitude progression; it is explicitly not continuous
+  terrain or navigation-grade elevation
 - Road notices receive suggested edge IDs, impact type, dates and confidence;
   human review is still mandatory before a notice changes a route
 - Local save, shareable URL, printing and browser PDF export
@@ -93,7 +94,12 @@ pull request is merged, but never affect routes or become opening-status claims 
 links dated within the last 180 days when a publication date can be read, so an
 archive page cannot refill the review pull request with stale notices.
 Empty official pages, empty Overpass results and suspiciously large facility-count
-drops preserve the previous snapshot instead of silently replacing it.
+drops preserve the previous snapshot instead of silently replacing it. Candidates
+missing from one otherwise successful weekly response remain for a 21-day grace
+period, and an open weekly review PR is used as the next run's starting snapshot.
+Attraction notices are displayed only when the crawler suggests an explicit
+attraction ID; county-wide notices are not attached by shared domain. The newest
+applicable publication wins, and date-specific capacity notices expire.
 
 The facility snapshot in `data/osm-service-points.json` is derived from
 OpenStreetMap and remains subject to ODbL 1.0. Presence in the snapshot is not a

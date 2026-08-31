@@ -19,6 +19,7 @@ official_services = json.loads((ROOT / "data" / "official-service-points.json").
 data_source = (ROOT / "src" / "data.ts").read_text(encoding="utf-8")
 known_leg_ids = set(re.findall(r'leg\("([^"]+)"', data_source))
 known_anchor_ids = set(re.findall(r'\{ id: "([^"]+)", name:', data_source))
+known_attraction_ids = set(re.findall(r'attraction\("([^"]+)"', data_source))
 allowed_hosts = {host for source in sources for host in source["allowed_domains"]}
 forbidden_fields = {"html", "body", "fullText", "fullContent", "imageData"}
 allowed_statuses = {"pending", "approved", "rejected", "expired"}
@@ -58,6 +59,15 @@ for index, event in enumerate(events):
             errors.append(f"{label}: invalid suggested attraction status")
         if event.get("requiresHumanReview") is not True:
             errors.append(f"{label}: attraction status suggestions must require human review")
+        attraction_ids = event.get("suggestedAttractionIds")
+        if not isinstance(attraction_ids, list):
+            errors.append(f"{label}: attraction suggestions require an explicit ID array, which may be empty for source-wide notices")
+        elif unknown := set(attraction_ids) - known_attraction_ids:
+            errors.append(f"{label}: unknown suggested attraction IDs: {sorted(unknown)}")
+        for date_field in ("publishedAt", "expiresAt"):
+            value = event.get(date_field)
+            if value is not None and (not isinstance(value, str) or not re.fullmatch(r"20\d{2}-\d{2}-\d{2}", value)):
+                errors.append(f"{label}: {date_field} must be YYYY-MM-DD")
     present_forbidden = forbidden_fields.intersection(event)
     if present_forbidden:
         errors.append(f"{label}: forbidden republished fields: {sorted(present_forbidden)}")

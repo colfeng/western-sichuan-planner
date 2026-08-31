@@ -18,9 +18,28 @@ type Segment = { start: number; end: number };
 type PathResult = { legs: RouteLeg[]; cost: number };
 
 const attractionById = new Map(attractions.map((item) => [item.id, item]));
+const attractionAliases: Record<string, string> = {
+  "fuyang-old-town": "songpan-old-town",
+  "suochong-pheasant": "sangdui-red-grass",
+};
 const round = (value: number) => Math.round(value * 10) / 10;
 const round2 = (value: number) => Math.round(value * 100) / 100;
 const unique = <T,>(values: T[]): T[] => [...new Set(values)];
+const canonicalAttractionId = (id: string) => attractionAliases[id] ?? id;
+export function normalizeAttractionIds(ids: string[]): string[] {
+  const result: string[] = [];
+  const groups = new Set<string>();
+  for (const rawId of ids) {
+    const id = canonicalAttractionId(rawId);
+    const item = attractionById.get(id);
+    if (!item) continue;
+    const group = item.placeGroupId ?? item.id;
+    if (groups.has(group)) continue;
+    groups.add(group);
+    result.push(id);
+  }
+  return result;
+}
 const planningRoadHours = (edge: RouteLeg) => round(edge.hours * (edge.evSupport === "limited" ? 1.2 : /G4217|G4218|G5|S9/.test(edge.road) ? 1.1 : 1.15));
 const planningDetourHours = (hours: number) => round(hours * 1.15);
 const strategyCopy: Record<Strategy, { title: Copy; subtitle: Copy }> = {
@@ -258,11 +277,13 @@ function rawPlan(input: PlannerInput, strategy: Strategy, ids: string[]) { const
 function normalizeInput(input: PlannerInput): PlannerInput { const startAnchorId = routeAnchors[input.startAnchorId] ? input.startAnchorId : "chengdu"; const endAnchorId = routeAnchors[input.endAnchorId] ? input.endAnchorId : startAnchorId; return { ...input, startDate: input.startDate || new Date().toISOString().slice(0, 10), startAnchorId, endAnchorId, departureTime: /^\d{2}:\d{2}$/.test(input.departureTime) ? input.departureTime : "08:30", vehicle: input.vehicle || "sedan", evRangeKm: input.evRangeKm || 450, autoSuggest: input.autoSuggest !== false, lockOrder: Boolean(input.lockOrder) }; }
 function minimumDays(input: PlannerInput, strategy: Strategy, ids: string[]): number | null { for (let days = input.days; days <= 14; days += 1) { const raw = rawPlan({ ...input, days }, strategy, ids); if (raw && !raw.warnings.some((warning) => warning.severity === "block")) return days; } return null; }
 function makeOption(sourceInput: PlannerInput, strategy: Strategy): PlanOption {
-  const input = normalizeInput(sourceInput); const required = unique(input.selectedAttractionIds).filter((id) => attractionById.has(id)); const requiredRoute = buildRoute(required, input); const routeAnchorSet = new Set([input.startAnchorId, input.endAnchorId, ...(requiredRoute?.flatMap((leg) => [leg.from, leg.to]) ?? [])]); const month = new Date(`${input.startDate}T12:00:00Z`).getUTCMonth() + 1; const theme = strategy === "culture" ? "culture" : strategy === "scenery" ? "scenery" : "rest"; const strategyOrder = new Map<string, number>(strategySuggestions[strategy].map((id, index) => [id, index])); const candidates = attractions
-    .filter((item) => routeAnchorSet.has(item.anchorId) && item.visitHours <= 4 && item.detourHours <= 1 && item.bestMonths.includes(month) && (item.themes.includes(theme) || strategy === "comfort") && !required.includes(item.id))
+  const input = normalizeInput(sourceInput); const required = normalizeAttractionIds(input.selectedAttractionIds); const requiredGroups = new Set(required.map((id) => attractionById.get(id)?.placeGroupId ?? id)); const requiredRoute = buildRoute(required, input); const routeAnchorSet = new Set([input.startAnchorId, input.endAnchorId, ...(requiredRoute?.flatMap((leg) => [leg.from, leg.to]) ?? [])]); const month = new Date(`${input.startDate}T12:00:00Z`).getUTCMonth() + 1; const theme = strategy === "culture" ? "culture" : strategy === "scenery" ? "scenery" : "rest"; const strategyOrder = new Map<string, number>(strategySuggestions[strategy].map((id, index) => [id, index])); const candidates = attractions
+    .filter((item) => routeAnchorSet.has(item.anchorId) && item.visitHours <= 4 && item.detourHours <= 1 && item.bestMonths.includes(month) && (item.themes.includes(theme) || strategy === "comfort") && !required.includes(item.id) && !requiredGroups.has(item.placeGroupId ?? item.id))
     .sort((left, right) => (strategyOrder.get(left.id) ?? 99) - (strategyOrder.get(right.id) ?? 99) || left.detourHours - right.detourHours || left.visitHours - right.visitHours)
     .map((item) => item.id); let suggested: string[] = []; let raw = rawPlan(input, strategy, required); const suggestionLimit = Math.min(12, Math.max(4, input.days * 2));
   if (input.autoSuggest && raw && !raw.warnings.some((item) => item.severity === "block")) for (const candidate of candidates) {
+    const candidateGroup = attractionById.get(candidate)?.placeGroupId ?? candidate;
+    if (suggested.some((id) => (attractionById.get(id)?.placeGroupId ?? id) === candidateGroup)) continue;
     if (suggested.length >= suggestionLimit) break; const trial = rawPlan(input, strategy, [...required, ...suggested, candidate]); if (!trial || trial.warnings.some((item) => item.severity === "block") || trial.schedule.some((day) => day.attractionIds.length > 3 || day.activityHours > 8.5 || day.freeHours < 0.75)) continue; suggested.push(candidate); raw = trial;
   }
   const ids = [...required, ...suggested];
@@ -272,5 +293,5 @@ function makeOption(sourceInput: PlannerInput, strategy: Strategy): PlanOption {
   return { id: strategy, ...strategyCopy[strategy], routeKind: "network", routeAnchorIds, schedule: raw.schedule, warnings: raw.warnings, feasible: !blocking, score: Math.max(0, Math.min(99, 96 - raw.warnings.length * 4)), selectedAttractionIds: required, suggestedAttractionIds: suggested, minimumDays: blocking ? minimumDays(input, strategy, required) : input.days, totalDriveHours, totalDistanceKm, activeRoadEventCount: activeEvents(input).length };
 }
 export function buildPlanOptions(input: PlannerInput): PlanOption[] { const normalized = normalizeInput(input); return unique([normalized.priority, "comfort", "scenery", "culture"] as Strategy[]).map((strategy) => makeOption(normalized, strategy)); }
-export function getAttraction(id: string) { return attractionById.get(id); }
+export function getAttraction(id: string) { return attractionById.get(canonicalAttractionId(id)); }
 export function getReturnDate(input: PlannerInput) { return addDays(input.startDate, input.days - 1); }
