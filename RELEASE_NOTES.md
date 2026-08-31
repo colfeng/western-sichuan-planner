@@ -1,5 +1,13 @@
 # Release notes
 
+## V0.6.3 — road-baseline calibration
+
+- Recalibrated the simplified road graph against published G4217, G4218, G544, G0615 and related corridor mileages available on 2026-08-31.
+- Removed obsolete distance inflation on the Wenchuan–Barkam, northern grassland, Jiuzhaigou and western loop corridors while keeping meals, rest and live road controls separate.
+- Added the opened Lixiao Road and the Hongyuan–Ngawa County corridor so plans no longer make obsolete detours through Wenchuan or Barkam.
+- Fixed long, lightly filled itineraries incorrectly reporting no route when they only needed additional rest days at valid overnight nodes.
+- Added corridor-range, geometry and seven-scenario network regression tests without changing the page layout.
+
 ## V0.6.2 — rest and meal scheduling
 
 - Lunch now substitutes for one short driving break instead of duplicating it.

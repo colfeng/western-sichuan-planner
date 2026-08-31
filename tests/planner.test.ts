@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { PlannerInput } from "../src/planner.ts";
 import { buildPlanOptions } from "../src/planner.ts";
-import { attractions, routeAnchors } from "../src/data.ts";
+import { anchorCoordinates, attractions, roadLegs, routeAnchors } from "../src/data.ts";
 
 const base = (overrides: Partial<PlannerInput> = {}): PlannerInput => ({
   days: 7,
@@ -131,6 +131,92 @@ test("records departure, estimated finish and sunset margin for every day", () =
       assert.ok(step.driveHours > 0);
     }
   }
+});
+
+test("published corridor mileages stay within calibrated planning ranges", () => {
+  const byId = new Map(roadLegs.map((leg) => [leg.id, leg]));
+  const corridor = (...ids: string[]) => ids.reduce((sum, id) => sum + (byId.get(id)?.km ?? 0), 0);
+
+  assert.ok(corridor("djy-yx") >= 24 && corridor("djy-yx") <= 30, "G4217 Dujiangyan-Yingxiu should track the published 25.49 km section");
+  assert.ok(corridor("yx-wc") >= 48 && corridor("yx-wc") <= 52, "G4217 Yingxiu-Wenchuan should track the published 48.27 km section");
+  assert.ok(corridor("wc-lx", "lx-myl", "myl-mek") >= 170 && corridor("wc-lx", "lx-myl", "myl-mek") <= 180, "Wenchuan-Barkam should track the roughly 173 km expressway corridor");
+  assert.ok(corridor("czs-jzg") >= 88 && corridor("czs-jzg") <= 100, "Chuanzhusi-Jiuzhaigou entrance should track the published 90.36 km section");
+  assert.ok(corridor("ld-ya", "kd-ld") >= 130 && corridor("ld-ya", "kd-ld") <= 140, "Ya'an-Kangding should track the 135 km expressway corridor");
+  assert.ok(corridor("lx-xj") >= 92 && corridor("lx-xj") <= 98, "Li County-Xiaojin should track the published 94 km Lixiao Road");
+});
+
+test("every road baseline is longer than its straight-line distance", () => {
+  const earthRadiusKm = 6371;
+  const radians = (value: number) => value * Math.PI / 180;
+  for (const leg of roadLegs) {
+    const from = anchorCoordinates[leg.from];
+    const to = anchorCoordinates[leg.to];
+    const latitudeDelta = radians(to.latitude - from.latitude);
+    const longitudeDelta = radians(to.longitude - from.longitude);
+    const value = Math.sin(latitudeDelta / 2) ** 2 + Math.cos(radians(from.latitude)) * Math.cos(radians(to.latitude)) * Math.sin(longitudeDelta / 2) ** 2;
+    const straightKm = 2 * earthRadiusKm * Math.asin(Math.sqrt(value));
+    assert.ok(leg.km >= straightKm * 0.98, `${leg.id}: ${leg.km} km is shorter than its ${straightKm.toFixed(1)} km straight-line distance`);
+  }
+});
+
+test("representative plans remain internally consistent across the road network", () => {
+  const scenarios: PlannerInput[] = [
+    base({ days: 8, selectedAttractionIds: ["moon-bay", "flower-lake"] }),
+    base({ days: 8, selectedAttractionIds: ["huanglong", "jiuzhaigou"] }),
+    base({ days: 10, maxDrive: 7, selectedAttractionIds: ["lianbaoyeze", "moon-bay"] }),
+    base({ days: 8, selectedAttractionIds: ["shuangqiao", "jiaju", "tagong-grassland"] }),
+    base({ days: 7, startAnchorId: "wenchuan", endAnchorId: "jiuzhaigou", selectedAttractionIds: ["dagu-glacier", "huanglong"] }),
+    base({ days: 9, startDate: "2026-12-10", vehicle: "ev", evRangeKm: 300, selectedAttractionIds: ["jiuzhaigou"] }),
+    base({ days: 9, startAnchorId: "yaan", endAnchorId: "aba-county", maxDrive: 7, selectedAttractionIds: ["lianbaoyeze"] }),
+  ];
+  const legById = new Map(roadLegs.map((leg) => [leg.id, leg]));
+
+  for (const input of scenarios) {
+    for (const option of buildPlanOptions(input)) {
+      assert.equal(option.schedule.length, input.days, `${option.id}: unexpected schedule length`);
+      assert.equal(option.routeAnchorIds[0], input.startAnchorId, `${option.id}: wrong start`);
+      assert.equal(option.routeAnchorIds.at(-1), input.endAnchorId, `${option.id}: wrong end`);
+      assert.deepEqual(new Set(option.selectedAttractionIds), new Set(input.selectedAttractionIds), `${option.id}: selected attraction was dropped`);
+      const scheduled = new Set(option.schedule.flatMap((day) => day.attractionIds));
+      for (const id of input.selectedAttractionIds) assert.ok(scheduled.has(id), `${option.id}: ${id} is missing from the schedule`);
+      assert.equal(option.totalDistanceKm, option.schedule.reduce((sum, day) => sum + day.distanceKm, 0), `${option.id}: distance total drifted`);
+      assert.ok(Math.abs(option.totalDriveHours - option.schedule.reduce((sum, day) => sum + day.driveHours, 0)) < 0.11, `${option.id}: drive-hour total drifted`);
+
+      for (let dayIndex = 0; dayIndex < option.schedule.length; dayIndex += 1) {
+        const day = option.schedule[dayIndex];
+        if (dayIndex > 0) assert.equal(day.startAnchorId, option.schedule[dayIndex - 1].endAnchorId, `${option.id} day ${day.day}: discontinuous overnight anchor`);
+        assert.ok(day.attractionIds.length <= 3, `${option.id} day ${day.day}: more than three attractions`);
+        for (let stepIndex = 0; stepIndex < day.routeSteps.length; stepIndex += 1) {
+          const step = day.routeSteps[stepIndex];
+          const source = legById.get(step.legId);
+          assert.ok(source, `${option.id}: unknown road leg ${step.legId}`);
+          assert.equal(step.distanceKm, source?.km, `${option.id}: ${step.legId} distance drifted`);
+          assert.equal(step.driveHours, source?.hours, `${option.id}: ${step.legId} time drifted`);
+          if (stepIndex > 0) assert.equal(step.fromAnchorId, day.routeSteps[stepIndex - 1].toAnchorId, `${option.id} day ${day.day}: discontinuous road steps`);
+        }
+      }
+    }
+  }
+});
+
+test("current cross-corridor links prevent obsolete backtracking", () => {
+  const lianbaoyeze = buildPlanOptions(base({ days: 10, maxDrive: 7, autoSuggest: false, selectedAttractionIds: ["moon-bay", "lianbaoyeze"] }))[0];
+  assert.ok(lianbaoyeze.routeAnchorIds.includes("hongyuan"));
+  assert.ok(lianbaoyeze.routeAnchorIds.includes("aba-county"));
+  const hongyuanIndex = lianbaoyeze.routeAnchorIds.indexOf("hongyuan");
+  const abaIndex = lianbaoyeze.routeAnchorIds.indexOf("aba-county");
+  assert.equal(lianbaoyeze.routeAnchorIds.slice(Math.min(hongyuanIndex, abaIndex), Math.max(hongyuanIndex, abaIndex) + 1).includes("maerkang"), false, "Hongyuan-Aba County should not backtrack through Barkam");
+
+  const lixiao = buildPlanOptions(base({ days: 6, startAnchorId: "lixian", endAnchorId: "xiaojin", autoSuggest: false, selectedAttractionIds: [] }))[0];
+  assert.ok(lixiao.routeAnchorIds.includes("lixian") && lixiao.routeAnchorIds.includes("xiaojin"));
+  assert.equal(lixiao.routeAnchorIds.includes("wenchuan"), false, "Li County-Xiaojin should use the current direct corridor");
+});
+
+test("long itineraries add rest days instead of reporting no route", () => {
+  const option = buildPlanOptions(base({ days: 10, autoSuggest: false, selectedAttractionIds: ["shuangqiao"] }))[0];
+  assert.equal(option.schedule.length, 10);
+  assert.ok(option.schedule.flatMap((day) => day.attractionIds).includes("shuangqiao"));
+  assert.equal(option.warnings.some((warning) => warning.code === "no-route"), false);
 });
 
 test("every attraction exposes the same audited information fields", () => {
