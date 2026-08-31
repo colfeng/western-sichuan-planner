@@ -1,5 +1,14 @@
 # Release notes
 
+## V0.6.1 — English mobile layout
+
+- Long English version, route, status and lodging text can wrap without forcing
+  horizontal overflow.
+- The English mobile header keeps the brand and language switch separated down
+  to 320 px.
+- English hero typography, daily timelines, result statistics, support panel
+  and footer use compact phone-specific layouts.
+
 ## V0.6.0 — daily route clarity and en-route suggestions
 
 - 115 selectable attractions, including 15 additional officially listed stops in

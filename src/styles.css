@@ -21,7 +21,7 @@ a { color: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { color: inherit; }
 
-.app-shell { min-height: 100vh; }
+.app-shell { min-height: 100vh; overflow-x: clip; }
 .topbar {
   width: min(1440px, calc(100% - 48px));
   height: 78px;
@@ -31,7 +31,8 @@ button { color: inherit; }
   align-items: center;
   gap: 28px;
 }
-.brand { display: flex; align-items: center; gap: 11px; text-decoration: none; width: max-content; }
+.brand { min-width: 0; display: flex; align-items: center; gap: 11px; text-decoration: none; width: max-content; }
+.brand > span:last-child { min-width: 0; }
 .brand-mark { width: 39px; height: 39px; border-radius: 13px 13px 13px 4px; background: var(--ink); color: white; display: grid; place-items: center; }
 .brand strong, .brand small { display: block; line-height: 1.14; }
 .brand strong { font-size: 15px; }
@@ -56,7 +57,8 @@ main { width: min(1440px, calc(100% - 48px)); margin: 0 auto; }
 .eyebrow { display: flex; align-items: center; gap: 8px; margin: 0 0 24px; color: #e0b477; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 h1 { margin: 0; max-width: 700px; font-size: clamp(36px, 4.2vw, 64px); line-height: 1.06; letter-spacing: -.045em; }
 .lede { max-width: 650px; color: #cbd7d2; line-height: 1.75; font-size: 15px; margin: 25px 0 27px; }
-.data-stamp { width: max-content; display: flex; align-items: center; gap: 7px; padding: 8px 11px; border: 1px solid rgba(255,255,255,.13); border-radius: 8px; color: #aebfba; font-size: 12px; }
+.data-stamp { width: fit-content; max-width: 100%; display: flex; align-items: flex-start; gap: 7px; padding: 8px 11px; border: 1px solid rgba(255,255,255,.13); border-radius: 8px; color: #aebfba; font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+.data-stamp svg { flex: 0 0 auto; margin-top: 1px; }
 .image-panel { min-height: 360px; position: relative; overflow: hidden; background: linear-gradient(135deg, #436a60, #183d34); }
 .image-panel > img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; }
 .image-panel::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(12,37,32,.28), transparent 45%), linear-gradient(180deg, transparent 62%, rgba(5,23,20,.64)); }
@@ -191,6 +193,7 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
 .plan-stats small { margin-top: 4px; color: #83908b; font-size: 9px; }
 .route-overview { margin: 16px 0 13px; overflow: hidden; border: 1px solid var(--line); border-radius: 13px; background: #f7f7f2; }
 .route-overview-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; padding: 14px 16px; border-bottom: 1px solid var(--line); background: #eef2ed; color: #34584d; }
+.route-overview-heading > div { min-width: 0; }
 .route-overview-heading b { font-size: 13px; }
 .route-overview-heading p { max-width: 920px; margin: 4px 0 0; color: #667871; line-height: 1.55; font-size: 10px; }
 .route-days { display: grid; }
@@ -235,6 +238,7 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
 .metrics .margin-negative { color: #a34b29; font-weight: 800; }
 .day-agenda { margin-top: 14px; overflow: hidden; border: 1px solid #d6e0db; border-radius: 12px; background: white; }
 .agenda-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; padding: 12px 14px; border-bottom: 1px solid #dfe6e2; background: #edf3ef; color: #315d50; }
+.agenda-heading > div { min-width: 0; }
 .agenda-heading b { font-size: 12px; }
 .agenda-heading p { margin: 3px 0 0; color: #6a7b75; line-height: 1.45; font-size: 9px; }
 .agenda-list { padding: 5px 14px; }
@@ -367,12 +371,18 @@ footer { width: min(1440px, calc(100% - 48px)); margin: 0 auto; padding: 23px 0 
 }
 
 @media (max-width: 620px) {
-  .topbar { height: 68px; }
+  .topbar { width: min(100% - 24px, 1440px); height: 68px; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  .brand { width: auto; gap: 8px; }
+  .brand-mark { flex: 0 0 auto; width: 36px; height: 36px; }
+  .brand strong { font-size: 13px; line-height: 1.12; overflow-wrap: anywhere; }
   .brand small { display: none; }
+  .language-button { padding: 8px 10px; gap: 5px; }
   .intro-band { border-radius: 18px 18px 6px 18px; }
   .intro-copy { padding: 32px 25px; }
   h1 { font-size: 37px; }
   .lede { font-size: 13px; }
+  .eyebrow { line-height: 1.45; }
+  .data-stamp { width: 100%; }
   .image-panel { min-height: 210px; }
   .planning-workbench { margin-top: 18px; gap: 14px; }
   .planner-card { display: block; padding: 20px 17px; }
@@ -387,9 +397,13 @@ footer { width: min(1440px, calc(100% - 48px)); margin: 0 auto; padding: 23px 0 
   .featured-picks { grid-template-columns: 1fr; }
   .selected-strip { grid-template-columns: 1fr auto; }
   .selected-strip > span { display: none; }
+  .selected-strip > div { min-width: 0; }
+  .selected-item { max-width: 100%; }
+  .selected-item b { min-width: 0; overflow-wrap: anywhere; }
   .attraction-grid { grid-template-columns: 1fr; max-height: 640px; }
   .results-title { display: grid; margin-top: 28px; }
-  .constraint-summary { width: max-content; max-width: 100%; }
+  .constraint-summary { width: 100%; max-width: 100%; align-items: flex-start; overflow-wrap: anywhere; }
+  .constraint-summary svg { flex: 0 0 auto; }
   .result-header { gap: 16px; }
   .title-line { align-items: flex-start; }
   .plan-stats { grid-template-columns: 1fr 1fr; gap: 10px 22px; }
@@ -402,7 +416,8 @@ footer { width: min(1440px, calc(100% - 48px)); margin: 0 auto; padding: 23px 0 
   .day-card { grid-template-columns: 39px 1fr; }
   .day-content { padding-left: 6px; }
   .day-topline { display: grid; }
-  .sleep-badge { width: max-content; }
+  .day-topline h3 { line-height: 1.35; overflow-wrap: anywhere; }
+  .sleep-badge { width: fit-content; max-width: 100%; flex-wrap: wrap; overflow-wrap: anywhere; }
   .day-detail { grid-template-columns: 1fr; gap: 11px; }
   .day-detail > div:last-child { grid-column: auto; }
   .ev-numbers { grid-template-columns: 1fr; }
@@ -411,13 +426,41 @@ footer { width: min(1440px, calc(100% - 48px)); margin: 0 auto; padding: 23px 0 
   .agenda-list { padding: 4px 10px; }
   .agenda-item { grid-template-columns: 72px 28px minmax(0, 1fr); }
   .agenda-item > time { font-size: 8.5px; }
+  .agenda-item b, .agenda-item p, .agenda-item small { overflow-wrap: anywhere; }
   .source-grid { grid-template-columns: 1fr; }
   .source-card p { min-height: 0; }
   .support-section { grid-template-columns: auto 1fr; padding: 22px; }
   .support-section button { grid-column: 1 / -1; }
-  footer { gap: 15px; }
+  footer { flex-direction: column; align-items: flex-start; gap: 7px; line-height: 1.5; }
   .detail-drawer { padding: 62px 22px 30px; }
   .detail-list > div { grid-template-columns: 1fr; gap: 5px; }
+}
+
+@media (max-width: 620px) {
+  .locale-en h1 { font-size: clamp(31px, 9vw, 36px); line-height: 1.08; letter-spacing: -.035em; }
+  .locale-en .intro-copy { padding-inline: 22px; }
+  .locale-en .eyebrow { letter-spacing: .055em; }
+  .locale-en .selection-heading h2, .locale-en .results-title h2 { font-size: 20px; line-height: 1.2; }
+  .locale-en .plan-stats { gap: 10px 14px; }
+  .locale-en .plan-stats b, .locale-en .plan-stats small { overflow-wrap: anywhere; }
+  .locale-en .result-header h2 { font-size: 23px; line-height: 1.2; overflow-wrap: anywhere; }
+  .locale-en .status-pill { white-space: normal; line-height: 1.25; }
+  .locale-en .agenda-heading { gap: 8px; }
+  .locale-en .agenda-item { grid-template-columns: 68px 26px minmax(0, 1fr); column-gap: 2px; }
+  .locale-en .agenda-dot { width: 23px; height: 23px; }
+  .locale-en .support-section { grid-template-columns: 1fr; gap: 13px; }
+  .locale-en .support-icon { width: 46px; height: 46px; }
+  .locale-en .support-section button { grid-column: auto; width: 100%; white-space: normal; }
+}
+
+@media (max-width: 360px) {
+  main, footer { width: min(100% - 20px, 1440px); }
+  .intro-copy { padding: 28px 19px; }
+  .attraction-panel, .result-column { padding-inline: 12px; }
+  .locale-en .brand strong { font-size: 12px; }
+  .locale-en .language-button { padding-inline: 8px; }
+  .locale-en .agenda-list { padding-inline: 7px; }
+  .locale-en .agenda-item { grid-template-columns: 64px 24px minmax(0, 1fr); }
 }
 
 @media print {

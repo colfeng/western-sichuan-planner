@@ -4,7 +4,7 @@ A bilingual, safety-first self-driving itinerary planner for Western Sichuan.
 
 一个中英双语、以安全约束为核心的川西自驾行程规划器。
 
-## V0.6 scope / V0.6 范围
+## V0.6.1 scope / V0.6.1 范围
 
 - Static React site deployed with GitHub Pages
 - 115 selectable stops across 9 regions, including Hongyuan, Ruoergai,
