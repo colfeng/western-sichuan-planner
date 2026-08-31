@@ -193,7 +193,8 @@ test("representative plans remain internally consistent across the road network"
           const source = legById.get(step.legId);
           assert.ok(source, `${option.id}: unknown road leg ${step.legId}`);
           assert.equal(step.distanceKm, source?.km, `${option.id}: ${step.legId} distance drifted`);
-          assert.equal(step.driveHours, source?.hours, `${option.id}: ${step.legId} time drifted`);
+          assert.ok(step.driveHours >= (source?.hours ?? 0), `${option.id}: ${step.legId} planning time lost its safety margin`);
+          assert.ok(step.driveHours <= (source?.hours ?? 0) * 1.26 + 0.11, `${option.id}: ${step.legId} planning margin is unexpectedly large`);
           if (stepIndex > 0) assert.equal(step.fromAnchorId, day.routeSteps[stepIndex - 1].toAnchorId, `${option.id} day ${day.day}: discontinuous road steps`);
         }
       }
@@ -221,13 +222,61 @@ test("long itineraries add rest days instead of reporting no route", () => {
   assert.equal(option.warnings.some((warning) => warning.code === "no-route"), false);
 });
 
+test("connects the new Daocheng Yading corridor through Yajiang and Litang", () => {
+  const option = buildPlanOptions(base({ days: 10, maxDrive: 7, autoSuggest: false, selectedAttractionIds: ["yading-scenic-area"] }))[0];
+  assert.ok(option.routeAnchorIds.includes("yajiang"));
+  assert.ok(option.routeAnchorIds.includes("litang"));
+  assert.ok(option.routeAnchorIds.includes("daocheng"));
+  assert.ok(option.routeAnchorIds.includes("shangrila"));
+  assert.equal(option.feasible, true);
+  assert.ok(option.schedule.flatMap((day) => day.attractionIds).includes("yading-scenic-area"));
+});
+
+test("a lunch-split attraction reports two timeline segments, not two visits", () => {
+  const option = buildPlanOptions(base({
+    days: 1,
+    maxDrive: 8,
+    avoidNight: false,
+    autoSuggest: false,
+    startAnchorId: "hongyuan",
+    endAnchorId: "hongyuan",
+    departureTime: "11:27",
+    selectedAttractionIds: ["moon-bay"],
+  }))[0];
+  const segments = option.schedule[0].agenda.filter((item) => item.attractionId === "moon-bay");
+  assert.equal(segments.length, 2);
+  assert.equal(option.schedule[0].attractionIds.filter((id) => id === "moon-bay").length, 1);
+});
+
+test("EV plans name each required en-route charging town or block the day", () => {
+  const option = buildPlanOptions(base({
+    days: 1,
+    maxDrive: 12,
+    avoidNight: false,
+    autoSuggest: false,
+    startAnchorId: "chengdu",
+    endAnchorId: "hongyuan",
+    vehicle: "ev",
+    evRangeKm: 375,
+    selectedAttractionIds: [],
+  }))[0];
+  const evPlan = option.schedule[0].evPlan;
+  assert.ok(evPlan);
+  assert.ok(evPlan.status === "verify" || evPlan.status === "blocked" || evPlan.status === "ok");
+  if (evPlan.status !== "blocked") {
+    assert.ok(evPlan.chargeStops.length >= 1);
+    assert.equal(evPlan.travelLegs.length, evPlan.chargeStops.length + 1);
+    assert.ok(evPlan.chargeStops.every((stop) => routeAnchors[stop.anchorId]?.canStay));
+  }
+});
+
 test("every attraction exposes the same audited information fields", () => {
   const officialHosts = new Set([
     "www.djy.gov.cn", "wenchuan.gov.cn", "www.wenchuan.gov.cn", "www.abazhou.gov.cn", "abazhou.gov.cn",
     "www.sgns.cn", "www.xiaojin.gov.cn", "xiaojin.gov.cn", "www.danba.gov.cn", "www.kangding.gov.cn",
-    "www.luding.gov.cn", "www.yaan.gov.cn", "www.huanglong.com", "www.jiuzhai.com",
+    "www.luding.gov.cn", "www.yaan.gov.cn", "www.huanglong.com", "www.jiuzhai.com", "www.daocheng.gov.cn", "daocheng.gov.cn",
   ]);
-  assert.equal(attractions.length, 115);
+  assert.equal(attractions.length, 123);
   let reservationCount = 0;
   for (const item of attractions) {
     assert.ok(routeAnchors[item.anchorId], `${item.id}: unknown anchor`);

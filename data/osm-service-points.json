@@ -1,8 +1,2049 @@
 {
   "schemaVersion": 1,
-  "updatedAt": null,
+  "updatedAt": "2026-08-31T02:50:46+00:00",
   "source": "OpenStreetMap contributors",
   "license": "ODbL-1.0",
   "attributionUrl": "https://www.openstreetmap.org/copyright",
-  "points": []
+  "points": [
+    {
+      "id": "osm-node-10314808936",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 32.891304,
+      "longitude": 101.685891,
+      "nearestAnchorId": "aba-county",
+      "osmUrl": "https://www.openstreetmap.org/node/10314808936"
+    },
+    {
+      "id": "osm-node-6712170802",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 32.903533,
+      "longitude": 101.718813,
+      "nearestAnchorId": "aba-county",
+      "osmUrl": "https://www.openstreetmap.org/node/6712170802"
+    },
+    {
+      "id": "osm-node-6720641006",
+      "name": "",
+      "nameEn": "Fuel Station",
+      "type": "fuel",
+      "latitude": 30.481632,
+      "longitude": 101.487457,
+      "nearestAnchorId": "bamei",
+      "osmUrl": "https://www.openstreetmap.org/node/6720641006"
+    },
+    {
+      "id": "osm-node-9173653462",
+      "name": "蓝电快充",
+      "nameEn": "",
+      "type": "charging",
+      "latitude": 30.573291,
+      "longitude": 104.063157,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/node/9173653462"
+    },
+    {
+      "id": "osm-node-9181729468",
+      "name": "",
+      "nameEn": "",
+      "type": "charging",
+      "latitude": 30.574846,
+      "longitude": 104.057535,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/node/9181729468"
+    },
+    {
+      "id": "osm-node-3070069509",
+      "name": "Tesla Supercharger",
+      "nameEn": "Tesla Supercharger",
+      "type": "charging",
+      "latitude": 30.59557,
+      "longitude": 104.064198,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/node/3070069509"
+    },
+    {
+      "id": "osm-way-1413406456",
+      "name": "特来电汽车充电站（快充区）",
+      "nameEn": "",
+      "type": "charging",
+      "latitude": 30.543502,
+      "longitude": 104.067999,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/way/1413406456"
+    },
+    {
+      "id": "osm-node-11543327454",
+      "name": "中和社区卫生服务中心(",
+      "nameEn": "",
+      "type": "clinic",
+      "latitude": 30.537253,
+      "longitude": 104.089546,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/node/11543327454"
+    },
+    {
+      "id": "osm-way-1346648871",
+      "name": "成都锦江益民医院",
+      "nameEn": "",
+      "type": "clinic",
+      "latitude": 30.605915,
+      "longitude": 104.10326,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/way/1346648871"
+    },
+    {
+      "id": "osm-way-1346648870",
+      "name": "成都市锦江区成龙路社区卫生服务中心",
+      "nameEn": "",
+      "type": "clinic",
+      "latitude": 30.605881,
+      "longitude": 104.103602,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/way/1346648870"
+    },
+    {
+      "id": "osm-node-12460868014",
+      "name": "华侨口腔牙科",
+      "nameEn": "",
+      "type": "clinic",
+      "latitude": 30.616639,
+      "longitude": 104.090462,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/node/12460868014"
+    },
+    {
+      "id": "osm-way-1138328526",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 30.563591,
+      "longitude": 104.088548,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/way/1138328526"
+    },
+    {
+      "id": "osm-node-5787211751",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.549673,
+      "longitude": 104.086003,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/node/5787211751"
+    },
+    {
+      "id": "osm-way-1373232450",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 30.549663,
+      "longitude": 104.086011,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/way/1373232450"
+    },
+    {
+      "id": "osm-way-778944127",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.565842,
+      "longitude": 104.032944,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/way/778944127"
+    },
+    {
+      "id": "osm-node-4702508991",
+      "name": "拉斐尔口腔",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.590014,
+      "longitude": 104.052421,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/node/4702508991"
+    },
+    {
+      "id": "osm-node-4661854188",
+      "name": "成都市急救指挥中心(120)",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.591528,
+      "longitude": 104.051354,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/node/4661854188"
+    },
+    {
+      "id": "osm-way-472000013",
+      "name": "成都市第一人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.592398,
+      "longitude": 104.050166,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/way/472000013"
+    },
+    {
+      "id": "osm-way-1364004609",
+      "name": "中和社区卫生服务中心",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.551444,
+      "longitude": 104.087811,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/way/1364004609"
+    },
+    {
+      "id": "osm-node-11813309023",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.566455,
+      "longitude": 104.068979,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/node/11813309023"
+    },
+    {
+      "id": "osm-way-1272970801",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.566326,
+      "longitude": 104.061846,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/way/1272970801"
+    },
+    {
+      "id": "osm-way-1272970802",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.565865,
+      "longitude": 104.070163,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/way/1272970802"
+    },
+    {
+      "id": "osm-node-10087309232",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.565143,
+      "longitude": 104.068285,
+      "nearestAnchorId": "chengdu",
+      "osmUrl": "https://www.openstreetmap.org/node/10087309232"
+    },
+    {
+      "id": "osm-node-3837016298",
+      "name": "雪山加油站",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 32.783413,
+      "longitude": 103.613294,
+      "nearestAnchorId": "chuanzhusi",
+      "osmUrl": "https://www.openstreetmap.org/node/3837016298"
+    },
+    {
+      "id": "osm-way-380365251",
+      "name": "中国石油川主寺加油站",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 32.787811,
+      "longitude": 103.59725,
+      "nearestAnchorId": "chuanzhusi",
+      "osmUrl": "https://www.openstreetmap.org/way/380365251"
+    },
+    {
+      "id": "osm-way-486785042",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 32.794188,
+      "longitude": 103.636999,
+      "nearestAnchorId": "chuanzhusi",
+      "osmUrl": "https://www.openstreetmap.org/way/486785042"
+    },
+    {
+      "id": "osm-way-617120572",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 32.923633,
+      "longitude": 103.691984,
+      "nearestAnchorId": "chuanzhusi",
+      "osmUrl": "https://www.openstreetmap.org/way/617120572"
+    },
+    {
+      "id": "osm-node-6849038239",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.875956,
+      "longitude": 101.905307,
+      "nearestAnchorId": "danba",
+      "osmUrl": "https://www.openstreetmap.org/node/6849038239"
+    },
+    {
+      "id": "osm-node-4902082522",
+      "name": "中国石油",
+      "nameEn": "uSmile",
+      "type": "fuel",
+      "latitude": 30.875786,
+      "longitude": 101.905433,
+      "nearestAnchorId": "danba",
+      "osmUrl": "https://www.openstreetmap.org/node/4902082522"
+    },
+    {
+      "id": "osm-node-6882128275",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.902183,
+      "longitude": 101.877578,
+      "nearestAnchorId": "danba",
+      "osmUrl": "https://www.openstreetmap.org/node/6882128275"
+    },
+    {
+      "id": "osm-node-4907317431",
+      "name": "综合大楼",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.890948,
+      "longitude": 101.877551,
+      "nearestAnchorId": "danba",
+      "osmUrl": "https://www.openstreetmap.org/node/4907317431"
+    },
+    {
+      "id": "osm-node-5204401726",
+      "name": "",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.891684,
+      "longitude": 101.876917,
+      "nearestAnchorId": "danba",
+      "osmUrl": "https://www.openstreetmap.org/node/5204401726"
+    },
+    {
+      "id": "osm-node-4907317522",
+      "name": "丹巴县中藏医医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.891933,
+      "longitude": 101.877018,
+      "nearestAnchorId": "danba",
+      "osmUrl": "https://www.openstreetmap.org/node/4907317522"
+    },
+    {
+      "id": "osm-node-4902085521",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.843896,
+      "longitude": 101.922897,
+      "nearestAnchorId": "danba",
+      "osmUrl": "https://www.openstreetmap.org/node/4902085521"
+    },
+    {
+      "id": "osm-node-11890752169",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.929389,
+      "longitude": 101.856003,
+      "nearestAnchorId": "danba",
+      "osmUrl": "https://www.openstreetmap.org/node/11890752169"
+    },
+    {
+      "id": "osm-node-2961075167",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 29.04966,
+      "longitude": 100.295518,
+      "nearestAnchorId": "daocheng",
+      "osmUrl": "https://www.openstreetmap.org/node/2961075167"
+    },
+    {
+      "id": "osm-node-2960988164",
+      "name": "稻城县人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 29.03858,
+      "longitude": 100.293869,
+      "nearestAnchorId": "daocheng",
+      "osmUrl": "https://www.openstreetmap.org/node/2960988164"
+    },
+    {
+      "id": "osm-node-12096542762",
+      "name": "三台村卫生站",
+      "nameEn": "",
+      "type": "clinic",
+      "latitude": 30.97645,
+      "longitude": 103.601752,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/node/12096542762"
+    },
+    {
+      "id": "osm-way-1030323389",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.984727,
+      "longitude": 103.638585,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/way/1030323389"
+    },
+    {
+      "id": "osm-way-1030323384",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 30.981916,
+      "longitude": 103.649285,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/way/1030323384"
+    },
+    {
+      "id": "osm-way-495281730",
+      "name": "Shell",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.981843,
+      "longitude": 103.623018,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/way/495281730"
+    },
+    {
+      "id": "osm-way-495281735",
+      "name": "Shell",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.996696,
+      "longitude": 103.599023,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/way/495281735"
+    },
+    {
+      "id": "osm-node-4248004093",
+      "name": "",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.981376,
+      "longitude": 103.65456,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/node/4248004093"
+    },
+    {
+      "id": "osm-way-571195794",
+      "name": "都江堰市中医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.96545,
+      "longitude": 103.629853,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/way/571195794"
+    },
+    {
+      "id": "osm-way-500826182",
+      "name": "虹口乡卫生院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 31.115633,
+      "longitude": 103.653859,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/way/500826182"
+    },
+    {
+      "id": "osm-way-1537908438",
+      "name": "郫都区第二人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.917101,
+      "longitude": 103.820282,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/way/1537908438"
+    },
+    {
+      "id": "osm-node-5495560568",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.996418,
+      "longitude": 103.622171,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/node/5495560568"
+    },
+    {
+      "id": "osm-node-5473497231",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.004695,
+      "longitude": 103.620815,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/node/5473497231"
+    },
+    {
+      "id": "osm-node-12412737062",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.001692,
+      "longitude": 103.619018,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/node/12412737062"
+    },
+    {
+      "id": "osm-node-3632295210",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.001124,
+      "longitude": 103.61902,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/node/3632295210"
+    },
+    {
+      "id": "osm-node-6034051927",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 32.240659,
+      "longitude": 102.783989,
+      "nearestAnchorId": "heishui",
+      "osmUrl": "https://www.openstreetmap.org/node/6034051927"
+    },
+    {
+      "id": "osm-node-13368619607",
+      "name": "蔚来换电站",
+      "nameEn": "NIO Power Swap",
+      "type": "charging",
+      "latitude": 32.793218,
+      "longitude": 102.531563,
+      "nearestAnchorId": "hongyuan",
+      "osmUrl": "https://www.openstreetmap.org/node/13368619607"
+    },
+    {
+      "id": "osm-node-13368619649",
+      "name": "中国石油红原加油站",
+      "nameEn": "Sinopec",
+      "type": "fuel",
+      "latitude": 32.795832,
+      "longitude": 102.536412,
+      "nearestAnchorId": "hongyuan",
+      "osmUrl": "https://www.openstreetmap.org/node/13368619649"
+    },
+    {
+      "id": "osm-node-4249838391",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 32.818741,
+      "longitude": 102.559489,
+      "nearestAnchorId": "hongyuan",
+      "osmUrl": "https://www.openstreetmap.org/node/4249838391"
+    },
+    {
+      "id": "osm-way-1457655378",
+      "name": "红原县人民医院",
+      "nameEn": "Hongyuan County People's Hospital",
+      "type": "hospital",
+      "latitude": 32.805418,
+      "longitude": 102.543819,
+      "nearestAnchorId": "hongyuan",
+      "osmUrl": "https://www.openstreetmap.org/way/1457655378"
+    },
+    {
+      "id": "osm-node-1845168415",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 32.788345,
+      "longitude": 102.53364,
+      "nearestAnchorId": "hongyuan",
+      "osmUrl": "https://www.openstreetmap.org/node/1845168415"
+    },
+    {
+      "id": "osm-node-13598027969",
+      "name": "",
+      "nameEn": "",
+      "type": "clinic",
+      "latitude": 32.783917,
+      "longitude": 103.906635,
+      "nearestAnchorId": "huanglong",
+      "osmUrl": "https://www.openstreetmap.org/node/13598027969"
+    },
+    {
+      "id": "osm-node-3749079305",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 32.738365,
+      "longitude": 103.831491,
+      "nearestAnchorId": "huanglong",
+      "osmUrl": "https://www.openstreetmap.org/node/3749079305"
+    },
+    {
+      "id": "osm-node-13734125901",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 32.74758,
+      "longitude": 103.834473,
+      "nearestAnchorId": "huanglong",
+      "osmUrl": "https://www.openstreetmap.org/node/13734125901"
+    },
+    {
+      "id": "osm-node-14053893901",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 32.73096,
+      "longitude": 103.833814,
+      "nearestAnchorId": "huanglong",
+      "osmUrl": "https://www.openstreetmap.org/node/14053893901"
+    },
+    {
+      "id": "osm-node-3657084214",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 32.729977,
+      "longitude": 103.832369,
+      "nearestAnchorId": "huanglong",
+      "osmUrl": "https://www.openstreetmap.org/node/3657084214"
+    },
+    {
+      "id": "osm-node-1488487609",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 33.31221,
+      "longitude": 103.939137,
+      "nearestAnchorId": "jiuzhaigou",
+      "osmUrl": "https://www.openstreetmap.org/node/1488487609"
+    },
+    {
+      "id": "osm-node-4185789972",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 33.297507,
+      "longitude": 103.861486,
+      "nearestAnchorId": "jiuzhaigou",
+      "osmUrl": "https://www.openstreetmap.org/node/4185789972"
+    },
+    {
+      "id": "osm-node-4442506808",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 33.494963,
+      "longitude": 104.019231,
+      "nearestAnchorId": "jiuzhaigou",
+      "osmUrl": "https://www.openstreetmap.org/node/4442506808"
+    },
+    {
+      "id": "osm-node-4793463176",
+      "name": "九寨沟人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 33.25104,
+      "longitude": 104.244317,
+      "nearestAnchorId": "jiuzhaigou",
+      "osmUrl": "https://www.openstreetmap.org/node/4793463176"
+    },
+    {
+      "id": "osm-node-2041829350",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 33.268472,
+      "longitude": 103.916893,
+      "nearestAnchorId": "jiuzhaigou",
+      "osmUrl": "https://www.openstreetmap.org/node/2041829350"
+    },
+    {
+      "id": "osm-node-2981320373",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 33.272281,
+      "longitude": 103.91858,
+      "nearestAnchorId": "jiuzhaigou",
+      "osmUrl": "https://www.openstreetmap.org/node/2981320373"
+    },
+    {
+      "id": "osm-node-3749065100",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 33.213351,
+      "longitude": 103.904784,
+      "nearestAnchorId": "jiuzhaigou",
+      "osmUrl": "https://www.openstreetmap.org/node/3749065100"
+    },
+    {
+      "id": "osm-node-3749080025",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 33.198308,
+      "longitude": 103.89476,
+      "nearestAnchorId": "jiuzhaigou",
+      "osmUrl": "https://www.openstreetmap.org/node/3749080025"
+    },
+    {
+      "id": "osm-node-6720648490",
+      "name": "",
+      "nameEn": "China Petro Station",
+      "type": "fuel",
+      "latitude": 30.029773,
+      "longitude": 101.956298,
+      "nearestAnchorId": "kangding",
+      "osmUrl": "https://www.openstreetmap.org/node/6720648490"
+    },
+    {
+      "id": "osm-node-5923678786",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.057762,
+      "longitude": 101.982291,
+      "nearestAnchorId": "kangding",
+      "osmUrl": "https://www.openstreetmap.org/node/5923678786"
+    },
+    {
+      "id": "osm-way-808132274",
+      "name": "",
+      "nameEn": "China Petro Station",
+      "type": "fuel",
+      "latitude": 30.074931,
+      "longitude": 102.140222,
+      "nearestAnchorId": "kangding",
+      "osmUrl": "https://www.openstreetmap.org/way/808132274"
+    },
+    {
+      "id": "osm-node-11681695277",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.22792,
+      "longitude": 102.187834,
+      "nearestAnchorId": "kangding",
+      "osmUrl": "https://www.openstreetmap.org/node/11681695277"
+    },
+    {
+      "id": "osm-way-1415847347",
+      "name": "甘孜藏族自治州人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.057483,
+      "longitude": 101.963716,
+      "nearestAnchorId": "kangding",
+      "osmUrl": "https://www.openstreetmap.org/way/1415847347"
+    },
+    {
+      "id": "osm-node-5182917096",
+      "name": "康定藏医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.040056,
+      "longitude": 101.958833,
+      "nearestAnchorId": "kangding",
+      "osmUrl": "https://www.openstreetmap.org/node/5182917096"
+    },
+    {
+      "id": "osm-way-1441907898",
+      "name": "甘孜州人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.022309,
+      "longitude": 101.959607,
+      "nearestAnchorId": "kangding",
+      "osmUrl": "https://www.openstreetmap.org/way/1441907898"
+    },
+    {
+      "id": "osm-way-1416023718",
+      "name": "康定市人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 29.997606,
+      "longitude": 101.956637,
+      "nearestAnchorId": "kangding",
+      "osmUrl": "https://www.openstreetmap.org/way/1416023718"
+    },
+    {
+      "id": "osm-node-4791659467",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.053517,
+      "longitude": 101.962881,
+      "nearestAnchorId": "kangding",
+      "osmUrl": "https://www.openstreetmap.org/node/4791659467"
+    },
+    {
+      "id": "osm-node-11436630669",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.073904,
+      "longitude": 101.803499,
+      "nearestAnchorId": "kangding",
+      "osmUrl": "https://www.openstreetmap.org/node/11436630669"
+    },
+    {
+      "id": "osm-way-1232837632",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.187702,
+      "longitude": 101.772623,
+      "nearestAnchorId": "kangding",
+      "osmUrl": "https://www.openstreetmap.org/way/1232837632"
+    },
+    {
+      "id": "osm-node-9554893610",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 33.247,
+      "longitude": 100.840319,
+      "nearestAnchorId": "lianbaoyeze",
+      "osmUrl": "https://www.openstreetmap.org/node/9554893610"
+    },
+    {
+      "id": "osm-way-1035103267",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 29.992691,
+      "longitude": 100.276033,
+      "nearestAnchorId": "litang",
+      "osmUrl": "https://www.openstreetmap.org/way/1035103267"
+    },
+    {
+      "id": "osm-node-5755945821",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 29.991752,
+      "longitude": 100.277921,
+      "nearestAnchorId": "litang",
+      "osmUrl": "https://www.openstreetmap.org/node/5755945821"
+    },
+    {
+      "id": "osm-way-1097921143",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 29.990281,
+      "longitude": 100.279828,
+      "nearestAnchorId": "litang",
+      "osmUrl": "https://www.openstreetmap.org/way/1097921143"
+    },
+    {
+      "id": "osm-way-1083748790",
+      "name": "卓帆加油站",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 29.993574,
+      "longitude": 100.291566,
+      "nearestAnchorId": "litang",
+      "osmUrl": "https://www.openstreetmap.org/way/1083748790"
+    },
+    {
+      "id": "osm-way-1208478404",
+      "name": "理塘县人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 29.996004,
+      "longitude": 100.270091,
+      "nearestAnchorId": "litang",
+      "osmUrl": "https://www.openstreetmap.org/way/1208478404"
+    },
+    {
+      "id": "osm-way-1096496523",
+      "name": "理塘县藏医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 29.992871,
+      "longitude": 100.264199,
+      "nearestAnchorId": "litang",
+      "osmUrl": "https://www.openstreetmap.org/way/1096496523"
+    },
+    {
+      "id": "osm-node-11407472815",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 29.997014,
+      "longitude": 100.267004,
+      "nearestAnchorId": "litang",
+      "osmUrl": "https://www.openstreetmap.org/node/11407472815"
+    },
+    {
+      "id": "osm-node-13573937447",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.006923,
+      "longitude": 100.276154,
+      "nearestAnchorId": "litang",
+      "osmUrl": "https://www.openstreetmap.org/node/13573937447"
+    },
+    {
+      "id": "osm-node-13939446672",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 29.942163,
+      "longitude": 100.215879,
+      "nearestAnchorId": "litang",
+      "osmUrl": "https://www.openstreetmap.org/node/13939446672"
+    },
+    {
+      "id": "osm-node-13939492967",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 29.942163,
+      "longitude": 100.215879,
+      "nearestAnchorId": "litang",
+      "osmUrl": "https://www.openstreetmap.org/node/13939492967"
+    },
+    {
+      "id": "osm-node-8166519577",
+      "name": "中国石油",
+      "nameEn": "Petro China Station",
+      "type": "fuel",
+      "latitude": 29.926191,
+      "longitude": 102.22656,
+      "nearestAnchorId": "luding",
+      "osmUrl": "https://www.openstreetmap.org/node/8166519577"
+    },
+    {
+      "id": "osm-node-8166596080",
+      "name": "中国石油",
+      "nameEn": "Petro China Station",
+      "type": "fuel",
+      "latitude": 29.891767,
+      "longitude": 102.223017,
+      "nearestAnchorId": "luding",
+      "osmUrl": "https://www.openstreetmap.org/node/8166596080"
+    },
+    {
+      "id": "osm-way-1479306038",
+      "name": "延长壳牌",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 29.951933,
+      "longitude": 102.239113,
+      "nearestAnchorId": "luding",
+      "osmUrl": "https://www.openstreetmap.org/way/1479306038"
+    },
+    {
+      "id": "osm-way-1479306042",
+      "name": "延长壳牌",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 29.954192,
+      "longitude": 102.235968,
+      "nearestAnchorId": "luding",
+      "osmUrl": "https://www.openstreetmap.org/way/1479306042"
+    },
+    {
+      "id": "osm-way-877739408",
+      "name": "泸定县人民医院",
+      "nameEn": "Luding People's Hospital",
+      "type": "hospital",
+      "latitude": 29.909903,
+      "longitude": 102.230286,
+      "nearestAnchorId": "luding",
+      "osmUrl": "https://www.openstreetmap.org/way/877739408"
+    },
+    {
+      "id": "osm-way-1426980053",
+      "name": "海螺沟景区人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 29.667373,
+      "longitude": 102.106139,
+      "nearestAnchorId": "luding",
+      "osmUrl": "https://www.openstreetmap.org/way/1426980053"
+    },
+    {
+      "id": "osm-way-1251959406",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 29.90696,
+      "longitude": 102.228303,
+      "nearestAnchorId": "luding",
+      "osmUrl": "https://www.openstreetmap.org/way/1251959406"
+    },
+    {
+      "id": "osm-node-12553994477",
+      "name": "泸定桥景区旅游厕所",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 29.91702,
+      "longitude": 102.229119,
+      "nearestAnchorId": "luding",
+      "osmUrl": "https://www.openstreetmap.org/node/12553994477"
+    },
+    {
+      "id": "osm-node-11578634667",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 31.92032,
+      "longitude": 102.185742,
+      "nearestAnchorId": "maerkang",
+      "osmUrl": "https://www.openstreetmap.org/node/11578634667"
+    },
+    {
+      "id": "osm-node-11578634666",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 31.920894,
+      "longitude": 102.18354,
+      "nearestAnchorId": "maerkang",
+      "osmUrl": "https://www.openstreetmap.org/node/11578634666"
+    },
+    {
+      "id": "osm-node-6034706212",
+      "name": "中国航油中信加油站",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 31.880103,
+      "longitude": 102.263956,
+      "nearestAnchorId": "maerkang",
+      "osmUrl": "https://www.openstreetmap.org/node/6034706212"
+    },
+    {
+      "id": "osm-way-1245426201",
+      "name": "阿坝州人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 31.899217,
+      "longitude": 102.224082,
+      "nearestAnchorId": "maerkang",
+      "osmUrl": "https://www.openstreetmap.org/way/1245426201"
+    },
+    {
+      "id": "osm-node-4249432790",
+      "name": "",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 31.905768,
+      "longitude": 102.213883,
+      "nearestAnchorId": "maerkang",
+      "osmUrl": "https://www.openstreetmap.org/node/4249432790"
+    },
+    {
+      "id": "osm-way-1245426209",
+      "name": "马尔康市人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 31.912175,
+      "longitude": 102.189943,
+      "nearestAnchorId": "maerkang",
+      "osmUrl": "https://www.openstreetmap.org/way/1245426209"
+    },
+    {
+      "id": "osm-way-1245496774",
+      "name": "马尔康市妇幼保健医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 31.914261,
+      "longitude": 102.188931,
+      "nearestAnchorId": "maerkang",
+      "osmUrl": "https://www.openstreetmap.org/way/1245496774"
+    },
+    {
+      "id": "osm-node-4248295196",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.902476,
+      "longitude": 102.217891,
+      "nearestAnchorId": "maerkang",
+      "osmUrl": "https://www.openstreetmap.org/node/4248295196"
+    },
+    {
+      "id": "osm-node-4249434889",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.906596,
+      "longitude": 102.213907,
+      "nearestAnchorId": "maerkang",
+      "osmUrl": "https://www.openstreetmap.org/node/4249434889"
+    },
+    {
+      "id": "osm-node-4249365193",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.905467,
+      "longitude": 102.208802,
+      "nearestAnchorId": "maerkang",
+      "osmUrl": "https://www.openstreetmap.org/node/4249365193"
+    },
+    {
+      "id": "osm-node-4249432393",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.906294,
+      "longitude": 102.209124,
+      "nearestAnchorId": "maerkang",
+      "osmUrl": "https://www.openstreetmap.org/node/4249432393"
+    },
+    {
+      "id": "osm-node-4935040755",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 31.688075,
+      "longitude": 103.844984,
+      "nearestAnchorId": "maoxian",
+      "osmUrl": "https://www.openstreetmap.org/node/4935040755"
+    },
+    {
+      "id": "osm-node-4935042687",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 31.670371,
+      "longitude": 103.835199,
+      "nearestAnchorId": "maoxian",
+      "osmUrl": "https://www.openstreetmap.org/node/4935042687"
+    },
+    {
+      "id": "osm-way-1030325145",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 31.697603,
+      "longitude": 103.850587,
+      "nearestAnchorId": "maoxian",
+      "osmUrl": "https://www.openstreetmap.org/way/1030325145"
+    },
+    {
+      "id": "osm-way-1030325146",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 31.698906,
+      "longitude": 103.857552,
+      "nearestAnchorId": "maoxian",
+      "osmUrl": "https://www.openstreetmap.org/way/1030325146"
+    },
+    {
+      "id": "osm-way-1470278536",
+      "name": "茂县人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 31.685441,
+      "longitude": 103.851715,
+      "nearestAnchorId": "maoxian",
+      "osmUrl": "https://www.openstreetmap.org/way/1470278536"
+    },
+    {
+      "id": "osm-way-1469815444",
+      "name": "茂县中医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 31.670289,
+      "longitude": 103.841687,
+      "nearestAnchorId": "maoxian",
+      "osmUrl": "https://www.openstreetmap.org/way/1469815444"
+    },
+    {
+      "id": "osm-node-13440094182",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.682922,
+      "longitude": 103.847332,
+      "nearestAnchorId": "maoxian",
+      "osmUrl": "https://www.openstreetmap.org/node/13440094182"
+    },
+    {
+      "id": "osm-node-13440094136",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.677579,
+      "longitude": 103.844289,
+      "nearestAnchorId": "maoxian",
+      "osmUrl": "https://www.openstreetmap.org/node/13440094136"
+    },
+    {
+      "id": "osm-node-13470954018",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.678039,
+      "longitude": 103.842588,
+      "nearestAnchorId": "maoxian",
+      "osmUrl": "https://www.openstreetmap.org/node/13470954018"
+    },
+    {
+      "id": "osm-node-6034632775",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 31.871265,
+      "longitude": 102.631203,
+      "nearestAnchorId": "miyaluo",
+      "osmUrl": "https://www.openstreetmap.org/node/6034632775"
+    },
+    {
+      "id": "osm-way-1337139066",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.593301,
+      "longitude": 102.81873,
+      "nearestAnchorId": "miyaluo",
+      "osmUrl": "https://www.openstreetmap.org/way/1337139066"
+    },
+    {
+      "id": "osm-way-1455426983",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.587275,
+      "longitude": 102.793141,
+      "nearestAnchorId": "miyaluo",
+      "osmUrl": "https://www.openstreetmap.org/way/1455426983"
+    },
+    {
+      "id": "osm-way-834897860",
+      "name": "昆仑好客",
+      "nameEn": "Petrochina",
+      "type": "fuel",
+      "latitude": 33.57477,
+      "longitude": 102.973401,
+      "nearestAnchorId": "ruoergai",
+      "osmUrl": "https://www.openstreetmap.org/way/834897860"
+    },
+    {
+      "id": "osm-way-834897855",
+      "name": "",
+      "nameEn": "Easyjoy",
+      "type": "fuel",
+      "latitude": 33.573672,
+      "longitude": 102.973663,
+      "nearestAnchorId": "ruoergai",
+      "osmUrl": "https://www.openstreetmap.org/way/834897855"
+    },
+    {
+      "id": "osm-node-1476458614",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 33.59704,
+      "longitude": 102.93716,
+      "nearestAnchorId": "ruoergai",
+      "osmUrl": "https://www.openstreetmap.org/node/1476458614"
+    },
+    {
+      "id": "osm-way-834897858",
+      "name": "昆仑好客",
+      "nameEn": "Petrochina",
+      "type": "fuel",
+      "latitude": 33.584785,
+      "longitude": 103.103602,
+      "nearestAnchorId": "ruoergai",
+      "osmUrl": "https://www.openstreetmap.org/way/834897858"
+    },
+    {
+      "id": "osm-node-13851534701",
+      "name": "",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 33.594539,
+      "longitude": 102.942845,
+      "nearestAnchorId": "ruoergai",
+      "osmUrl": "https://www.openstreetmap.org/node/13851534701"
+    },
+    {
+      "id": "osm-node-5921854185",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 29.201912,
+      "longitude": 100.105488,
+      "nearestAnchorId": "sangdui",
+      "osmUrl": "https://www.openstreetmap.org/node/5921854185"
+    },
+    {
+      "id": "osm-node-4908575423",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 29.415635,
+      "longitude": 100.175167,
+      "nearestAnchorId": "sangdui",
+      "osmUrl": "https://www.openstreetmap.org/node/4908575423"
+    },
+    {
+      "id": "osm-node-11522443260",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 29.438134,
+      "longitude": 100.185785,
+      "nearestAnchorId": "sangdui",
+      "osmUrl": "https://www.openstreetmap.org/node/11522443260"
+    },
+    {
+      "id": "osm-way-1480135182",
+      "name": "中国国际能源",
+      "nameEn": "CIEC",
+      "type": "fuel",
+      "latitude": 28.572579,
+      "longitude": 100.344351,
+      "nearestAnchorId": "shangrila",
+      "osmUrl": "https://www.openstreetmap.org/way/1480135182"
+    },
+    {
+      "id": "osm-node-6485142585",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 28.550553,
+      "longitude": 100.323293,
+      "nearestAnchorId": "shangrila",
+      "osmUrl": "https://www.openstreetmap.org/node/6485142585"
+    },
+    {
+      "id": "osm-way-1264537223",
+      "name": "稻城县中藏医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 28.558545,
+      "longitude": 100.339598,
+      "nearestAnchorId": "shangrila",
+      "osmUrl": "https://www.openstreetmap.org/way/1264537223"
+    },
+    {
+      "id": "osm-node-4791660042",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 28.561795,
+      "longitude": 100.347403,
+      "nearestAnchorId": "shangrila",
+      "osmUrl": "https://www.openstreetmap.org/node/4791660042"
+    },
+    {
+      "id": "osm-way-1416273061",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 28.561253,
+      "longitude": 100.348955,
+      "nearestAnchorId": "shangrila",
+      "osmUrl": "https://www.openstreetmap.org/way/1416273061"
+    },
+    {
+      "id": "osm-node-4791659470",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 28.551491,
+      "longitude": 100.326572,
+      "nearestAnchorId": "shangrila",
+      "osmUrl": "https://www.openstreetmap.org/node/4791659470"
+    },
+    {
+      "id": "osm-node-13576801225",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 28.537679,
+      "longitude": 100.316776,
+      "nearestAnchorId": "shangrila",
+      "osmUrl": "https://www.openstreetmap.org/node/13576801225"
+    },
+    {
+      "id": "osm-node-13227378090",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 30.994348,
+      "longitude": 102.834423,
+      "nearestAnchorId": "siguniang",
+      "osmUrl": "https://www.openstreetmap.org/node/13227378090"
+    },
+    {
+      "id": "osm-node-3442496150",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.987346,
+      "longitude": 102.780373,
+      "nearestAnchorId": "siguniang",
+      "osmUrl": "https://www.openstreetmap.org/node/3442496150"
+    },
+    {
+      "id": "osm-node-11035587188",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.99699,
+      "longitude": 102.83269,
+      "nearestAnchorId": "siguniang",
+      "osmUrl": "https://www.openstreetmap.org/node/11035587188"
+    },
+    {
+      "id": "osm-node-12045502152",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.038687,
+      "longitude": 102.874583,
+      "nearestAnchorId": "siguniang",
+      "osmUrl": "https://www.openstreetmap.org/node/12045502152"
+    },
+    {
+      "id": "osm-node-6034207716",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.044571,
+      "longitude": 102.874823,
+      "nearestAnchorId": "siguniang",
+      "osmUrl": "https://www.openstreetmap.org/node/6034207716"
+    },
+    {
+      "id": "osm-node-12045502246",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.251249,
+      "longitude": 102.889328,
+      "nearestAnchorId": "siguniang",
+      "osmUrl": "https://www.openstreetmap.org/node/12045502246"
+    },
+    {
+      "id": "osm-way-380364490",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 32.628874,
+      "longitude": 103.593114,
+      "nearestAnchorId": "songpan",
+      "osmUrl": "https://www.openstreetmap.org/way/380364490"
+    },
+    {
+      "id": "osm-way-858911264",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 32.627655,
+      "longitude": 103.592601,
+      "nearestAnchorId": "songpan",
+      "osmUrl": "https://www.openstreetmap.org/way/858911264"
+    },
+    {
+      "id": "osm-way-486785014",
+      "name": "松潘县人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 32.656285,
+      "longitude": 103.606291,
+      "nearestAnchorId": "songpan",
+      "osmUrl": "https://www.openstreetmap.org/way/486785014"
+    },
+    {
+      "id": "osm-node-13031176037",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 32.406025,
+      "longitude": 103.715435,
+      "nearestAnchorId": "songpan",
+      "osmUrl": "https://www.openstreetmap.org/node/13031176037"
+    },
+    {
+      "id": "osm-node-12583761045",
+      "name": "",
+      "nameEn": "",
+      "type": "charging",
+      "latitude": 30.3248,
+      "longitude": 101.525253,
+      "nearestAnchorId": "tagong",
+      "osmUrl": "https://www.openstreetmap.org/node/12583761045"
+    },
+    {
+      "id": "osm-node-12597957741",
+      "name": "",
+      "nameEn": "",
+      "type": "charging",
+      "latitude": 30.330205,
+      "longitude": 101.458321,
+      "nearestAnchorId": "tagong",
+      "osmUrl": "https://www.openstreetmap.org/node/12597957741"
+    },
+    {
+      "id": "osm-node-12584536357",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 30.329792,
+      "longitude": 101.531984,
+      "nearestAnchorId": "tagong",
+      "osmUrl": "https://www.openstreetmap.org/node/12584536357"
+    },
+    {
+      "id": "osm-way-1359535259",
+      "name": "中国石油信运加油站",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.329905,
+      "longitude": 101.531931,
+      "nearestAnchorId": "tagong",
+      "osmUrl": "https://www.openstreetmap.org/way/1359535259"
+    },
+    {
+      "id": "osm-way-1220271095",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.324219,
+      "longitude": 101.525111,
+      "nearestAnchorId": "tagong",
+      "osmUrl": "https://www.openstreetmap.org/way/1220271095"
+    },
+    {
+      "id": "osm-way-1360550756",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.343116,
+      "longitude": 101.426661,
+      "nearestAnchorId": "tagong",
+      "osmUrl": "https://www.openstreetmap.org/way/1360550756"
+    },
+    {
+      "id": "osm-node-13003613882",
+      "name": "中国石油唐克加油站",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 33.391771,
+      "longitude": 102.483104,
+      "nearestAnchorId": "tangke",
+      "osmUrl": "https://www.openstreetmap.org/node/13003613882"
+    },
+    {
+      "id": "osm-way-380376948",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 31.485211,
+      "longitude": 103.609623,
+      "nearestAnchorId": "wenchuan",
+      "osmUrl": "https://www.openstreetmap.org/way/380376948"
+    },
+    {
+      "id": "osm-way-380377277",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 31.459683,
+      "longitude": 103.563893,
+      "nearestAnchorId": "wenchuan",
+      "osmUrl": "https://www.openstreetmap.org/way/380377277"
+    },
+    {
+      "id": "osm-node-3750365465",
+      "name": "九寨运业",
+      "nameEn": "Jiuzhai Yunye",
+      "type": "fuel",
+      "latitude": 31.441829,
+      "longitude": 103.541377,
+      "nearestAnchorId": "wenchuan",
+      "osmUrl": "https://www.openstreetmap.org/node/3750365465"
+    },
+    {
+      "id": "osm-node-7830213892",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 31.555936,
+      "longitude": 103.472237,
+      "nearestAnchorId": "wenchuan",
+      "osmUrl": "https://www.openstreetmap.org/node/7830213892"
+    },
+    {
+      "id": "osm-node-12909179203",
+      "name": "汶川现代天府医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 31.482903,
+      "longitude": 103.583219,
+      "nearestAnchorId": "wenchuan",
+      "osmUrl": "https://www.openstreetmap.org/node/12909179203"
+    },
+    {
+      "id": "osm-way-1394507610",
+      "name": "汶川县人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 31.471632,
+      "longitude": 103.573702,
+      "nearestAnchorId": "wenchuan",
+      "osmUrl": "https://www.openstreetmap.org/way/1394507610"
+    },
+    {
+      "id": "osm-node-13031183667",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.572882,
+      "longitude": 103.720893,
+      "nearestAnchorId": "wenchuan",
+      "osmUrl": "https://www.openstreetmap.org/node/13031183667"
+    },
+    {
+      "id": "osm-node-11027967793",
+      "name": "卧龙加油站",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 31.058459,
+      "longitude": 103.209015,
+      "nearestAnchorId": "wolong",
+      "osmUrl": "https://www.openstreetmap.org/node/11027967793"
+    },
+    {
+      "id": "osm-node-11027967794",
+      "name": "卧龙LNG站",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 31.058792,
+      "longitude": 103.208851,
+      "nearestAnchorId": "wolong",
+      "osmUrl": "https://www.openstreetmap.org/node/11027967794"
+    },
+    {
+      "id": "osm-way-494047507",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 31.076714,
+      "longitude": 103.313772,
+      "nearestAnchorId": "wolong",
+      "osmUrl": "https://www.openstreetmap.org/way/494047507"
+    },
+    {
+      "id": "osm-way-494047528",
+      "name": "卧龙镇卫生院卫生院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 31.041102,
+      "longitude": 103.195244,
+      "nearestAnchorId": "wolong",
+      "osmUrl": "https://www.openstreetmap.org/way/494047528"
+    },
+    {
+      "id": "osm-way-494047529",
+      "name": "卧龙镇卫生院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 31.041423,
+      "longitude": 103.19532,
+      "nearestAnchorId": "wolong",
+      "osmUrl": "https://www.openstreetmap.org/way/494047529"
+    },
+    {
+      "id": "osm-node-12307392675",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.028296,
+      "longitude": 103.166556,
+      "nearestAnchorId": "wolong",
+      "osmUrl": "https://www.openstreetmap.org/node/12307392675"
+    },
+    {
+      "id": "osm-node-12307392674",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.022767,
+      "longitude": 103.168895,
+      "nearestAnchorId": "wolong",
+      "osmUrl": "https://www.openstreetmap.org/node/12307392674"
+    },
+    {
+      "id": "osm-node-11027969008",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.040174,
+      "longitude": 103.194377,
+      "nearestAnchorId": "wolong",
+      "osmUrl": "https://www.openstreetmap.org/node/11027969008"
+    },
+    {
+      "id": "osm-node-12810803495",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.102077,
+      "longitude": 103.319633,
+      "nearestAnchorId": "wolong",
+      "osmUrl": "https://www.openstreetmap.org/node/12810803495"
+    },
+    {
+      "id": "osm-node-5149620423",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.997019,
+      "longitude": 102.353221,
+      "nearestAnchorId": "xiaojin",
+      "osmUrl": "https://www.openstreetmap.org/node/5149620423"
+    },
+    {
+      "id": "osm-way-1272124382",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 31.01706,
+      "longitude": 102.404739,
+      "nearestAnchorId": "xiaojin",
+      "osmUrl": "https://www.openstreetmap.org/way/1272124382"
+    },
+    {
+      "id": "osm-way-560489661",
+      "name": "小金县人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 31.003774,
+      "longitude": 102.332723,
+      "nearestAnchorId": "xiaojin",
+      "osmUrl": "https://www.openstreetmap.org/way/560489661"
+    },
+    {
+      "id": "osm-node-12378638993",
+      "name": "蔚来换电站",
+      "nameEn": "NIO Power Swap",
+      "type": "charging",
+      "latitude": 30.075007,
+      "longitude": 101.612717,
+      "nearestAnchorId": "xinduqiao",
+      "osmUrl": "https://www.openstreetmap.org/node/12378638993"
+    },
+    {
+      "id": "osm-node-6720641008",
+      "name": "",
+      "nameEn": "China Petro Station",
+      "type": "fuel",
+      "latitude": 30.042128,
+      "longitude": 101.502821,
+      "nearestAnchorId": "xinduqiao",
+      "osmUrl": "https://www.openstreetmap.org/node/6720641008"
+    },
+    {
+      "id": "osm-node-6720641007",
+      "name": "",
+      "nameEn": "Fuel Station",
+      "type": "fuel",
+      "latitude": 30.054687,
+      "longitude": 101.482133,
+      "nearestAnchorId": "xinduqiao",
+      "osmUrl": "https://www.openstreetmap.org/node/6720641007"
+    },
+    {
+      "id": "osm-node-6720641009",
+      "name": "",
+      "nameEn": "U Smile Station",
+      "type": "fuel",
+      "latitude": 30.045359,
+      "longitude": 101.559672,
+      "nearestAnchorId": "xinduqiao",
+      "osmUrl": "https://www.openstreetmap.org/node/6720641009"
+    },
+    {
+      "id": "osm-way-1216809710",
+      "name": "新都桥人民医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.048856,
+      "longitude": 101.49216,
+      "nearestAnchorId": "xinduqiao",
+      "osmUrl": "https://www.openstreetmap.org/way/1216809710"
+    },
+    {
+      "id": "osm-way-1304874650",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.041758,
+      "longitude": 101.259248,
+      "nearestAnchorId": "xinduqiao",
+      "osmUrl": "https://www.openstreetmap.org/way/1304874650"
+    },
+    {
+      "id": "osm-way-1354933310",
+      "name": "南二路社区卫生服务中心",
+      "nameEn": "",
+      "type": "clinic",
+      "latitude": 30.00096,
+      "longitude": 103.000341,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/way/1354933310"
+    },
+    {
+      "id": "osm-way-1164326518",
+      "name": "",
+      "nameEn": "",
+      "type": "clinic",
+      "latitude": 30.018793,
+      "longitude": 102.993306,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/way/1164326518"
+    },
+    {
+      "id": "osm-way-1358121858",
+      "name": "雅安市雨城区华兴街社区卫生服务中心",
+      "nameEn": "",
+      "type": "clinic",
+      "latitude": 29.981372,
+      "longitude": 103.002826,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/way/1358121858"
+    },
+    {
+      "id": "osm-node-5855265389",
+      "name": "昆仑好客",
+      "nameEn": "uSmile",
+      "type": "fuel",
+      "latitude": 30.015498,
+      "longitude": 103.009686,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/node/5855265389"
+    },
+    {
+      "id": "osm-way-1088454540",
+      "name": "CNG加气站",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.000646,
+      "longitude": 102.986309,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/way/1088454540"
+    },
+    {
+      "id": "osm-way-1085591007",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 29.999616,
+      "longitude": 103.022389,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/way/1085591007"
+    },
+    {
+      "id": "osm-node-9144952164",
+      "name": "中国石油",
+      "nameEn": "PetroChina",
+      "type": "fuel",
+      "latitude": 30.037648,
+      "longitude": 103.009446,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/node/9144952164"
+    },
+    {
+      "id": "osm-way-1155287925",
+      "name": "雅安恒博医院(果园路院区)",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 29.99666,
+      "longitude": 102.997441,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/way/1155287925"
+    },
+    {
+      "id": "osm-way-1177886102",
+      "name": "雅安恒博医院(妇产院区)",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 29.994984,
+      "longitude": 103.00435,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/way/1177886102"
+    },
+    {
+      "id": "osm-way-1136695742",
+      "name": "雅安仁康医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 29.994734,
+      "longitude": 103.003106,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/way/1136695742"
+    },
+    {
+      "id": "osm-way-1296318440",
+      "name": "雅安恒博医院(北二路院区)",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 29.994346,
+      "longitude": 103.004492,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/way/1296318440"
+    },
+    {
+      "id": "osm-node-11010969386",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.002735,
+      "longitude": 102.992127,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/node/11010969386"
+    },
+    {
+      "id": "osm-node-10948867108",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 29.997905,
+      "longitude": 103.001971,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/node/10948867108"
+    },
+    {
+      "id": "osm-node-11135971347",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 29.997243,
+      "longitude": 102.996826,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/node/11135971347"
+    },
+    {
+      "id": "osm-way-1155773235",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 29.998776,
+      "longitude": 102.990424,
+      "nearestAnchorId": "yaan",
+      "osmUrl": "https://www.openstreetmap.org/way/1155773235"
+    },
+    {
+      "id": "osm-way-1483884397",
+      "name": "雅道桥加油站",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.042899,
+      "longitude": 101.030901,
+      "nearestAnchorId": "yajiang",
+      "osmUrl": "https://www.openstreetmap.org/way/1483884397"
+    },
+    {
+      "id": "osm-node-5922294685",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 30.038996,
+      "longitude": 100.994215,
+      "nearestAnchorId": "yajiang",
+      "osmUrl": "https://www.openstreetmap.org/node/5922294685"
+    },
+    {
+      "id": "osm-node-11761138149",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.010816,
+      "longitude": 100.951772,
+      "nearestAnchorId": "yajiang",
+      "osmUrl": "https://www.openstreetmap.org/node/11761138149"
+    },
+    {
+      "id": "osm-node-11348215108",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 29.998775,
+      "longitude": 100.871249,
+      "nearestAnchorId": "yajiang",
+      "osmUrl": "https://www.openstreetmap.org/node/11348215108"
+    },
+    {
+      "id": "osm-node-13606057958",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.021195,
+      "longitude": 100.796792,
+      "nearestAnchorId": "yajiang",
+      "osmUrl": "https://www.openstreetmap.org/node/13606057958"
+    },
+    {
+      "id": "osm-way-1030324334",
+      "name": "昆仑好客",
+      "nameEn": "uSmile",
+      "type": "fuel",
+      "latitude": 31.035737,
+      "longitude": 103.469433,
+      "nearestAnchorId": "yingxiu",
+      "osmUrl": "https://www.openstreetmap.org/way/1030324334"
+    },
+    {
+      "id": "osm-node-11044140386",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 31.063214,
+      "longitude": 103.485648,
+      "nearestAnchorId": "yingxiu",
+      "osmUrl": "https://www.openstreetmap.org/node/11044140386"
+    },
+    {
+      "id": "osm-node-11005779274",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.936082,
+      "longitude": 103.422622,
+      "nearestAnchorId": "yingxiu",
+      "osmUrl": "https://www.openstreetmap.org/node/11005779274"
+    },
+    {
+      "id": "osm-node-10959390955",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.934664,
+      "longitude": 103.423271,
+      "nearestAnchorId": "yingxiu",
+      "osmUrl": "https://www.openstreetmap.org/node/10959390955"
+    },
+    {
+      "id": "osm-node-11005779251",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.934624,
+      "longitude": 103.420084,
+      "nearestAnchorId": "yingxiu",
+      "osmUrl": "https://www.openstreetmap.org/node/11005779251"
+    }
+  ]
 }

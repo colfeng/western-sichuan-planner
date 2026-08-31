@@ -1,11 +1,14 @@
 import type { Attraction, Copy, RouteLeg, Vehicle } from "./data.ts";
 import { anchorCoordinates, attractions, c, roadLegs, routeAnchors, strategySuggestions } from "./data.ts";
+import { osmServicePoints } from "./services.ts";
 
 export type Strategy = keyof typeof strategySuggestions;
 export type RoadEvent = { id: string; legIds: string[]; impact: "closed" | "restricted" | "delay"; delayHours?: number; startsAt: string; endsAt: string; title: Copy };
 export type PlannerInput = { days: number; maxDrive: number; priority: Strategy; avoidNight: boolean; autoSuggest: boolean; selectedAttractionIds: string[]; startDate: string; startAnchorId: string; endAnchorId: string; departureTime: string; vehicle: Vehicle; evRangeKm: number; lockOrder: boolean; roadEvents?: RoadEvent[] };
 export type PlanWarning = { code: string; severity: "warn" | "block"; day?: number; message: Copy };
-export type EvDayPlan = { safeBudgetKm: number; usagePercent: number; needsCharge: boolean; chargeAnchorId: string; fallbackAnchorId: string; estimatedChargeMinutes: number };
+export type EvChargeStop = { anchorId: string; legDistanceKm: number; estimatedChargeMinutes: number; chargerCount: number; required: boolean };
+export type EvTravelLeg = { fromAnchorId: string; toAnchorId: string; distanceKm: number };
+export type EvDayPlan = { safeBudgetKm: number; usagePercent: number; status: "ok" | "arrival" | "verify" | "blocked"; chargeStops: EvChargeStop[]; travelLegs: EvTravelLeg[]; destinationTopUpMinutes: number; unresolvedBeforeAnchorId?: string };
 export type DayRouteStep = { legId: string; fromAnchorId: string; toAnchorId: string; road: string; driveHours: number; distanceKm: number };
 export type DayAgendaItem = { kind: "drive" | "visit" | "rest" | "lunch"; startTime: string; endTime: string; anchorId: string; fromAnchorId?: string; toAnchorId?: string; attractionId?: string; road?: string; driveHours?: number; distanceKm?: number };
 export type PlanDay = { day: number; date: string; sunrise: string; sunset: string; daylightHours: number; departureTime: string; estimatedArrivalTime: string; daylightMarginMinutes: number; startAnchorId: string; endAnchorId: string; viaAnchorIds: string[]; routeSteps: DayRouteStep[]; agenda: DayAgendaItem[]; driveHours: number; distanceKm: number; activityHours: number; restHours: number; mealHours: number; dutyHours: number; freeHours: number; sleepAltitude: number; attractionIds: string[]; roads: string[]; legIds: string[]; evPlan?: EvDayPlan };
@@ -17,6 +20,8 @@ type PathResult = { legs: RouteLeg[]; cost: number };
 const attractionById = new Map(attractions.map((item) => [item.id, item]));
 const round = (value: number) => Math.round(value * 10) / 10;
 const unique = <T,>(values: T[]): T[] => [...new Set(values)];
+const planningRoadHours = (edge: RouteLeg) => round(edge.hours * (edge.evSupport === "limited" ? 1.2 : /G4217|G4218|G5|S9/.test(edge.road) ? 1.1 : 1.15));
+const planningDetourHours = (hours: number) => round(hours * 1.15);
 const strategyCopy: Record<Strategy, { title: Copy; subtitle: Copy }> = {
   comfort: { title: c("舒适安全方案", "Comfort-first plan"), subtitle: c("优先控制驾驶、日照窗口、住宿海拔和高强度活动", "Controls driving, daylight, sleeping altitude and demanding activities") },
   scenery: { title: c("景观丰富方案", "Scenery-rich plan"), subtitle: c("在必去景点之外加入少量顺路自然景观", "Adds a small number of en-route landscapes beyond must-sees") },
@@ -45,7 +50,7 @@ function shortestPath(from: string, to: string, input: PlannerInput): PathResult
     if (!current || best === Infinity) break; unvisited.delete(current); if (current === to) break;
     for (const edge of roadLegs) {
       if (closed.has(edge.id)) continue; const next = edge.from === current ? edge.to : edge.to === current ? edge.from : null; if (!next || !unvisited.has(next)) continue;
-      const candidate = best + edge.hours + (delayByLeg.get(edge.id) ?? 0);
+      const candidate = best + planningRoadHours(edge) + (delayByLeg.get(edge.id) ?? 0);
       if (candidate < (distance.get(next) ?? Infinity)) { distance.set(next, candidate); previous.set(next, { node: current, leg: edge.from === current ? edge : { ...edge, from: edge.to, to: edge.from } }); }
     }
   }
@@ -68,10 +73,10 @@ function buildRoute(ids: string[], input: PlannerInput): RouteLeg[] | null {
 function buildTasks(legs: RouteLeg[], attractionIds: string[], startAnchorId: string): Task[] {
   const byAnchor = new Map<string, Attraction[]>(); for (const id of attractionIds) { const item = attractionById.get(id); if (item) byAnchor.set(item.anchorId, [...(byAnchor.get(item.anchorId) ?? []), item]); }
   const visited = new Set<string>([startAnchorId]); const tasks: Task[] = [];
-  for (const item of byAnchor.get(startAnchorId) ?? []) tasks.push({ kind: "visit", fromAnchorId: item.anchorId, toAnchorId: item.anchorId, driveHours: item.detourHours, distanceKm: item.detourKm, activityHours: item.visitHours, attractionId: item.id, effort: item.effort });
+  for (const item of byAnchor.get(startAnchorId) ?? []) tasks.push({ kind: "visit", fromAnchorId: item.anchorId, toAnchorId: item.anchorId, driveHours: planningDetourHours(item.detourHours), distanceKm: item.detourKm, activityHours: item.visitHours, attractionId: item.id, effort: item.effort });
   for (const routeLeg of legs) {
-    tasks.push({ kind: "travel", fromAnchorId: routeLeg.from, toAnchorId: routeLeg.to, driveHours: routeLeg.hours, distanceKm: routeLeg.km, activityHours: 0, road: routeLeg.road, legId: routeLeg.id, evLimited: routeLeg.evSupport === "limited" });
-    if (!visited.has(routeLeg.to)) { for (const item of byAnchor.get(routeLeg.to) ?? []) tasks.push({ kind: "visit", fromAnchorId: item.anchorId, toAnchorId: item.anchorId, driveHours: item.detourHours, distanceKm: item.detourKm, activityHours: item.visitHours, attractionId: item.id, effort: item.effort }); visited.add(routeLeg.to); }
+    tasks.push({ kind: "travel", fromAnchorId: routeLeg.from, toAnchorId: routeLeg.to, driveHours: planningRoadHours(routeLeg), distanceKm: routeLeg.km, activityHours: 0, road: routeLeg.road, legId: routeLeg.id, evLimited: routeLeg.evSupport === "limited" });
+    if (!visited.has(routeLeg.to)) { for (const item of byAnchor.get(routeLeg.to) ?? []) tasks.push({ kind: "visit", fromAnchorId: item.anchorId, toAnchorId: item.anchorId, driveHours: planningDetourHours(item.detourHours), distanceKm: item.detourKm, activityHours: item.visitHours, attractionId: item.id, effort: item.effort }); visited.add(routeLeg.to); }
   }
   return tasks;
 }
@@ -83,6 +88,39 @@ function plannedBreaks(driveHours: number, activityHours: number) {
   const baseRestHours = driveHours >= 1.5 ? Math.max(1, Math.floor(driveHours / 2)) * 0.25 : 0;
   const restHours = Math.max(0, baseRestHours - (mealHours > 0 ? 0.25 : 0));
   return { restHours, mealHours };
+}
+function evPlanFrom(value: ReturnType<typeof summarize>, input: PlannerInput): EvDayPlan {
+  const safeBudgetKm = Math.floor(input.evRangeKm * 0.65);
+  const usagePercent = Math.round(value.distanceKm / Math.max(1, safeBudgetKm) * 100);
+  const nodes: Array<{ anchorId: string; distanceKm: number }> = [{ anchorId: value.startAnchorId, distanceKm: 0 }];
+  let cumulative = 0;
+  for (const step of value.routeSteps) { cumulative += step.distanceKm; nodes.push({ anchorId: step.toAnchorId, distanceKm: cumulative }); }
+  if (nodes.length === 1 || nodes.at(-1)!.anchorId !== value.endAnchorId) nodes.push({ anchorId: value.endAnchorId, distanceKm: cumulative });
+  const totalKm = Math.max(value.distanceKm, cumulative);
+  const chargeStops: EvChargeStop[] = [];
+  const travelLegs: EvTravelLeg[] = [];
+  let startIndex = 0;
+  let startDistance = 0;
+  while (totalKm - startDistance > safeBudgetKm) {
+    let candidateIndex = -1;
+    for (let index = startIndex + 1; index < nodes.length - 1; index += 1) {
+      if (nodes[index].distanceKm - startDistance <= safeBudgetKm && routeAnchors[nodes[index].anchorId]?.canStay) candidateIndex = index;
+    }
+    if (candidateIndex < 0) {
+      const next = nodes.find((node) => node.distanceKm > startDistance + safeBudgetKm);
+      return { safeBudgetKm, usagePercent, status: "blocked", chargeStops, travelLegs, destinationTopUpMinutes: 0, unresolvedBeforeAnchorId: next?.anchorId ?? value.endAnchorId };
+    }
+    const stop = nodes[candidateIndex]; const legDistanceKm = Math.round(stop.distanceKm - startDistance);
+    travelLegs.push({ fromAnchorId: nodes[startIndex].anchorId, toAnchorId: stop.anchorId, distanceKm: legDistanceKm });
+    const chargerCount = osmServicePoints.filter((point) => point.anchorId === stop.anchorId && point.types.includes("charging")).length;
+    chargeStops.push({ anchorId: stop.anchorId, legDistanceKm, estimatedChargeMinutes: Math.max(20, Math.ceil(legDistanceKm * 0.22 / 10) * 10), chargerCount, required: true });
+    startIndex = candidateIndex; startDistance = stop.distanceKm;
+  }
+  const finalDistance = Math.round(totalKm - startDistance);
+  travelLegs.push({ fromAnchorId: nodes[startIndex].anchorId, toAnchorId: value.endAnchorId, distanceKm: finalDistance });
+  const destinationTopUpMinutes = finalDistance >= safeBudgetKm * 0.55 ? Math.max(20, Math.ceil(finalDistance * 0.22 / 10) * 10) : 0;
+  const status = chargeStops.length > 0 ? (chargeStops.every((stop) => stop.chargerCount > 0) ? "ok" : "verify") : destinationTopUpMinutes > 0 ? "arrival" : "ok";
+  return { safeBudgetKm, usagePercent, status, chargeStops, travelLegs, destinationTopUpMinutes };
 }
 function agendaFrom(tasks: Task[], segment: Segment, input: PlannerInput, restHours: number, mealHours: number): DayAgendaItem[] {
   const agenda: DayAgendaItem[] = []; const slice = tasks.slice(segment.start, segment.end); let current = timeToHours(input.departureTime); let restRemaining = restHours; let lunchRemaining = mealHours; let driveSinceRest = 0; let currentAnchor = slice[0]?.fromAnchorId ?? input.startAnchorId;
@@ -135,7 +173,7 @@ function partition(tasks: Task[], input: PlannerInput, strategy: Strategy): Segm
 }
 function scheduleFrom(tasks: Task[], segments: Segment[], input: PlannerInput): PlanDay[] {
   return segments.map((segment, index) => {
-    const value = summarize(tasks, segment.start, segment.end); const date = addDays(input.startDate, index); const coordinate = anchorCoordinates[value.endAnchorId]; const light = daylight(date, coordinate.latitude, coordinate.longitude); const breaks = plannedBreaks(value.driveHours, value.activityHours); const dutyHours = round(value.driveHours + value.activityHours + breaks.restHours + breaks.mealHours); const safeSunset = timeToHours(light.sunset) - 0.5; const availableHours = input.avoidNight ? Math.max(0, safeSunset - timeToHours(input.departureTime)) : 10.5; const agenda = agendaFrom(tasks, segment, input, breaks.restHours, breaks.mealHours); const estimatedArrivalTime = agenda.at(-1)?.endTime ?? hoursToTime(timeToHours(input.departureTime) + dutyHours); const arrivalHours = timeToHours(estimatedArrivalTime); const safeBudgetKm = Math.floor(input.evRangeKm * 0.65); const usagePercent = Math.round(value.distanceKm / Math.max(1, safeBudgetKm) * 100); const previousStay = [...value.viaAnchorIds].reverse().find((id) => routeAnchors[id]?.canStay && id !== value.endAnchorId) ?? value.startAnchorId; const evPlan = input.vehicle === "ev" ? { safeBudgetKm, usagePercent, needsCharge: usagePercent >= 55 || value.hasLimitedEvLeg, chargeAnchorId: value.endAnchorId, fallbackAnchorId: previousStay, estimatedChargeMinutes: Math.max(20, Math.ceil(value.distanceKm * 0.22 / 60 * 6) * 10) } : undefined;
+    const value = summarize(tasks, segment.start, segment.end); const date = addDays(input.startDate, index); const coordinate = anchorCoordinates[value.endAnchorId]; const light = daylight(date, coordinate.latitude, coordinate.longitude); const breaks = plannedBreaks(value.driveHours, value.activityHours); const dutyHours = round(value.driveHours + value.activityHours + breaks.restHours + breaks.mealHours); const safeSunset = timeToHours(light.sunset) - 0.5; const availableHours = input.avoidNight ? Math.max(0, safeSunset - timeToHours(input.departureTime)) : 10.5; const agenda = agendaFrom(tasks, segment, input, breaks.restHours, breaks.mealHours); const estimatedArrivalTime = agenda.at(-1)?.endTime ?? hoursToTime(timeToHours(input.departureTime) + dutyHours); const arrivalHours = timeToHours(estimatedArrivalTime); const evPlan = input.vehicle === "ev" ? evPlanFrom(value, input) : undefined;
     return { day: index + 1, date, sunrise: light.sunrise, sunset: light.sunset, daylightHours: light.hours, departureTime: input.departureTime, estimatedArrivalTime, daylightMarginMinutes: Math.round((safeSunset - arrivalHours) * 60), startAnchorId: value.startAnchorId, endAnchorId: value.endAnchorId, viaAnchorIds: value.viaAnchorIds, routeSteps: value.routeSteps, agenda, driveHours: round(value.driveHours), distanceKm: Math.round(value.distanceKm), activityHours: round(value.activityHours), restHours: breaks.restHours, mealHours: breaks.mealHours, dutyHours, freeHours: round(Math.max(0, availableHours - dutyHours)), sleepAltitude: routeAnchors[value.endAnchorId].altitude, attractionIds: value.attractionIds, roads: value.roads, legIds: value.legIds, ...(evPlan ? { evPlan } : {}) };
   });
 }
@@ -147,7 +185,8 @@ function warningsFor(schedule: PlanDay[], input: PlannerInput): PlanWarning[] {
     if (day.dutyHours > limit + 0.05) warnings.push({ code: `light-${day.day}`, severity: "block", day: day.day, message: c(`第${day.day}天预计${day.estimatedArrivalTime}完成，超过日落前30分钟的保守窗口。`, `Day ${day.day} is estimated to finish at ${day.estimatedArrivalTime}, beyond the conservative 30-minute pre-sunset margin.`) });
     if (timeToHours(input.departureTime) < timeToHours(day.sunrise) - 0.25) warnings.push({ code: `early-${day.day}`, severity: "warn", day: day.day, message: c(`第${day.day}天${input.departureTime}出发早于估算日出${day.sunrise}。`, `Day ${day.day} departs at ${input.departureTime}, before the estimated ${day.sunrise} sunrise.`) });
     if (day.day === 1 && routeAnchors[input.startAnchorId].altitude < 2000 && day.sleepAltitude > 2800) warnings.push({ code: "first-night", severity: "block", day: 1, message: c("从低海拔起点出发，第一晚直接住到2800米以上，建议增加低海拔过渡夜。", "Starting low and sleeping above 2,800 m on the first night calls for a lower-altitude transition night.") }); else if (gain > 1500 && day.sleepAltitude > 2600) warnings.push({ code: `gain-${day.day}`, severity: "warn", day: day.day, message: c(`第${day.day}天住宿海拔上升约${gain}米。`, `Sleeping altitude rises by about ${gain} m on day ${day.day}.`) });
-    if (input.vehicle === "ev" && day.distanceKm > input.evRangeKm * 0.65) warnings.push({ code: `ev-${day.day}`, severity: "warn", day: day.day, message: c(`第${day.day}天基线里程达到续航的65%以上，必须另用合规导航核验充电站和冬季续航。`, `Day ${day.day} exceeds 65% of stated range; verify chargers and winter range in a licensed navigation service.`) });
+    if (input.vehicle === "ev" && day.evPlan?.status === "blocked") warnings.push({ code: `ev-${day.day}`, severity: "block", day: day.day, message: c(`第${day.day}天在保守续航内找不到可落脚的途中补能节点，当前方案不可直接执行。`, `Day ${day.day} has no reachable en-route charging node within the conservative budget and must not be used as-is.`) });
+    else if (input.vehicle === "ev" && day.evPlan?.status === "verify") warnings.push({ code: `ev-${day.day}`, severity: "warn", day: day.day, message: c(`第${day.day}天需要途中补能，但每周开放地图快照尚未核验到全部充电点；出发前必须用运营商或合规导航确认。`, `Day ${day.day} requires en-route charging, but the weekly open-map snapshot has not verified every stop; confirm with the operator or a licensed navigation service.`) });
     for (const id of day.attractionIds) { const item = attractionById.get(id); if (item?.bestMonths?.length && !item.bestMonths.includes(month)) warnings.push({ code: `season-${id}`, severity: "warn", day: day.day, message: c(`${item.name.zh}不在种子数据标注的推荐月份内；这不是闭园判断，请查官方公告。`, `${item.name.en} is outside the seed-data preferred months. This is not a closure determination; check the official notice.`) }); if (item?.effort === "high") warnings.push({ code: `effort-${id}`, severity: "warn", day: day.day, message: c(`${item.name.zh}属于高海拔或高强度项目。`, `${item.name.en} is a high-altitude or demanding activity.`) }); }
   }
   for (const event of activeEvents(input)) warnings.push({ code: `event-${event.id}`, severity: "warn", message: c(`审核道路公告已参与计算：${event.title.zh}`, `Reviewed road notice applied: ${event.title.en}`) }); return warnings;

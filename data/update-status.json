@@ -1,7 +1,43 @@
 {
   "schemaVersion": 1,
-  "lastAttemptAt": "2026-08-30T00:00:00+00:00",
-  "successfulSources": 0,
-  "totalSources": 6,
-  "sourceResults": []
+  "lastAttemptAt": "2026-08-31T02:50:46+00:00",
+  "successfulSources": 5,
+  "totalSources": 7,
+  "sourceResults": [
+    {
+      "sourceId": "ganzi-transport",
+      "ok": false,
+      "error": "The read operation timed out"
+    },
+    {
+      "sourceId": "aba-government",
+      "ok": true,
+      "candidateCount": 0
+    },
+    {
+      "sourceId": "jiuzhaigou-notices",
+      "ok": true,
+      "candidateCount": 16
+    },
+    {
+      "sourceId": "huanglong-official",
+      "ok": true,
+      "candidateCount": 0
+    },
+    {
+      "sourceId": "daocheng-notices",
+      "ok": false,
+      "error": "The read operation timed out"
+    },
+    {
+      "sourceId": "aba-attractions",
+      "ok": true,
+      "candidateCount": 0
+    },
+    {
+      "sourceId": "openstreetmap-services",
+      "ok": true,
+      "candidateCount": 208
+    }
+  ]
 }

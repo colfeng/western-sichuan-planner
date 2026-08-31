@@ -51,6 +51,7 @@ import type { PlannerInput, Strategy } from "./planner";
 import { buildPlanOptions, getAttraction, getReturnDate } from "./planner";
 import reviewedRoadEvents from "../data/reviewed-road-events.json";
 import updateStatus from "../data/update-status.json";
+import pendingUpdates from "../data/pending-updates.json";
 import "./styles.css";
 
 const text = (copy: Copy, locale: Locale) => copy[locale];
@@ -83,8 +84,8 @@ const ui = {
     support: "支持项目",
     eyebrow: `${attractions.length}个可选停留 · 多走廊道路图 · 中英双语`,
     heading: "由你选择想看的地方，规划器负责判断怎样走得完。",
-    intro: "路线网已覆盖红原、若尔盖、九寨沟、黄龙、黑水、阿坝县、莲宝叶则及川西南部走廊。规划器根据任意起终点、日期日照、驾驶上限、游玩时长、海拔和住宿节点动态连线。",
-    updated: "V0.6.3道路基线校准 · 规划基线并非实时导航",
+    intro: "路线网已覆盖红原、若尔盖、九寨沟、黄龙、莲宝叶则及雅江—理塘—稻城亚丁走廊。规划器根据任意起终点、日期日照、驾驶上限、游玩时长、海拔和住宿节点动态连线。",
+    updated: "V0.7.0稻城亚丁走廊 · 驾驶时间含保守规划余量",
     controls: "设定旅行约束",
     days: "旅行天数",
     dates: "出发 / 返程",
@@ -137,7 +138,7 @@ const ui = {
     minimumDays: "按当前必去景点，建议至少增加到",
     dayUnit: "天",
     allGood: "当前日程满足你的驾驶上限与日照窗口；出发前仍须复核天气和正式导航。",
-    pureDrive: "纯驾驶",
+    pureDrive: "规划驾驶",
     activities: "游玩",
     plannedBreak: "休息",
     mealBreak: "用餐",
@@ -164,8 +165,11 @@ const ui = {
     evTitle: "电动车当天补能计划",
     evSafeBudget: "保守里程预算",
     evUsage: "预计使用",
-    evCharge: "建议在到达后补能",
-    evFallback: "若充电站不可用，备用住宿/补能节点",
+    evCharge: "到达后建议补能",
+    evRequired: "途中必须补能",
+    evLegs: "当天电量分段",
+    evStopUnverified: "周快照未核验到具体充电站，必须先用运营商或合规导航确认",
+    evBlocked: "保守续航内没有可落脚的途中补能节点，本日方案不可直接执行",
     evEstimate: "按高原20–22 kWh/100km、有效60kW粗估",
     osmEmpty: "开放地图设施快照尚未返回具体点位，先用高德实时核验。",
     osmUpdated: serviceSnapshot.updatedAt ? `开放地图设施快照：${serviceSnapshot.updatedAt.slice(0, 10)}，共${serviceSnapshot.count}个点位` : "开放地图设施快照等待首次周更新",
@@ -173,7 +177,7 @@ const ui = {
     suggestedStop: "建议",
     selectedStop: "必去",
     agendaTitle: "当天时间表（估算）",
-    agendaIntro: "早餐和晚餐位于行车窗口外；午餐、途中休息已计入当天总时长。",
+    agendaIntro: "驾驶时间已加入道路规划余量；午餐和途中休息已计入当天总时长。",
     breakfast: "早餐",
     breakfastHint: "在住宿地附近完成早餐，并在计划出发前预留装车和检查车辆时间。",
     morning: "上午",
@@ -190,7 +194,7 @@ const ui = {
     dayReasonAltitude: "控制住宿海拔变化，并把高强度活动与长驾驶拆开。",
     dayReasonDrive: "按连续行车90–120分钟安排正规休息，不用压缩休息追回时间。",
     disclaimerTitle: "规划结果不是通行承诺",
-    disclaimer: "里程和时间是用于比较方案的基线估计，并非实时导航。出发前24小时必须再次核对交警公告、天气、景区开放状态和正式导航；遇暴雨、浓雾或地灾预警时删减活动。",
+    disclaimer: "本站只整合公开信息并提供规划参考，不承诺道路通行、景区开放、充电设施可用或行程安全；自动抓取可能延迟、遗漏或解析错误。购票和出发前24小时必须以景区、交警、应急部门当日公告及正式导航再次核验。此提示不能排除依法不得免除的责任。",
     sourceTitle: "规划数据要能回到官方来源",
     sourceIntro: "同一个每周任务检查道路与景区官方入口，并更新开放地图中的加油、充电、厕所和医疗设施快照。公告会自动给出道路分段与影响候选，但未经人工审核不会改变路线。",
     humanReview: "人工确认后生效",
@@ -210,6 +214,8 @@ const ui = {
     bestMonths: "推荐月份",
     details: "查看资料详情",
     opening: "开放说明",
+    weeklyOpening: "每周发现的官方更新",
+    weeklyOpeningPending: "自动发现，尚未人工审核，不直接等同于当前开放状态",
     checkedOn: "最后核验",
     sourceLink: "官方来源",
     close: "关闭",
@@ -228,8 +234,8 @@ const ui = {
     support: "Support",
     eyebrow: `${attractions.length} selectable stops · Multi-corridor graph · Bilingual`,
     heading: "Choose what you want to see. Let the planner decide what can actually fit.",
-    intro: "The graph now covers Hongyuan, Ruoergai, Jiuzhaigou, Huanglong, Heishui, Ngawa County, Lianbaoyeze and the southern corridors. Any start/end, dates, daylight, driving caps, visit time, altitude and overnight nodes affect the route.",
-    updated: "V0.6.3 road-baseline calibration · Planning baseline, not live navigation",
+    intro: "The graph covers Hongyuan, Ruoergai, Jiuzhaigou, Huanglong, Lianbaoyeze and the Yajiang–Litang–Daocheng Yading corridor. Start/end points, dates, daylight, driving caps, visit time, altitude and overnight nodes all affect the route.",
+    updated: "V0.7.0 Daocheng Yading corridor · Conservative driving-time margins",
     controls: "Set trip constraints",
     days: "Trip length",
     dates: "Departure / return",
@@ -282,7 +288,7 @@ const ui = {
     minimumDays: "For the current must-sees, allow at least",
     dayUnit: "days",
     allGood: "This schedule fits your driving cap and daylight window. Recheck weather and formal navigation before departure.",
-    pureDrive: "Driving",
+    pureDrive: "Planned driving",
     activities: "Activities",
     plannedBreak: "Rest",
     mealBreak: "Meals",
@@ -309,8 +315,11 @@ const ui = {
     evTitle: "Daily EV charging plan",
     evSafeBudget: "Conservative distance budget",
     evUsage: "Planned use",
-    evCharge: "Top up after arrival",
-    evFallback: "Fallback overnight/charging node if unavailable",
+    evCharge: "Suggested top-up after arrival",
+    evRequired: "Required en-route charge",
+    evLegs: "Day's battery legs",
+    evStopUnverified: "No specific charger is verified in the weekly snapshot; confirm first with the operator or a licensed navigation service",
+    evBlocked: "No reachable en-route charging node fits the conservative range; do not use this day plan as-is",
     evEstimate: "Rough estimate at 20–22 kWh/100 km and an effective 60 kW",
     osmEmpty: "The open-map facility snapshot has no returned points yet; verify live in Amap.",
     osmUpdated: serviceSnapshot.updatedAt ? `Open-map snapshot: ${serviceSnapshot.updatedAt.slice(0, 10)}, ${serviceSnapshot.count} points` : "Open-map facility snapshot awaits its first weekly refresh",
@@ -318,7 +327,7 @@ const ui = {
     suggestedStop: "Suggested",
     selectedStop: "Must-see",
     agendaTitle: "Estimated day timeline",
-    agendaIntro: "Breakfast and dinner sit outside the driving window; lunch and road rests are included in the day's total time.",
+    agendaIntro: "Driving includes a road-planning margin; lunch and road rests are included in the day's total time.",
     breakfast: "Breakfast",
     breakfastHint: "Eat near the overnight area and leave time for loading and a vehicle check before departure.",
     morning: "Morning",
@@ -335,7 +344,7 @@ const ui = {
     dayReasonAltitude: "Controls sleeping-altitude changes and separates demanding activities from long drives.",
     dayReasonDrive: "Plan a formal stop every 90–120 minutes; never recover time by cutting rest.",
     disclaimerTitle: "A plan is not a promise that the road is open",
-    disclaimer: "Distance and time are comparison baselines, not live navigation. Within 24 hours of departure, recheck police notices, weather, attraction status and formal navigation. Drop activities during heavy rain, dense fog or geohazard alerts.",
+    disclaimer: "This site only organizes public information and offers planning guidance. It does not promise road access, attraction opening, charger availability or trip safety; automated checks can be delayed, incomplete or wrong. Recheck same-day park, police and emergency notices and formal navigation before booking and within 24 hours of departure. This notice cannot exclude liability that the law does not allow to be excluded.",
     sourceTitle: "Planning data should trace back to official sources",
     sourceIntro: "One weekly job checks official road and attraction sources and refreshes open-map fuel, charging, toilet and medical facilities. Notices receive suggested road segments and impacts, but never change routes before human review.",
     humanReview: "Active after human review",
@@ -355,6 +364,8 @@ const ui = {
     bestMonths: "Best months",
     details: "Open data details",
     opening: "Opening note",
+    weeklyOpening: "Official update found by the weekly check",
+    weeklyOpeningPending: "Automatically discovered and not human-reviewed; this is not by itself a current open/closed status",
     checkedOn: "Last reviewed",
     sourceLink: "Official source",
     close: "Close",
@@ -366,13 +377,21 @@ const ui = {
   },
 };
 
-const regionFilters: Array<"all" | RegionId> = ["all", "gateway", "aba", "maerkang", "heishui", "grassland", "jiuzhai", "danba", "kangding", "return"];
+const regionFilters: Array<"all" | RegionId> = ["all", "gateway", "aba", "maerkang", "heishui", "grassland", "jiuzhai", "danba", "kangding", "daocheng", "return"];
 const themeFilters: Array<"all" | Theme> = ["all", "scenery", "culture", "wildlife", "hiking", "rest"];
 const shiftTime = (value: string, hours: number) => {
   const [hour, minute] = value.split(":").map(Number); const total = (hour * 60 + minute + Math.round(hours * 60) + 1440) % 1440;
   return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 };
 const isMorning = (value: string) => Number(value.slice(0, 2)) < 12;
+const agendaDuration = (start: string, end: string) => {
+  const minutes = (value: string) => Number(value.slice(0, 2)) * 60 + Number(value.slice(3, 5));
+  return Math.round(((minutes(end) - minutes(start) + 1440) % 1440) / 6) / 10;
+};
+type PendingAttractionUpdate = { sourceId: string; candidateType: string; titleZh: string; url: string; discoveredAt?: string; reviewStatus?: string; suggestedStatus?: "closed" | "reopened" | "reservation" | "notice" };
+const attractionUpdates = pendingUpdates as PendingAttractionUpdate[];
+const updateSourceFor = (url: string) => url.includes("jiuzhai.com") ? "jiuzhaigou-notices" : url.includes("huanglong.com") ? "huanglong-official" : url.includes("daocheng.gov.cn") ? "daocheng-notices" : url.includes("sgns.cn") ? "siguniang-notices" : null;
+const updatePriority = (item: PendingAttractionUpdate) => ({ closed: 4, reopened: 3, reservation: 2, notice: 1 }[item.suggestedStatus ?? "notice"] * 1000 + item.titleZh.length);
 
 function loadInitialInput(): PlannerInput {
   try {
@@ -488,6 +507,7 @@ function App() {
   };
 
   const detailAttraction = detailAttractionId ? getAttraction(detailAttractionId) : undefined;
+  const detailWeeklyUpdate = detailAttraction ? attractionUpdates.filter((item) => item.candidateType === "attraction" && item.sourceId === updateSourceFor(detailAttraction.sourceUrl)).sort((left, right) => updatePriority(right) - updatePriority(left))[0] : undefined;
   const overnightAnchors = Object.values(routeAnchors).filter((anchor) => anchor.canStay);
 
   return (
@@ -838,6 +858,9 @@ function App() {
                         </div>
                         {day.agenda.map((item, index) => {
                           const attraction = item.attractionId ? getAttraction(item.attractionId) : undefined;
+                          const splitVisit = Boolean(item.attractionId && day.agenda.filter((candidate) => candidate.attractionId === item.attractionId).length > 1);
+                          const firstVisitSegment = !item.attractionId || day.agenda.findIndex((candidate) => candidate.attractionId === item.attractionId) === index;
+                          const segmentHours = agendaDuration(item.startTime, item.endTime);
                           const phase = item.kind === "lunch" ? copy.lunchBlock : isMorning(item.startTime) ? copy.morning : copy.afternoon;
                           const kind = item.kind === "drive" ? copy.driveBlock : item.kind === "visit" ? copy.visitBlock : item.kind === "rest" ? copy.restBlock : copy.lunchBlock;
                           const title = item.kind === "drive" && item.fromAnchorId && item.toAnchorId
@@ -847,7 +870,9 @@ function App() {
                           const detail = item.kind === "drive"
                             ? `${item.road} · ${item.distanceKm}km · ${item.driveHours}h`
                             : item.kind === "visit" && attraction
-                              ? `${locale === "zh" ? "游玩" : "Visit"} ${attraction.visitHours}h${attraction.detourHours > 0 ? ` · ${locale === "zh" ? "含支线往返驾驶" : "branch driving"} ${attraction.detourHours}h` : ""}`
+                              ? splitVisit
+                                ? `${locale === "zh" ? (firstVisitSegment ? "本段安排" : "午餐后继续") : (firstVisitSegment ? "This segment" : "Continue after lunch")} ${segmentHours}h · ${locale === "zh" ? "全天游玩合计" : "full-day visit total"} ${attraction.visitHours}h${firstVisitSegment && attraction.detourHours > 0 ? ` · ${locale === "zh" ? "另含支线驾驶" : "plus branch driving"} ${attraction.detourHours}h` : ""}`
+                                : `${locale === "zh" ? "游玩" : "Visit"} ${attraction.visitHours}h${attraction.detourHours > 0 ? ` · ${locale === "zh" ? "含支线往返驾驶" : "branch driving"} ${attraction.detourHours}h` : ""}`
                               : item.kind === "rest"
                                 ? (locale === "zh" ? "进入正规服务区或停车区休息，不在路肩停车。" : "Use a formal service or parking area; never stop on the shoulder.")
                                 : copy.lunchHint;
@@ -890,11 +915,19 @@ function App() {
                       </article>
                     </div>
 
-                    {day.evPlan && <section className="ev-day-plan">
+                    {day.evPlan && <section className={`ev-day-plan ev-${day.evPlan.status}`}>
                       <div className="ev-title"><BatteryCharging size={20} /><div><b>{copy.evTitle}</b><small>{copy.evEstimate}</small></div></div>
-                      <div className="ev-numbers"><span><b>{day.evPlan.safeBudgetKm} km</b><small>{copy.evSafeBudget}</small></span><span><b>{day.evPlan.usagePercent}%</b><small>{copy.evUsage}</small></span><span><b>{day.evPlan.estimatedChargeMinutes} min</b><small>{copy.evCharge} · {text(routeAnchors[day.evPlan.chargeAnchorId].name, locale)}</small></span></div>
+                      <div className="ev-numbers"><span><b>{day.evPlan.safeBudgetKm} km</b><small>{copy.evSafeBudget}</small></span><span><b>{day.evPlan.usagePercent}%</b><small>{copy.evUsage}</small></span><span><b>{day.evPlan.chargeStops.length} {locale === "zh" ? "次" : day.evPlan.chargeStops.length === 1 ? "stop" : "stops"}</b><small>{day.evPlan.chargeStops.length > 0 ? copy.evRequired : copy.evCharge}</small></span></div>
                       <div className="ev-meter"><i style={{ width: `${Math.min(100, day.evPlan.usagePercent)}%` }} /></div>
-                      <p><AlertTriangle size={14} />{copy.evFallback}：<b>{text(routeAnchors[day.evPlan.fallbackAnchorId].name, locale)}</b>。{nearbyServices.filter((point) => point.types.includes("charging")).length === 0 && copy.osmEmpty}</p>
+                      <b className="ev-leg-title">{copy.evLegs}</b>
+                      <ol className="ev-leg-list">{day.evPlan.travelLegs.map((leg, legIndex) => {
+                        const stop = day.evPlan!.chargeStops[legIndex];
+                        return <li key={`${leg.fromAnchorId}-${leg.toAnchorId}-${legIndex}`}><span>{text(routeAnchors[leg.fromAnchorId].name, locale)} → {text(routeAnchors[leg.toAnchorId].name, locale)} · {leg.distanceKm}km</span>{stop && <small><BatteryCharging size={13} />{copy.evRequired}：<a href={amapSearchUrl(stop.anchorId, locale === "zh" ? "充电站" : "charging station")} target="_blank" rel="noreferrer">{text(routeAnchors[stop.anchorId].name, locale)}</a> · {stop.estimatedChargeMinutes}min{stop.chargerCount > 0 ? ` · ${locale === "zh" ? `周快照${stop.chargerCount}个候选` : `${stop.chargerCount} weekly-snapshot candidate(s)`}` : ` · ${copy.evStopUnverified}`}</small>}</li>;
+                      })}</ol>
+                      {day.evPlan.destinationTopUpMinutes > 0 && <p><BatteryCharging size={14} />{copy.evCharge}：<b>{text(routeAnchors[day.endAnchorId].name, locale)}</b> · {day.evPlan.destinationTopUpMinutes}min；{locale === "zh" ? "这不是当天唯一一次充电，途中必充点见上方。" : "This is not the day's only charge; required en-route stops are listed above."}</p>}
+                      {day.evPlan.status === "blocked" && <p className="ev-blocked"><AlertTriangle size={14} />{copy.evBlocked}：{text(routeAnchors[day.evPlan.unresolvedBeforeAnchorId ?? day.endAnchorId].name, locale)}</p>}
+                      {day.evPlan.status === "verify" && <p><AlertTriangle size={14} />{copy.evStopUnverified}。</p>}
+                      {day.evPlan.chargeStops.length === 0 && day.evPlan.destinationTopUpMinutes === 0 && <p><ShieldCheck size={14} />{locale === "zh" ? "本日不需要途中补能；仍应满电或按计划电量出发。" : "No en-route charge is needed today; still depart at the planned state of charge."}</p>}
                     </section>}
 
                     <div className="service-tools">
@@ -965,6 +998,7 @@ function App() {
           <dl className="detail-list">
             <div><dt>{copy.bestMonths}</dt><dd>{detailAttraction.bestMonths.join(" / ")}</dd></div>
             <div><dt>{copy.opening}</dt><dd>{text(detailAttraction.opening, locale)}</dd></div>
+            {detailWeeklyUpdate && <div><dt>{copy.weeklyOpening}</dt><dd><a href={detailWeeklyUpdate.url} target="_blank" rel="noreferrer">{detailWeeklyUpdate.titleZh}<ExternalLink size={13} /></a><small className="weekly-opening-note">{detailWeeklyUpdate.discoveredAt?.slice(0, 10)} · {copy.weeklyOpeningPending}</small></dd></div>}
             {detailAttraction.reservation && <div><dt>{copy.reservation}</dt><dd>{text(detailAttraction.reservation, locale)}</dd></div>}
             <div><dt>{copy.checkedOn}</dt><dd>{detailAttraction.verifiedOn}</dd></div>
           </dl>
@@ -973,7 +1007,7 @@ function App() {
         </section>
       </div>}
 
-      <footer><span>{copy.footer}</span><span>v0.6.3 · 2026</span></footer>
+      <footer><span>{copy.footer}</span><span>v0.7.0 · 2026</span></footer>
     </div>
   );
 }

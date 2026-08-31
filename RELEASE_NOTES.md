@@ -1,5 +1,20 @@
 # Release notes
 
+## V0.7.0 — executable timelines, EV legs, and Daocheng Yading
+
+- A visit split by lunch now shows the duration of each timeline segment and the
+  attraction's single full-day total, so it can no longer look like two complete visits.
+- EV cards list each battery leg and every required charging town. Days with no
+  reachable charging node are blocked; unverified charger candidates are labelled.
+- Displayed driving time now adds a 10–20% planning margin by road type before
+  meal and rest breaks.
+- Weekly attraction checks can deploy display-only official-update links with an
+  explicit unreviewed/not-real-time label. They never alter route feasibility.
+- Added the Yajiang–Litang–Daocheng–Shangri-La Town–Yading corridor and eight
+  officially sourced Daocheng-area stops, bringing the catalogue to 123.
+- The information-use notice now covers crawler delay, charger availability and
+  non-excludable legal responsibility.
+
 ## V0.6.3 — road-baseline calibration
 
 - Recalibrated the simplified road graph against published G4217, G4218, G544, G0615 and related corridor mileages available on 2026-08-31.

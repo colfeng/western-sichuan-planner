@@ -3,7 +3,7 @@ export type Locale = "zh" | "en";
 export type Copy = { zh: string; en: string };
 export type Theme = "scenery" | "culture" | "wildlife" | "hiking" | "rest";
 export type Effort = "low" | "medium" | "high";
-export type RegionId = "gateway" | "aba" | "siguniang" | "maerkang" | "heishui" | "grassland" | "jiuzhai" | "danba" | "kangding" | "return";
+export type RegionId = "gateway" | "aba" | "siguniang" | "maerkang" | "heishui" | "grassland" | "jiuzhai" | "danba" | "kangding" | "daocheng" | "return";
 export type Vehicle = "sedan" | "suv" | "ev";
 
 export type RouteAnchor = {
@@ -42,6 +42,7 @@ export type Attraction = {
   opening: Copy;
   reservation?: Copy;
   verifiedOn: string;
+  updateSourceId?: string;
 };
 
 export type LodgingArea = {
@@ -65,6 +66,7 @@ export const regionNames: Record<RegionId, Copy> = {
   jiuzhai: c("松潘·黄龙·九寨沟", "Songpan · Huanglong · Jiuzhaigou"),
   danba: c("丹巴段", "Danba section"),
   kangding: c("康定环线", "Kangding loop"),
+  daocheng: c("雅江·理塘·稻城亚丁", "Yajiang · Litang · Daocheng Yading"),
   return: c("泸定·雅安返程", "Luding · Ya'an return"),
 };
 
@@ -109,6 +111,11 @@ const anchors: RouteAnchor[] = [
   { id: "bamei", name: c("八美", "Bamei"), altitude: 3500, canStay: true, region: "kangding", latitude: 30.50 },
   { id: "tagong", name: c("塔公", "Tagong"), altitude: 3730, canStay: true, region: "kangding", latitude: 30.32 },
   { id: "xinduqiao", name: c("新都桥", "Xinduqiao"), altitude: 3460, canStay: true, region: "kangding", latitude: 30.04 },
+  { id: "yajiang", name: c("雅江", "Yajiang"), altitude: 2640, canStay: true, region: "daocheng", latitude: 30.03 },
+  { id: "litang", name: c("理塘", "Litang"), altitude: 4010, canStay: true, region: "daocheng", latitude: 30.00 },
+  { id: "sangdui", name: c("桑堆·海子山", "Sangdui · Haizi Mountain"), altitude: 3940, canStay: false, region: "daocheng", latitude: 29.28 },
+  { id: "daocheng", name: c("稻城县城", "Daocheng town"), altitude: 3750, canStay: true, region: "daocheng", latitude: 29.04 },
+  { id: "shangrila", name: c("香格里拉镇", "Shangri-La Town"), altitude: 2900, canStay: true, region: "daocheng", latitude: 28.57 },
   { id: "kangding", name: c("康定", "Kangding"), altitude: 2560, canStay: true, region: "kangding", latitude: 30.05 },
   { id: "luding", name: c("泸定", "Luding"), altitude: 1330, canStay: true, region: "return", latitude: 29.91 },
   { id: "yaan", name: c("雅安", "Ya'an"), altitude: 600, canStay: true, region: "return", latitude: 30.01 },
@@ -143,6 +150,11 @@ export const anchorCoordinates: Record<string, { longitude: number; latitude: nu
   bamei: { longitude: 101.5, latitude: 30.5 },
   tagong: { longitude: 101.54, latitude: 30.32 },
   xinduqiao: { longitude: 101.49, latitude: 30.04 },
+  yajiang: { longitude: 101.014, latitude: 30.032 },
+  litang: { longitude: 100.269, latitude: 29.996 },
+  sangdui: { longitude: 100.112, latitude: 29.278 },
+  daocheng: { longitude: 100.297, latitude: 29.038 },
+  shangrila: { longitude: 100.333, latitude: 28.57 },
   kangding: { longitude: 101.96, latitude: 30.05 },
   luding: { longitude: 102.23, latitude: 29.91 },
   yaan: { longitude: 103.0, latitude: 30.01 },
@@ -185,6 +197,11 @@ export const roadLegs: RouteLeg[] = [
   leg("bm-tg", "bamei", "tagong", 0.7, 35, "G248"),
   leg("tg-xdq", "tagong", "xinduqiao", 1.0, 45, "G248 / G318"),
   leg("xdq-kd", "xinduqiao", "kangding", 1.7, 75, "G318"),
+  leg("xdq-yj", "xinduqiao", "yajiang", 1.6, 70, "G318", "limited"),
+  leg("yj-lt", "yajiang", "litang", 2.6, 135, "G318", "limited"),
+  leg("lt-sd", "litang", "sangdui", 1.7, 100, "G227 / 理亚公路", "limited"),
+  leg("sd-dc", "sangdui", "daocheng", 0.9, 50, "G227 / 理亚公路", "limited"),
+  leg("dc-xgl", "daocheng", "shangrila", 1.6, 75, "G227 / 景区连接线", "limited"),
   leg("kd-ld", "kangding", "luding", 0.7, 40, "G4218 / G318"),
   leg("db-ld", "danba", "luding", 4.0, 200, "S211", "limited"),
   leg("ld-ya", "luding", "yaan", 1.3, 95, "G4218"),
@@ -216,6 +233,7 @@ const attraction = (
     jiuzhai: [4,5,6,7,8,9,10,11],
     danba: [3,4,5,6,7,8,9,10,11],
     kangding: [4,5,6,7,8,9,10,11],
+    daocheng: [4,5,6,7,8,9,10,11],
     return: [3,4,5,6,7,8,9,10,11],
   };
   const publicStop = themes.includes("rest");
@@ -363,6 +381,14 @@ export const attractions: Attraction[] = [
   attraction("jiuzhai-romance-town", "jiuzhaigou", c("九寨千古情小镇", "Jiuzhai Romance Town"), "jiuzhai", ["culture", "rest"], 2.5, 0.3, 12, 2050, "low", c("可作为沟口住宿日晚间文化活动，但演出场次和小镇公共开放须分别核验。", "An evening cultural option near the park entrance; verify show schedules separately from public town access."), ABA_ROAD_SERVICES, { bestMonths: [4,5,6,7,8,9,10,11] }),
   attraction("jiuzhai-cloud-top", "jiuzhaigou", c("九寨云顶旅游度假区", "Jiuzhai Cloud-top Resort"), "jiuzhai", ["scenery", "rest"], 4, 1.2, 55, 2600, "medium", c("属于九寨沟周边支线度假区，不应在九寨沟整日游后继续硬塞。", "A branch resort around Jiuzhaigou that should not be added after a full day in the main park."), ABA_ROAD_SERVICES, { bestMonths: [4,5,6,7,8,9,10,11] }),
   attraction("rigangqiao", "hongyuan", c("日干乔景区", "Rigangqiao Scenic Area"), "grassland", ["scenery", "wildlife"], 3.5, 1, 45, 3450, "medium", c("高原湿地与草原景观，只在允许区域活动，不进入湿地保护腹地。", "A plateau wetland and grassland landscape; remain in permitted areas and outside the protected interior."), ABA_ROAD_SERVICES, { bestMonths: [5,6,7,8,9,10] }),
+  attraction("yading-scenic-area", "shangrila", c("稻城亚丁景区", "Daocheng Yading Scenic Area"), "daocheng", ["scenery", "hiking"], 8, 0, 0, 4100, "high", c("以香格里拉镇住宿区为当天起终点，按完整景区日安排；私家车停在景区规定停车区域，入园后交通、徒步线路和高海拔区域开放均以当日公告为准。", "Use Shangri-La Town as the day's start and finish and allow a full park day. Leave the private car in designated parking; internal transport, hiking routes and high-altitude access follow the same-day notice."), "https://www.daocheng.gov.cn/yb_tpjj/article/653697", { bestMonths: [4,5,6,7,8,9,10,11], opening: c("景区运营、内部交通与高海拔徒步线路是三个可能分别调整的状态；每周自动发现官方更新，购票和出发当天仍须再次核验。", "Park operation, internal transport and high-altitude hiking routes may change separately. Weekly discovery does not replace another check on the booking and travel day."), reservation: c("需要提前通过景区公布的官方渠道预约；预约、票务和入园时段按当日官方页面执行。", "Book in advance through a channel published by the park; reservation, ticketing and entry windows follow the same-day official page."), verifiedOn: "2026-08-31" }),
+  attraction("haizishan-xingyicuo", "sangdui", c("海子山·兴伊措", "Haizi Mountain · Xingyicuo"), "daocheng", ["scenery", "wildlife"], 2, 0.4, 20, 4420, "high", c("理塘至稻城走廊上的高海拔生态停留；只使用开放道路和正式服务点，不进入保护区腹地。", "A high-altitude ecological stop on the Litang–Daocheng corridor. Use open roads and formal service points only; do not enter the protected interior."), "https://www.daocheng.gov.cn/lydt/article/480658", { bestMonths: [5,6,7,8,9,10], opening: c("自然保护与道路状态可能临时调整；仅在官方服务点开放、无地灾和冰雪管制时短停。", "Conservation and road access may change at short notice. Stop only when official facilities are open and no geohazard or ice control applies."), verifiedOn: "2026-08-31" }),
+  attraction("sangdui-red-grass", "sangdui", c("桑堆红草湿地", "Sangdui Red-grass Wetland"), "daocheng", ["scenery", "wildlife", "rest"], 1.2, 0.2, 8, 3940, "low", c("红草景观季节性很强，只在允许停靠与开放步道活动。", "The red-grass landscape is strongly seasonal; use only permitted stopping areas and open paths."), "https://www.daocheng.gov.cn/lydt/article/261897", { bestMonths: [9,10], opening: c("属于季节性湿地景观；开放边界和停车位置按属地当日提示，不进入湿地保护区域。", "This is a seasonal wetland landscape. Follow same-day local access and parking directions and stay outside protected wetland areas."), verifiedOn: "2026-08-31" }),
+  attraction("daocheng-white-pagoda", "daocheng", c("稻城白塔", "Daocheng White Pagoda"), "daocheng", ["culture", "rest"], 1, 0.1, 4, 3750, "low", c("县城附近的低强度文化短停，适合抵达或离开稻城时安排。", "A low-intensity cultural stop near town, suitable on arrival or departure."), "https://www.daocheng.gov.cn/ttxw/article/609762", { bestMonths: [1,2,3,4,5,6,7,8,9,10,11,12], verifiedOn: "2026-08-31" }),
+  attraction("yading-tianjie", "daocheng", c("亚丁天街", "Yading Tianjie"), "daocheng", ["culture", "rest"], 1.5, 0, 0, 3750, "low", c("稻城县城公共街区，可用于抵达后的轻松散步，不把具体商户作为规划推荐。", "A public street in Daocheng town for an easy arrival-day walk; the planner does not recommend individual businesses."), "https://www.daocheng.gov.cn/mzts/article/480828", { bestMonths: [1,2,3,4,5,6,7,8,9,10,11,12], verifiedOn: "2026-08-31" }),
+  attraction("peiguang-village", "daocheng", c("培光精品旅游村寨", "Peiguang Tourism Village"), "daocheng", ["culture", "scenery", "rest"], 2, 0.3, 12, 3760, "low", c("县城近郊的藏式村寨与湿地景观；尊重居民空间，只在公共区域活动。", "A Tibetan village and wetland landscape near town. Respect residents and remain in public areas."), "https://www.daocheng.gov.cn/mzts/article/480828", { bestMonths: [5,6,7,8,9,10], verifiedOn: "2026-08-31" }),
+  attraction("sela-flower-sea", "daocheng", c("色拉花海", "Sela Flower Sea"), "daocheng", ["scenery", "rest"], 1.5, 0.3, 14, 3770, "low", c("强季节性花海，只作为花期内的顺路候选，不把经营性体验项目作为默认内容。", "A highly seasonal flower landscape, suggested only during bloom; operated experiences are not included by default."), "https://www.daocheng.gov.cn/mzts/article/480828", { bestMonths: [6,7,8], verifiedOn: "2026-08-31" }),
+  attraction("zilong-village", "daocheng", c("自龙民俗文化村", "Zilong Folk Culture Village"), "daocheng", ["culture", "rest"], 2, 0.4, 16, 3700, "low", c("稻城近郊民俗与藏式建筑停留；宗教空间和居民院落是否进入以现场许可为准。", "A folk-culture and Tibetan-architecture stop near Daocheng; enter religious spaces or residential courtyards only with on-site permission."), "https://www.daocheng.gov.cn/mzts/article/480828", { bestMonths: [4,5,6,7,8,9,10], verifiedOn: "2026-08-31" }),
 ];
 
 export const lodgingAreas: LodgingArea[] = [
@@ -375,6 +401,10 @@ export const lodgingAreas: LodgingArea[] = [
   { anchorId: "ruoergai", name: c("若尔盖县城", "Ruoergai town"), services: c("花湖和北部草原的住宿节点", "An overnight node for Flower Lake and northern grasslands"), tradeoff: c("距黄龙、九寨沟仍需转场", "Still requires a transfer to Huanglong or Jiuzhaigou") },
   { anchorId: "songpan", name: c("松潘城区", "Songpan town"), services: c("可连接若尔盖、黄龙和九寨沟", "Connects Ruoergai, Huanglong and Jiuzhaigou"), tradeoff: c("节假日道路与停车压力较大", "Holiday traffic and parking can be heavy") },
   { anchorId: "jiuzhaigou", name: c("漳扎镇/沟口住宿区域", "Zhangzha / park entrance area"), services: c("便于次日按预约时段入园", "Convenient for the next day's reserved entry"), tradeoff: c("旺季价格与容量波动，本项目不推荐具体酒店", "Peak-season prices and capacity vary; this project names no individual hotels") },
+  { anchorId: "yajiang", name: c("雅江县城", "Yajiang town"), services: c("适合作为新都桥至理塘之间的低一些海拔过渡夜", "A lower-altitude transition night between Xinduqiao and Litang"), tradeoff: c("南行至稻城亚丁仍需多段高原驾驶", "Several high-altitude driving sections remain before Yading") },
+  { anchorId: "litang", name: c("理塘县城", "Litang town"), services: c("G318与理亚公路交会补给节点", "A resupply node where G318 meets the road toward Yading"), tradeoff: c("住宿海拔约4010米，不适合作为低海拔首晚", "Sleeping altitude is about 4,010 m and unsuitable for a first night from low altitude") },
+  { anchorId: "daocheng", name: c("稻城县城", "Daocheng town"), services: c("县城补给与医疗条件优于景区沿线", "Town supplies and medical access are stronger than along the park road"), tradeoff: c("距亚丁游客中心仍有约110公里级转场", "The Yading visitor centre still requires roughly a 110 km transfer") },
+  { anchorId: "shangrila", name: c("香格里拉镇城区", "Shangri-La Town area"), services: c("适合亚丁入园前后住宿并减少当天接驳", "Suitable before or after a Yading visit and reduces the entry-day transfer"), tradeoff: c("旺季容量和停车条件需在预订平台自行核验", "Peak capacity and parking must be verified independently on a booking platform") },
 ];
 
 export function overnightGuide(anchorId: string): Required<LodgingArea> {
@@ -391,7 +421,7 @@ export function overnightGuide(anchorId: string): Required<LodgingArea> {
   };
 }
 
-export const featuredAttractionIds = ["lianbaoyeze", "jiuzhaigou", "huanglong", "shuangqiao", "flower-lake", "moon-bay", "dagu-glacier", "bipenggou"] as const;
+export const featuredAttractionIds = ["yading-scenic-area", "lianbaoyeze", "jiuzhaigou", "huanglong", "shuangqiao", "flower-lake", "moon-bay", "dagu-glacier", "bipenggou"] as const;
 
 export const sourceSummary = [
   {
@@ -435,6 +465,12 @@ export const sourceSummary = [
     scope: c("景区介绍、开放与索道运行入口", "Scenic-area, opening and cableway information"),
     url: "https://www.huanglong.com/",
     cadence: c("出发前复核", "Recheck before departure"),
+  },
+  {
+    agency: c("稻城县人民政府", "Daocheng County Government"),
+    scope: c("亚丁景区运营、稻城景点与属地交通更新入口", "Yading operations, Daocheng attractions and local transport updates"),
+    url: "https://www.daocheng.gov.cn/lydt",
+    cadence: c("每周自动发现，人工复核", "Discovered weekly, human-reviewed"),
   },
   {
     agency: c("甘孜州交通运输局 · 阿坝州人民政府", "Garzê Transport Bureau · Ngawa Government"),

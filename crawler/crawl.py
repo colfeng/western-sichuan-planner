@@ -21,7 +21,7 @@ OUTPUT_PATH = ROOT / "data" / "pending-updates.json"
 STATUS_PATH = ROOT / "data" / "update-status.json"
 OSM_SERVICES_PATH = ROOT / "data" / "osm-service-points.json"
 ROAD_SEGMENTS_PATH = ROOT / "crawler" / "road-segments.json"
-USER_AGENT = "WesternSichuanPlanner/0.6.3 (+https://github.com/colfeng/western-sichuan-planner)"
+USER_AGENT = "WesternSichuanPlanner/0.7.0 (+https://github.com/colfeng/western-sichuan-planner)"
 
 
 class LinkParser(HTMLParser):
@@ -172,6 +172,15 @@ def discover(source: dict[str, object]) -> list[dict[str, object]]:
             "titleZh": link["title"][:280],
             "url": absolute_url,
         }
+        if source["category"] == "attraction":
+            title = link["title"]
+            candidate["suggestedStatus"] = (
+                "closed" if re.search(r"闭园|暂停开放|临时关闭", title)
+                else "reopened" if re.search(r"恢复开放|重新开放", title)
+                else "reservation" if re.search(r"预约|售罄|限流|票务", title)
+                else "notice"
+            )
+            candidate["requiresHumanReview"] = True
         if source["category"] == "road" and len(results) < 20:
             candidate.update(analyse_road_candidate(link["title"], absolute_url))
         results.append(candidate)
@@ -201,7 +210,7 @@ def parse_power_kw(tags: dict[str, str]) -> float | None:
 
 def refresh_osm_services(attempted_at: str) -> int:
     query = '''[out:json][timeout:90];(
-      nwr["amenity"~"^(fuel|charging_station|toilets|hospital|clinic)$"](29.5,100.7,33.8,104.3);
+      nwr["amenity"~"^(fuel|charging_station|toilets|hospital|clinic)$"](28.3,99.9,33.8,104.3);
     );out center tags;'''
     request = Request(
         "https://overpass-api.de/api/interpreter",
@@ -233,12 +242,23 @@ def refresh_osm_services(attempted_at: str) -> int:
             "longitude": round(longitude, 6),
             "nearestAnchorId": nearest,
             "osmUrl": f"https://www.openstreetmap.org/{element['type']}/{element['id']}",
+            "_distanceSq": distance_sq(longitude, latitude, *coordinates[nearest]),
         }
         power = parse_power_kw(tags) if amenity == "charging_station" else None
         if power:
             point["powerKw"] = round(power, 1)
         points.append(point)
-    points.sort(key=lambda point: (str(point["nearestAnchorId"]), str(point["type"]), str(point["id"])))
+    points.sort(key=lambda point: (str(point["nearestAnchorId"]), str(point["type"]), float(point["_distanceSq"])))
+    nearby_points: list[dict[str, object]] = []
+    group_counts: dict[tuple[str, str], int] = {}
+    for point in points:
+        key = (str(point["nearestAnchorId"]), str(point["type"]))
+        if float(point["_distanceSq"]) > 0.02 or group_counts.get(key, 0) >= 4:
+            continue
+        group_counts[key] = group_counts.get(key, 0) + 1
+        point.pop("_distanceSq", None)
+        nearby_points.append(point)
+    points = nearby_points
     OSM_SERVICES_PATH.write_text(json.dumps({
         "schemaVersion": 1,
         "updatedAt": attempted_at,
@@ -256,6 +276,7 @@ def main() -> int:
     by_url = {event["url"]: event for event in existing}
     attempted_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     source_results: list[dict[str, object]] = []
+    successful_source_ids: set[str] = set()
 
     for index, source in enumerate(sources):
         try:
@@ -264,6 +285,10 @@ def main() -> int:
                 if candidate["url"] not in by_url:
                     candidate.update({"discoveredAt": attempted_at, "reviewStatus": "pending", "affectsPlanner": False})
                     by_url[candidate["url"]] = candidate
+                else:
+                    by_url[candidate["url"]].update({key: value for key, value in candidate.items() if key not in {"discoveredAt", "reviewStatus", "affectsPlanner"}})
+                by_url[candidate["url"]]["lastSeenAt"] = attempted_at
+            successful_source_ids.add(str(source["id"]))
             source_results.append({"sourceId": source["id"], "ok": True, "candidateCount": len(candidates)})
             print(f"{source['id']}: discovered {len(candidates)} candidate links")
         except Exception as exc:
@@ -293,7 +318,10 @@ def main() -> int:
         print("All official-source checks failed; preserving existing candidates.", file=sys.stderr)
         return 1
 
-    events = sorted(by_url.values(), key=lambda item: item.get("discoveredAt", ""), reverse=True)
+    events = sorted((
+        item for item in by_url.values()
+        if item.get("sourceId") not in successful_source_ids or item.get("lastSeenAt") == attempted_at
+    ), key=lambda item: (item.get("lastSeenAt", ""), item.get("discoveredAt", "")), reverse=True)
     OUTPUT_PATH.write_text(json.dumps(events, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {len(events)} pending candidates and checked {successful}/{len(sources)} sources")
     return 0

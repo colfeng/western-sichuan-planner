@@ -288,6 +288,15 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
 .ev-meter { height: 5px; overflow: hidden; border-radius: 999px; background: #d6e3dc; }
 .ev-meter i { display: block; height: 100%; background: linear-gradient(90deg, #3b8a70, #d98935); }
 .ev-day-plan p { display: flex; align-items: flex-start; gap: 5px; margin: 9px 0 0; color: #5b6f68; line-height: 1.5; font-size: 9px; }
+.ev-day-plan.ev-blocked { border-color: rgba(155,68,42,.32); background: #fbefeb; }
+.ev-leg-title { display: block; margin-top: 11px; color: #335e52; font-size: 10px; }
+.ev-leg-list { display: grid; gap: 7px; margin: 7px 0 0; padding-left: 20px; color: #405b53; font-size: 9px; }
+.ev-leg-list li { padding-left: 2px; }
+.ev-leg-list span { display: block; font-weight: 700; }
+.ev-leg-list small { display: flex; align-items: flex-start; gap: 4px; margin-top: 3px; color: #667972; line-height: 1.45; }
+.ev-leg-list small svg { flex: 0 0 auto; }
+.ev-leg-list a { color: #285f50; font-weight: 800; }
+.ev-day-plan .ev-blocked { color: #8b3d28; font-weight: 750; }
 .service-tools { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 10px; }
 .service-tools > b { display: flex; align-items: center; gap: 5px; color: #3f5e54; font-size: 9px; }
 .service-tools > div, .service-tools > p { display: flex; flex-wrap: wrap; gap: 5px; margin: 7px 0 0; }
@@ -342,6 +351,8 @@ footer { width: min(1440px, calc(100% - 48px)); margin: 0 auto; padding: 23px 0 
 .detail-list > div { display: grid; grid-template-columns: 118px 1fr; gap: 16px; padding: 15px 0; border-bottom: 1px solid var(--line); }
 .detail-list dt { color: #6b7a75; font-size: 11px; font-weight: 700; }
 .detail-list dd { margin: 0; color: #2d433d; line-height: 1.65; font-size: 12px; }
+.detail-list dd a { display: inline-flex; align-items: center; gap: 4px; color: #285f50; }
+.weekly-opening-note { display: block; margin-top: 5px; color: #7a8883; font-size: 9px; }
 .official-source-button { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 22px; border-radius: 10px; padding: 12px; background: var(--ink); color: white; font-size: 12px; font-weight: 750; text-decoration: none; }
 .drawer-disclaimer { margin-top: 18px; color: #77857f; font-size: 10px; line-height: 1.65; }
 

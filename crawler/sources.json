@@ -37,6 +37,16 @@
     "keywords": ["公告", "开放", "闭园", "预约", "票务", "索道", "调整", "限流"]
   },
   {
+    "id": "daocheng-notices",
+    "category": "attraction",
+    "agency_zh": "稻城县人民政府",
+    "agency_en": "Daocheng County Government",
+    "list_url": "https://www.daocheng.gov.cn/lydt",
+    "allowed_domains": ["daocheng.gov.cn", "www.daocheng.gov.cn"],
+    "keywords": ["亚丁", "景区", "开放", "闭园", "暂停", "恢复", "预约", "票务", "交通", "管制", "调整"],
+    "max_age_days": 180
+  },
+  {
     "id": "aba-attractions",
     "category": "attraction",
     "agency_zh": "阿坝州人民政府景区介绍",

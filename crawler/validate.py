@@ -16,7 +16,9 @@ status = json.loads((ROOT / "data" / "update-status.json").read_text(encoding="u
 reviewed = json.loads((ROOT / "data" / "reviewed-road-events.json").read_text(encoding="utf-8"))
 osm_services = json.loads((ROOT / "data" / "osm-service-points.json").read_text(encoding="utf-8"))
 official_services = json.loads((ROOT / "data" / "official-service-points.json").read_text(encoding="utf-8"))
-known_leg_ids = set(re.findall(r'leg\("([^"]+)"', (ROOT / "src" / "data.ts").read_text(encoding="utf-8")))
+data_source = (ROOT / "src" / "data.ts").read_text(encoding="utf-8")
+known_leg_ids = set(re.findall(r'leg\("([^"]+)"', data_source))
+known_anchor_ids = set(re.findall(r'\{ id: "([^"]+)", name:', data_source))
 allowed_hosts = {host for source in sources for host in source["allowed_domains"]}
 forbidden_fields = {"html", "body", "fullText", "fullContent", "imageData"}
 allowed_statuses = {"pending", "approved", "rejected", "expired"}
@@ -51,6 +53,11 @@ for index, event in enumerate(events):
             errors.append(f"{label}: invalid mappingConfidence")
         if event.get("requiresHumanReview") is not True:
             errors.append(f"{label}: mapped road suggestions must require human review")
+    if event.get("candidateType") == "attraction" and "suggestedStatus" in event:
+        if event.get("suggestedStatus") not in {"closed", "reopened", "reservation", "notice"}:
+            errors.append(f"{label}: invalid suggested attraction status")
+        if event.get("requiresHumanReview") is not True:
+            errors.append(f"{label}: attraction status suggestions must require human review")
     present_forbidden = forbidden_fields.intersection(event)
     if present_forbidden:
         errors.append(f"{label}: forbidden republished fields: {sorted(present_forbidden)}")
@@ -74,6 +81,8 @@ for index, point in enumerate(osm_services.get("points", [])):
         errors.append(f"{label}: missing OpenStreetMap object URL")
     if not isinstance(point.get("latitude"), (int, float)) or not isinstance(point.get("longitude"), (int, float)):
         errors.append(f"{label}: invalid coordinates")
+    if point.get("nearestAnchorId") not in known_anchor_ids:
+        errors.append(f"{label}: unknown nearest anchor")
 
 if official_services.get("schemaVersion") != 1 or not official_services.get("sourceUrl", "").startswith("https://"):
     errors.append("official-service-points.json must have a version and official source")

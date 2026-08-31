@@ -1,7 +1,7 @@
-import type { Copy, Locale } from "./data";
-import { anchorCoordinates, c, routeAnchors } from "./data";
-import officialData from "../data/official-service-points.json";
-import osmData from "../data/osm-service-points.json";
+import type { Copy, Locale } from "./data.ts";
+import { anchorCoordinates, c, routeAnchors } from "./data.ts";
+import officialData from "../data/official-service-points.json" with { type: "json" };
+import osmData from "../data/osm-service-points.json" with { type: "json" };
 
 export type ServiceType = "rest" | "toilet" | "water" | "rescue" | "fuel" | "charging" | "hospital" | "clinic";
 
