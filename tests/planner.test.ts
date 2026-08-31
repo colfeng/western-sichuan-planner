@@ -140,6 +140,8 @@ test("published corridor mileages stay within calibrated planning ranges", () =>
   assert.ok(corridor("djy-yx") >= 24 && corridor("djy-yx") <= 30, "G4217 Dujiangyan-Yingxiu should track the published 25.49 km section");
   assert.ok(corridor("yx-wc") >= 48 && corridor("yx-wc") <= 52, "G4217 Yingxiu-Wenchuan should track the published 48.27 km section");
   assert.ok(corridor("wc-lx", "lx-myl", "myl-mek") >= 170 && corridor("wc-lx", "lx-myl", "myl-mek") <= 180, "Wenchuan-Barkam should track the roughly 173 km expressway corridor");
+  const wenchuanBarkamHours = ["wc-lx", "lx-myl", "myl-mek"].reduce((sum, id) => sum + (byId.get(id)?.hours ?? 0), 0);
+  assert.ok(wenchuanBarkamHours >= 2.2 && wenchuanBarkamHours <= 2.6, "Wenchuan-Barkam open-road time should not imply an excessive mountain-expressway average speed");
   assert.ok(corridor("czs-jzg") >= 88 && corridor("czs-jzg") <= 100, "Chuanzhusi-Jiuzhaigou entrance should track the published 90.36 km section");
   assert.ok(corridor("ld-ya", "kd-ld") >= 130 && corridor("ld-ya", "kd-ld") <= 140, "Ya'an-Kangding should track the 135 km expressway corridor");
   assert.ok(corridor("lx-xj") >= 92 && corridor("lx-xj") <= 98, "Li County-Xiaojin should track the published 94 km Lixiao Road");
