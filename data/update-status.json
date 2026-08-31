@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "lastAttemptAt": "2026-08-31T02:50:46+00:00",
+  "lastAttemptAt": "2026-08-31T09:42:43+00:00",
   "successfulSources": 5,
   "totalSources": 7,
   "sourceResults": [
     {
       "sourceId": "ganzi-transport",
       "ok": false,
-      "error": "The read operation timed out"
+      "error": "Remote end closed connection without response"
     },
     {
       "sourceId": "aba-government",
@@ -21,13 +21,13 @@
     },
     {
       "sourceId": "huanglong-official",
-      "ok": true,
-      "candidateCount": 0
+      "ok": false,
+      "error": "official page returned no parseable links; preserving the previous snapshot"
     },
     {
       "sourceId": "daocheng-notices",
-      "ok": false,
-      "error": "The read operation timed out"
+      "ok": true,
+      "candidateCount": 0
     },
     {
       "sourceId": "aba-attractions",
@@ -37,7 +37,7 @@
     {
       "sourceId": "openstreetmap-services",
       "ok": true,
-      "candidateCount": 208
+      "candidateCount": 185
     }
   ]
 }

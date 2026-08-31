@@ -1,18 +1,5 @@
 [
   {
-    "sourceId": "daocheng-notices",
-    "candidateType": "attraction",
-    "agencyZh": "稻城县人民政府",
-    "agencyEn": "Daocheng County Government",
-    "titleZh": "稻城亚丁8月起限时免票诚意邀约全国游客畅游雪域仙境",
-    "url": "https://www.daocheng.gov.cn/fmxw/article/726022",
-    "suggestedStatus": "reservation",
-    "requiresHumanReview": true,
-    "discoveredAt": "2026-08-31T02:45:17+00:00",
-    "reviewStatus": "pending",
-    "affectsPlanner": false
-  },
-  {
     "sourceId": "jiuzhaigou-notices",
     "candidateType": "attraction",
     "agencyZh": "九寨沟景区官方网站",
@@ -23,7 +10,8 @@
     "requiresHumanReview": true,
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
-    "affectsPlanner": false
+    "affectsPlanner": false,
+    "lastSeenAt": "2026-08-31T09:42:43+00:00"
   },
   {
     "sourceId": "jiuzhaigou-notices",
@@ -36,7 +24,8 @@
     "requiresHumanReview": true,
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
-    "affectsPlanner": false
+    "affectsPlanner": false,
+    "lastSeenAt": "2026-08-31T09:42:43+00:00"
   },
   {
     "sourceId": "jiuzhaigou-notices",
@@ -49,7 +38,8 @@
     "requiresHumanReview": true,
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
-    "affectsPlanner": false
+    "affectsPlanner": false,
+    "lastSeenAt": "2026-08-31T09:42:43+00:00"
   },
   {
     "sourceId": "jiuzhaigou-notices",
@@ -62,7 +52,8 @@
     "requiresHumanReview": true,
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
-    "affectsPlanner": false
+    "affectsPlanner": false,
+    "lastSeenAt": "2026-08-31T09:42:43+00:00"
   },
   {
     "sourceId": "jiuzhaigou-notices",
@@ -75,7 +66,8 @@
     "requiresHumanReview": true,
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
-    "affectsPlanner": false
+    "affectsPlanner": false,
+    "lastSeenAt": "2026-08-31T09:42:43+00:00"
   },
   {
     "sourceId": "jiuzhaigou-notices",
@@ -88,7 +80,8 @@
     "requiresHumanReview": true,
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
-    "affectsPlanner": false
+    "affectsPlanner": false,
+    "lastSeenAt": "2026-08-31T09:42:43+00:00"
   },
   {
     "sourceId": "jiuzhaigou-notices",
@@ -101,7 +94,8 @@
     "requiresHumanReview": true,
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
-    "affectsPlanner": false
+    "affectsPlanner": false,
+    "lastSeenAt": "2026-08-31T09:42:43+00:00"
   },
   {
     "sourceId": "jiuzhaigou-notices",
@@ -114,7 +108,8 @@
     "requiresHumanReview": true,
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
-    "affectsPlanner": false
+    "affectsPlanner": false,
+    "lastSeenAt": "2026-08-31T09:42:43+00:00"
   },
   {
     "sourceId": "jiuzhaigou-notices",
@@ -127,7 +122,8 @@
     "requiresHumanReview": true,
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
-    "affectsPlanner": false
+    "affectsPlanner": false,
+    "lastSeenAt": "2026-08-31T09:42:43+00:00"
   },
   {
     "sourceId": "jiuzhaigou-notices",
@@ -140,7 +136,8 @@
     "requiresHumanReview": true,
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
-    "affectsPlanner": false
+    "affectsPlanner": false,
+    "lastSeenAt": "2026-08-31T09:42:43+00:00"
   },
   {
     "sourceId": "jiuzhaigou-notices",
@@ -153,6 +150,7 @@
     "requiresHumanReview": true,
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
-    "affectsPlanner": false
+    "affectsPlanner": false,
+    "lastSeenAt": "2026-08-31T09:42:43+00:00"
   }
 ]
