@@ -61,6 +61,7 @@ const initialInput: PlannerInput = {
   maxDrive: 6,
   priority: "comfort",
   avoidNight: true,
+  autoSuggest: true,
   selectedAttractionIds: ["moon-bay", "flower-lake"],
   startDate: defaultStartDate,
   startAnchorId: "chengdu",
@@ -83,7 +84,7 @@ const ui = {
     eyebrow: `${attractions.length}个可选停留 · 多走廊道路图 · 中英双语`,
     heading: "由你选择想看的地方，规划器负责判断怎样走得完。",
     intro: "路线网已覆盖红原、若尔盖、九寨沟、黄龙、黑水、阿坝县、莲宝叶则及川西南部走廊。规划器根据任意起终点、日期日照、驾驶上限、游玩时长、海拔和住宿节点动态连线。",
-    updated: "V0.5易读路书与服务设施 · 规划基线并非实时导航",
+    updated: "V0.6分日路线与顺路推荐 · 规划基线并非实时导航",
     controls: "设定旅行约束",
     days: "旅行天数",
     dates: "出发 / 返程",
@@ -102,6 +103,7 @@ const ui = {
     scenery: "景观丰富",
     culture: "人文与村落",
     avoidNight: "按当天日落保留30分钟安全余量",
+    autoSuggest: "时间允许时，自动加入顺路景点",
     orderHint: "顺序会影响路线；用箭头调整后将按此顺序计算",
     update: "按这些条件重新规划",
     dirty: "选择有变化，更新后才会应用",
@@ -128,7 +130,9 @@ const ui = {
     totalDistance: "基线里程",
     suggested: "算法建议",
     mustSee: "你的必去",
-    routeOverview: "行程骨架",
+    routeOverview: "分日道路顺序",
+    routeTruth: "下方按规划器实际采用的道路分段排列，显示道路编号、基线里程和驾驶时间；它是顺序清单，不是按真实方位或比例绘制的地图。",
+    selectedAndSuggested: "必去 / 自动补充",
     conflicts: "需要你决定",
     minimumDays: "按当前必去景点，建议至少增加到",
     dayUnit: "天",
@@ -143,6 +147,7 @@ const ui = {
     daylight: "日照",
     estimatedWindow: "预计时段",
     margin: "日落余量",
+    freeTime: "机动余量",
     navigate: "在高德核对路线",
     stops: "当天安排",
     mainActivities: "怎么玩",
@@ -167,6 +172,21 @@ const ui = {
     transit: "转场与正规休息",
     suggestedStop: "建议",
     selectedStop: "必去",
+    agendaTitle: "当天时间表（估算）",
+    agendaIntro: "早餐和晚餐位于行车窗口外；午餐、途中休息已计入当天总时长。",
+    breakfast: "早餐",
+    breakfastHint: "在住宿地附近完成早餐，并在计划出发前预留装车和检查车辆时间。",
+    morning: "上午",
+    afternoon: "下午",
+    driveBlock: "行车",
+    visitBlock: "游玩",
+    restBlock: "途中休息",
+    lunchBlock: "午餐",
+    lunchHint: "优先选择县城、镇区或正规服务区；不依赖偏远景区门口临时解决。",
+    dinner: "晚餐",
+    checkIn: "入住",
+    suggestedApplied: "已自动加入顺路景点",
+    noSuggestedApplied: "当前路线、季节、日照与强度约束下，没有找到可以安全加入的顺路景点。",
     dayReasonAltitude: "控制住宿海拔变化，并把高强度活动与长驾驶拆开。",
     dayReasonDrive: "按连续行车90–120分钟安排正规休息，不用压缩休息追回时间。",
     disclaimerTitle: "规划结果不是通行承诺",
@@ -209,7 +229,7 @@ const ui = {
     eyebrow: `${attractions.length} selectable stops · Multi-corridor graph · Bilingual`,
     heading: "Choose what you want to see. Let the planner decide what can actually fit.",
     intro: "The graph now covers Hongyuan, Ruoergai, Jiuzhaigou, Huanglong, Heishui, Ngawa County, Lianbaoyeze and the southern corridors. Any start/end, dates, daylight, driving caps, visit time, altitude and overnight nodes affect the route.",
-    updated: "V0.5 readable roadbook and service facilities · Planning baseline, not live navigation",
+    updated: "V0.6 daily routes and en-route suggestions · Planning baseline, not live navigation",
     controls: "Set trip constraints",
     days: "Trip length",
     dates: "Departure / return",
@@ -228,6 +248,7 @@ const ui = {
     scenery: "Landscape variety",
     culture: "Culture & villages",
     avoidNight: "Keep a 30-minute margin before that day's sunset",
+    autoSuggest: "Automatically add en-route places when time allows",
     orderHint: "Order affects the route. Using the arrows locks this order.",
     update: "Rebuild with these constraints",
     dirty: "Selections changed; rebuild to apply them",
@@ -254,7 +275,9 @@ const ui = {
     totalDistance: "Baseline distance",
     suggested: "Planner suggestions",
     mustSee: "Your must-sees",
-    routeOverview: "Route skeleton",
+    routeOverview: "Road sequence by day",
+    routeTruth: "The sequence below uses the planner's actual road-graph segments with road number, baseline distance and driving time. It is an ordered list, not a geographically scaled map.",
+    selectedAndSuggested: "Must-see / auto-added",
     conflicts: "Decision needed",
     minimumDays: "For the current must-sees, allow at least",
     dayUnit: "days",
@@ -269,6 +292,7 @@ const ui = {
     daylight: "Daylight",
     estimatedWindow: "Estimated window",
     margin: "Sunset margin",
+    freeTime: "Buffer",
     navigate: "Check route in Amap",
     stops: "Day plan",
     mainActivities: "What to do",
@@ -293,6 +317,21 @@ const ui = {
     transit: "Transit and formal rest stops",
     suggestedStop: "Suggested",
     selectedStop: "Must-see",
+    agendaTitle: "Estimated day timeline",
+    agendaIntro: "Breakfast and dinner sit outside the driving window; lunch and road rests are included in the day's total time.",
+    breakfast: "Breakfast",
+    breakfastHint: "Eat near the overnight area and leave time for loading and a vehicle check before departure.",
+    morning: "Morning",
+    afternoon: "Afternoon",
+    driveBlock: "Drive",
+    visitBlock: "Visit",
+    restBlock: "Road rest",
+    lunchBlock: "Lunch",
+    lunchHint: "Prefer a town or formal service area; do not rely on a remote park entrance.",
+    dinner: "Dinner",
+    checkIn: "Check in",
+    suggestedApplied: "Automatically added en-route places",
+    noSuggestedApplied: "No en-route place safely fits the current route, season, daylight and activity constraints.",
     dayReasonAltitude: "Controls sleeping-altitude changes and separates demanding activities from long drives.",
     dayReasonDrive: "Plan a formal stop every 90–120 minutes; never recover time by cutting rest.",
     disclaimerTitle: "A plan is not a promise that the road is open",
@@ -329,11 +368,16 @@ const ui = {
 
 const regionFilters: Array<"all" | RegionId> = ["all", "gateway", "aba", "maerkang", "heishui", "grassland", "jiuzhai", "danba", "kangding", "return"];
 const themeFilters: Array<"all" | Theme> = ["all", "scenery", "culture", "wildlife", "hiking", "rest"];
+const shiftTime = (value: string, hours: number) => {
+  const [hour, minute] = value.split(":").map(Number); const total = (hour * 60 + minute + Math.round(hours * 60) + 1440) % 1440;
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+};
+const isMorning = (value: string) => Number(value.slice(0, 2)) < 12;
 
 function loadInitialInput(): PlannerInput {
   try {
     const shared = new URLSearchParams(window.location.search).get("plan");
-    const raw = shared ? decodeURIComponent(window.atob(shared)) : window.localStorage.getItem("western-sichuan-plan-v05") ?? window.localStorage.getItem("western-sichuan-plan-v04") ?? window.localStorage.getItem("western-sichuan-plan-v03");
+    const raw = shared ? decodeURIComponent(window.atob(shared)) : window.localStorage.getItem("western-sichuan-plan-v06") ?? window.localStorage.getItem("western-sichuan-plan-v05") ?? window.localStorage.getItem("western-sichuan-plan-v04") ?? window.localStorage.getItem("western-sichuan-plan-v03");
     if (!raw) return initialInput;
     const value = JSON.parse(raw) as Partial<PlannerInput>;
     if (!Array.isArray(value.selectedAttractionIds)) return initialInput;
@@ -350,6 +394,7 @@ function sameInput(a: PlannerInput, b: PlannerInput): boolean {
     && a.maxDrive === b.maxDrive
     && a.priority === b.priority
     && a.avoidNight === b.avoidNight
+    && a.autoSuggest === b.autoSuggest
     && a.startDate === b.startDate
     && a.startAnchorId === b.startAnchorId
     && a.endAnchorId === b.endAnchorId
@@ -373,7 +418,7 @@ function App() {
   const [detailAttractionId, setDetailAttractionId] = useState<string | null>(null);
   const copy = ui[locale];
   const dirty = !sameInput(draft, applied);
-  const heroImage = `${import.meta.env.BASE_URL}images/western-sichuan-road.webp`;
+  const heroImage = `${import.meta.env.BASE_URL}images/mount-siguniang-road.jpg`;
 
   const options = useMemo(() => buildPlanOptions(applied), [applied]);
   const activePlan = options.find((option) => option.id === activeStrategy) ?? options[0];
@@ -412,7 +457,7 @@ function App() {
   };
 
   const savePlan = () => {
-    window.localStorage.setItem("western-sichuan-plan-v05", JSON.stringify(applied));
+    window.localStorage.setItem("western-sichuan-plan-v06", JSON.stringify(applied));
     setActionNotice(copy.saved);
     window.setTimeout(() => setActionNotice(""), 1800);
   };
@@ -471,8 +516,9 @@ function App() {
             <p className="lede">{copy.intro}</p>
             <span className="data-stamp"><RefreshCw size={14} /> {copy.updated}</span>
           </div>
-          <div className="image-panel" style={{ backgroundImage: `linear-gradient(90deg, rgba(12, 37, 32, .52), rgba(12, 37, 32, .03)), url(${heroImage})` }} role="img" aria-label={locale === "zh" ? "川西雪山与山谷公路" : "An alpine road and snow peaks in Western Sichuan"}>
-            <div className="route-badge"><MountainSnow size={19} /><span>Western Sichuan<br /><b>九寨沟 · 黑水 · 莲宝叶则</b></span></div>
+          <div className="image-panel">
+            <img src={heroImage} alt={locale === "zh" ? "四姑娘山雪峰与川西高原公路" : "Mount Siguniang peaks and an alpine road in Western Sichuan"} />
+            <div className="route-badge"><MountainSnow size={19} /><span>Mount Siguniang<br /><b>四姑娘山 · 巴朗山 · 川西公路</b></span></div>
           </div>
         </section>
 
@@ -572,6 +618,12 @@ function App() {
               <input type="checkbox" checked={draft.avoidNight} onChange={(event) => setDraft({ ...draft, avoidNight: event.target.checked })} />
               <span className="fake-check"><Check size={14} /></span>
               <span>{copy.avoidNight}</span>
+            </label>
+
+            <label className="check-row">
+              <input type="checkbox" checked={draft.autoSuggest} onChange={(event) => setDraft({ ...draft, autoSuggest: event.target.checked })} />
+              <span className="fake-check"><Check size={14} /></span>
+              <span>{copy.autoSuggest}</span>
             </label>
 
             <button className="primary-button" type="submit">{copy.update}<ArrowRight size={18} /></button>
@@ -698,6 +750,7 @@ function App() {
               </div>
               <div className="plan-stats">
                 <span><b>{copy.network}</b><small>{copy.routeOverview}</small></span>
+                <span><b>{activePlan.selectedAttractionIds.length} / {activePlan.suggestedAttractionIds.length}</b><small>{copy.selectedAndSuggested}</small></span>
                 <span><b>{activePlan.totalDriveHours} h</b><small>{copy.totalDrive}</small></span>
                 <span><b>{activePlan.totalDistanceKm} km</b><small>{copy.totalDistance}</small></span>
               </div>
@@ -710,15 +763,22 @@ function App() {
               {actionNotice && <span role="status"><Check size={14} />{actionNotice}</span>}
             </div>
 
-            <div className="route-strip" aria-label={copy.routeOverview}>
-              {activePlan.routeAnchorIds.map((anchorId, index) => (
-                <div className="route-node" key={`${anchorId}-${index}`}>
-                  <span className={activePlan.schedule.some((day) => day.endAnchorId === anchorId && day.day < applied.days) ? "overnight" : ""} />
-                  <b>{text(routeAnchors[anchorId].name, locale)}</b>
-                  {index < activePlan.routeAnchorIds.length - 1 && <i />}
-                </div>
-              ))}
-            </div>
+            <section className="route-overview" aria-label={copy.routeOverview}>
+              <div className="route-overview-heading"><div><b>{copy.routeOverview}</b><p>{copy.routeTruth}</p></div><Route size={19} /></div>
+              <div className="route-days">
+                {activePlan.schedule.map((day) => <div className="route-day" key={`route-${day.day}`}>
+                  <span className="route-day-label">D{day.day}</span>
+                  <div className="route-sequence">
+                    <b className="route-place start">{text(routeAnchors[day.startAnchorId].name, locale)}</b>
+                    {day.routeSteps.map((step, index) => <React.Fragment key={`${day.day}-${step.legId}-${index}`}>
+                      <span className="route-leg"><small>{step.road}</small><i /><em>{step.distanceKm}km · {step.driveHours}h</em></span>
+                      <b className={`route-place ${index === day.routeSteps.length - 1 ? "stay" : ""}`}>{text(routeAnchors[step.toAnchorId].name, locale)}</b>
+                    </React.Fragment>)}
+                    {day.routeSteps.length === 0 && <span className="same-place">{locale === "zh" ? "同一区域活动，无主干道转场" : "Same-area activities; no main-road transfer"}</span>}
+                  </div>
+                </div>)}
+              </div>
+            </section>
 
             <div className={`decision-panel ${activePlan.feasible ? "ok" : "attention"}`}>
               {activePlan.feasible ? <ShieldCheck size={22} /> : <AlertTriangle size={22} />}
@@ -731,8 +791,8 @@ function App() {
               </div>
             </div>
 
-            {activePlan.suggestedAttractionIds.length > 0 && (
-              <div className="suggestion-row"><Sparkles size={16} /><b>{copy.suggested}</b>{activePlan.suggestedAttractionIds.map((id) => {
+            {applied.autoSuggest && (
+              <div className={`suggestion-row ${activePlan.suggestedAttractionIds.length === 0 ? "empty" : ""}`}><Sparkles size={16} /><b>{activePlan.suggestedAttractionIds.length > 0 ? copy.suggestedApplied : copy.noSuggestedApplied}</b>{activePlan.suggestedAttractionIds.map((id) => {
                 const item = getAttraction(id);
                 return item ? <span key={id}>{text(item.name, locale)}</span> : null;
               })}</div>
@@ -741,8 +801,11 @@ function App() {
             <div className="timeline">
               {activePlan.schedule.map((day) => {
                 const guide = overnightGuide(day.endAnchorId);
+                const startGuide = overnightGuide(day.startAnchorId);
                 const restPoints = servicesForLegs(day.legIds);
                 const nearbyServices = servicesNearAnchors([day.startAnchorId, ...day.viaAnchorIds, day.endAnchorId], undefined, 5);
+                const dinnerStart = shiftTime(day.estimatedArrivalTime, 0.25);
+                const dinnerEnd = shiftTime(day.estimatedArrivalTime, 1.25);
                 return <article className="day-card" key={day.day}>
                   <div className="day-rail"><span>D{day.day}</span><i /></div>
                   <div className="day-content">
@@ -761,12 +824,56 @@ function App() {
                       <span><Gauge size={15} /> {copy.distance} {day.distanceKm}km</span>
                       <span><Sun size={15} /> {copy.daylight} {day.sunrise}–{day.sunset}</span>
                       <span><Clock3 size={15} /> {copy.estimatedWindow} {day.departureTime}–{day.estimatedArrivalTime}</span>
+                      <span><ShieldCheck size={15} /> {copy.freeTime} {day.freeHours}h</span>
                       <span className={day.daylightMarginMinutes >= 0 ? "margin-positive" : "margin-negative"}><Sun size={15} /> {copy.margin} {day.daylightMarginMinutes >= 0 ? "+" : ""}{day.daylightMarginMinutes} min</span>
                     </div>
+
+                    <section className="day-agenda">
+                      <div className="agenda-heading"><div><b>{copy.agendaTitle}</b><p>{copy.agendaIntro}</p></div><Clock3 size={18} /></div>
+                      <div className="agenda-list">
+                        <div className="agenda-item meal-item">
+                          <time>{shiftTime(day.departureTime, -0.75)}–{shiftTime(day.departureTime, -0.25)}</time>
+                          <span className="agenda-dot"><Utensils size={14} /></span>
+                          <div><span className="agenda-phase">{copy.breakfast}</span><b>{text(startGuide.name, locale)}</b><p>{copy.breakfastHint}</p></div>
+                        </div>
+                        {day.agenda.map((item, index) => {
+                          const attraction = item.attractionId ? getAttraction(item.attractionId) : undefined;
+                          const phase = item.kind === "lunch" ? copy.lunchBlock : isMorning(item.startTime) ? copy.morning : copy.afternoon;
+                          const kind = item.kind === "drive" ? copy.driveBlock : item.kind === "visit" ? copy.visitBlock : item.kind === "rest" ? copy.restBlock : copy.lunchBlock;
+                          const title = item.kind === "drive" && item.fromAnchorId && item.toAnchorId
+                            ? `${text(routeAnchors[item.fromAnchorId].name, locale)} → ${text(routeAnchors[item.toAnchorId].name, locale)}`
+                            : item.kind === "visit" && attraction ? text(attraction.name, locale)
+                              : text(routeAnchors[item.anchorId].name, locale);
+                          const detail = item.kind === "drive"
+                            ? `${item.road} · ${item.distanceKm}km · ${item.driveHours}h`
+                            : item.kind === "visit" && attraction
+                              ? `${locale === "zh" ? "游玩" : "Visit"} ${attraction.visitHours}h${attraction.detourHours > 0 ? ` · ${locale === "zh" ? "含支线往返驾驶" : "branch driving"} ${attraction.detourHours}h` : ""}`
+                              : item.kind === "rest"
+                                ? (locale === "zh" ? "进入正规服务区或停车区休息，不在路肩停车。" : "Use a formal service or parking area; never stop on the shoulder.")
+                                : copy.lunchHint;
+                          return <div className={`agenda-item ${item.kind}`} key={`${day.day}-agenda-${index}`}>
+                            <time>{item.startTime}–{item.endTime}</time>
+                            <span className="agenda-dot">{item.kind === "drive" ? <Navigation size={14} /> : item.kind === "visit" ? <Sparkles size={14} /> : item.kind === "rest" ? <Coffee size={14} /> : <Utensils size={14} />}</span>
+                            <div><span className="agenda-phase">{phase} · {kind}</span><b>{title}</b><p>{detail}</p></div>
+                          </div>;
+                        })}
+                        <div className="agenda-item meal-item">
+                          <time>{dinnerStart}–{dinnerEnd}</time>
+                          <span className="agenda-dot"><Utensils size={14} /></span>
+                          <div><span className="agenda-phase">{copy.dinner}</span><b>{text(guide.name, locale)}</b><p>{text(guide.dining, locale)}</p></div>
+                        </div>
+                        <div className="agenda-item stay-item">
+                          <time>{dinnerEnd}{locale === "zh" ? "后" : "+"}</time>
+                          <span className="agenda-dot"><BedDouble size={14} /></span>
+                          <div><span className="agenda-phase">{copy.checkIn}</span><b>{text(guide.name, locale)} · {day.sleepAltitude}m</b><p>{text(guide.stayAdvice, locale)}</p><small>{text(guide.tradeoff, locale)}</small></div>
+                        </div>
+                      </div>
+                    </section>
+
                     <div className="roadbook-grid">
                       <article>
                         <span className="roadbook-icon"><Sparkles size={16} /></span>
-                        <div><b>{copy.mainActivities}</b>
+                        <div><b>{locale === "zh" ? "为什么这样安排" : "Why this order"}</b>
                         <div className="stop-list">
                           {day.attractionIds.length === 0 && <span>{copy.transit}</span>}
                           {day.attractionIds.map((id) => {
@@ -780,14 +887,6 @@ function App() {
                       <article>
                         <span className="roadbook-icon"><Coffee size={16} /></span>
                         <div><b>{copy.roadRest}</b>{restPoints.length > 0 ? <ul className="service-list">{restPoints.map((point) => <li key={point.id}><a href={point.sourceUrl} target="_blank" rel="noreferrer">{text(point.name, locale)}</a><small>{point.road} {point.kilometer}</small></li>)}</ul> : <p>{copy.noOfficialRest}</p>}</div>
-                      </article>
-                      <article>
-                        <span className="roadbook-icon"><Utensils size={16} /></span>
-                        <div><b>{copy.mealPlan}</b><p>{text(guide.dining, locale)}</p>{day.mealHours > 0 && <small>{locale === "zh" ? `行程已预留约${day.mealHours}小时，不计入纯驾驶时间。` : `About ${day.mealHours} hours is reserved outside pure driving time.`}</small>}</div>
-                      </article>
-                      <article>
-                        <span className="roadbook-icon"><BedDouble size={16} /></span>
-                        <div><b>{copy.overnight}</b><h4>{text(guide.name, locale)} · {day.sleepAltitude}m</h4><p>{text(guide.stayAdvice, locale)}</p><small>{text(guide.tradeoff, locale)}</small></div>
                       </article>
                     </div>
 
@@ -874,7 +973,7 @@ function App() {
         </section>
       </div>}
 
-      <footer><span>{copy.footer}</span><span>v0.5 · 2026</span></footer>
+      <footer><span>{copy.footer}</span><span>v0.6 · 2026</span></footer>
     </div>
   );
 }

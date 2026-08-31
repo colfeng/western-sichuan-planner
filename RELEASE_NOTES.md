@@ -1,5 +1,21 @@
 # Release notes
 
+## V0.6.0 — daily route clarity and en-route suggestions
+
+- 115 selectable attractions, including 15 additional officially listed stops in
+  Aba Prefecture.
+- A broken pseudo-map-style connector was replaced by a per-day ordered road
+  sequence showing actual planner edges, road labels, baseline kilometres and
+  driving hours.
+- A breakfast-to-check-in timeline clearly separates morning and afternoon
+  driving, visits, formal rests, lunch, dinner and lodging area.
+- Optional en-route suggestions now fill genuinely usable free time while
+  respecting season, theme, daily activity, attraction-count and buffer limits.
+- Must-see and automatically suggested attractions are labelled separately in
+  both the overview and each day's reasoning.
+- The Mount Siguniang hero image now uses a compatible local JPEG and descriptive
+  alternative text.
+
 ## V0.5.0 — readable roadbooks and service data
 
 - 100 selectable attractions, with Lianbaoyeze in the key-place quick picker.

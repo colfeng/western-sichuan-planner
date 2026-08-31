@@ -4,10 +4,10 @@ A bilingual, safety-first self-driving itinerary planner for Western Sichuan.
 
 一个中英双语、以安全约束为核心的川西自驾行程规划器。
 
-## V0.5 scope / V0.5 范围
+## V0.6 scope / V0.6 范围
 
 - Static React site deployed with GitHub Pages
-- 100 selectable stops across 9 regions, including Hongyuan, Ruoergai,
+- 115 selectable stops across 9 regions, including Hongyuan, Ruoergai,
   Jiuzhaigou, Huanglong, Heishui and Lianbaoyeze
 - 29 planning anchors and 33 bidirectional road edges instead of fixed loops
 - User-selectable start and end anchors, planned daily departure time, estimated
@@ -27,6 +27,14 @@ A bilingual, safety-first self-driving itinerary planner for Western Sichuan.
 - Reviewed closures exclude mapped road edges; restrictions and delays add route weight
 - Compatible short stops can share a day; full-day attractions remain protected
   from being over-packed
+- Optional en-route suggestions fill safe free time only when the stop lies on the
+  computed route, matches the season/theme and leaves a usable daily buffer
+- Every day shows an ordered road sequence with road name, baseline distance and
+  time; the sequence is explicitly not presented as a geographic map
+- A chronological breakfast-to-check-in agenda separates morning and afternoon
+  driving, visits, formal rests, lunch, dinner and the overnight area
+- The hero photograph is served as a broadly compatible local JPEG with meaningful
+  alternative text
 - Every attraction has aligned season, opening, review-date and official-source
   fields; reservation guidance appears only when a reservation or permission
   requirement has been identified

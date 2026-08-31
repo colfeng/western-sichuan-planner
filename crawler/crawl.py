@@ -21,7 +21,7 @@ OUTPUT_PATH = ROOT / "data" / "pending-updates.json"
 STATUS_PATH = ROOT / "data" / "update-status.json"
 OSM_SERVICES_PATH = ROOT / "data" / "osm-service-points.json"
 ROAD_SEGMENTS_PATH = ROOT / "crawler" / "road-segments.json"
-USER_AGENT = "WesternSichuanPlanner/0.5 (+https://github.com/colfeng/western-sichuan-planner)"
+USER_AGENT = "WesternSichuanPlanner/0.6 (+https://github.com/colfeng/western-sichuan-planner)"
 
 
 class LinkParser(HTMLParser):

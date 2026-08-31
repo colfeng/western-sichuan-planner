@@ -9,6 +9,7 @@ const base = (overrides: Partial<PlannerInput> = {}): PlannerInput => ({
   maxDrive: 6,
   priority: "comfort",
   avoidNight: true,
+  autoSuggest: true,
   selectedAttractionIds: ["moon-bay", "flower-lake"],
   startDate: "2026-09-15",
   startAnchorId: "chengdu",
@@ -81,6 +82,15 @@ test("combines compatible short stops on the same day", () => {
   assert.ok(option.schedule.some((day) => day.attractionIds.length >= 2));
 });
 
+test("automatically fills safe en-route free time and can be disabled", () => {
+  const automatic = buildPlanOptions(base({ days: 8, selectedAttractionIds: ["moon-bay", "flower-lake"] }))[0];
+  assert.ok(automatic.suggestedAttractionIds.length > 0);
+  assert.ok(automatic.schedule.some((day) => day.attractionIds.some((id) => automatic.suggestedAttractionIds.includes(id))));
+  const manualOnly = buildPlanOptions(base({ days: 8, autoSuggest: false, selectedAttractionIds: ["moon-bay", "flower-lake"] }))[0];
+  assert.equal(manualOnly.suggestedAttractionIds.length, 0);
+  assert.deepEqual(new Set(manualOnly.schedule.flatMap((day) => day.attractionIds)), new Set(["moon-bay", "flower-lake"]));
+});
+
 test("supports different start and end anchors on the same graph", () => {
   const option = buildPlanOptions(base({
     days: 6,
@@ -104,6 +114,15 @@ test("records departure, estimated finish and sunset margin for every day", () =
     assert.ok(day.restHours >= 0);
     assert.ok(day.mealHours >= 0);
     assert.ok(Array.isArray(day.legIds));
+    assert.ok(Array.isArray(day.routeSteps));
+    assert.ok(Array.isArray(day.agenda));
+    assert.ok(day.freeHours >= 0);
+    if (day.agenda.length > 0) assert.equal(day.agenda.at(-1)?.endTime, day.estimatedArrivalTime);
+    for (const step of day.routeSteps) {
+      assert.ok(step.road);
+      assert.ok(step.distanceKm > 0);
+      assert.ok(step.driveHours > 0);
+    }
   }
 });
 
@@ -113,7 +132,7 @@ test("every attraction exposes the same audited information fields", () => {
     "www.sgns.cn", "www.xiaojin.gov.cn", "xiaojin.gov.cn", "www.danba.gov.cn", "www.kangding.gov.cn",
     "www.luding.gov.cn", "www.yaan.gov.cn", "www.huanglong.com", "www.jiuzhai.com",
   ]);
-  assert.equal(attractions.length, 100);
+  assert.equal(attractions.length, 115);
   let reservationCount = 0;
   for (const item of attractions) {
     assert.ok(routeAnchors[item.anchorId], `${item.id}: unknown anchor`);
