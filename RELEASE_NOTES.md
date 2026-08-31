@@ -1,5 +1,21 @@
 # Release notes
 
+## V0.8.0 — charging timeline, 144 places, and trip visuals
+
+- Every planned en-route and destination EV charge is now a timed roadbook item;
+  charging contributes to duty time, finish time, sunset margin and feasibility.
+- Charger candidates are shown at the relevant charging town, and unverified
+  points are labelled instead of implying availability.
+- Added 21 officially sourced stops across Dujiangyan, Songpan, Jiuzhaigou,
+  Daocheng, Litang, Kangding and Ya'an, bringing the catalogue to 144.
+- Added a responsive trip-insights drawer with a schematic route-node elevation
+  profile, daily time-allocation bars and sleeping-altitude progression.
+- The weekly updater now preserves old data when an official page has no
+  parseable links or the OSM response is empty or suspiciously small.
+- Scheduled refreshes build and test one review pull request but do not deploy
+  unmerged crawler output; only a push to `main` publishes GitHub Pages.
+- Added crawler failure-mode tests and EV roadbook timing regression coverage.
+
 ## V0.7.2 — timeline compatibility fixes
 
 - Visit labels now count only actual visit segments, so attraction-branch drives
