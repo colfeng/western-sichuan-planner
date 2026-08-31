@@ -273,6 +273,66 @@ test("a long road leg gets a real mid-route rest before arrival", () => {
   );
 });
 
+test("a real visit resets continuous driving and preserves a short return branch", () => {
+  const option = buildPlanOptions(base({
+    days: 1,
+    maxDrive: 8,
+    avoidNight: false,
+    autoSuggest: false,
+    startAnchorId: "chengdu",
+    endAnchorId: "maerkang",
+    selectedAttractionIds: ["yingxiu-old-town", "maerkang-town"],
+  }))[0];
+  const day = option.schedule[0];
+  const stop = day.agenda.filter((item) => item.attractionId === "yingxiu-old-town");
+  assert.deepEqual(stop.map((item) => item.kind), ["drive", "visit", "drive"]);
+  assert.deepEqual(stop.filter((item) => item.kind === "drive").map((item) => item.detourDirection), ["outbound", "return"]);
+  assert.equal(stop.filter((item) => item.kind === "drive").reduce((sum, item) => sum + (item.distanceKm ?? 0), 0), 4);
+  assert.equal(stop.filter((item) => item.kind === "visit").length, 1);
+  assert.ok(day.agenda.findIndex((item) => item.kind === "rest") > day.agenda.findIndex((item) => item.kind === "lunch"));
+  assert.equal(day.restHours, 0.25);
+  assert.equal(day.mealHours, 0.75);
+});
+
+test("lunch can replace a due roadside rest instead of creating two close stops", () => {
+  const option = buildPlanOptions(base({
+    days: 1,
+    maxDrive: 10.5,
+    avoidNight: false,
+    autoSuggest: false,
+    startAnchorId: "xiaojin",
+    endAnchorId: "wolong",
+    selectedAttractionIds: [],
+  }))[0];
+  const agenda = option.schedule[0].agenda;
+  const lunch = agenda.find((item) => item.kind === "lunch");
+  assert.ok(lunch?.road);
+  const lunchIndex = agenda.indexOf(lunch!);
+  assert.notEqual(agenda[lunchIndex - 1]?.kind, "rest");
+  assert.notEqual(agenda[lunchIndex + 1]?.kind, "rest");
+});
+
+test("a very long road baseline can split repeatedly after separate breaks", () => {
+  const option = buildPlanOptions(base({
+    days: 1,
+    maxDrive: 10.5,
+    avoidNight: false,
+    autoSuggest: false,
+    startAnchorId: "dujiangyan",
+    endAnchorId: "aba-county",
+    selectedAttractionIds: [],
+  }))[0];
+  let continuousMinutes = 0;
+  for (const item of option.schedule[0].agenda) {
+    const [startHour, startMinute] = item.startTime.split(":").map(Number);
+    const [endHour, endMinute] = item.endTime.split(":").map(Number);
+    const durationMinutes = (endHour * 60 + endMinute - startHour * 60 - startMinute + 1440) % 1440;
+    if (item.kind === "drive") continuousMinutes += durationMinutes;
+    else if (item.kind === "rest" || item.kind === "lunch") continuousMinutes = 0;
+    assert.ok(continuousMinutes <= 129);
+  }
+});
+
 test("EV plans name each required en-route charging town or block the day", () => {
   const option = buildPlanOptions(base({
     days: 1,

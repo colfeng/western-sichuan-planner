@@ -19,6 +19,7 @@ type PathResult = { legs: RouteLeg[]; cost: number };
 
 const attractionById = new Map(attractions.map((item) => [item.id, item]));
 const round = (value: number) => Math.round(value * 10) / 10;
+const round2 = (value: number) => Math.round(value * 100) / 100;
 const unique = <T,>(values: T[]): T[] => [...new Set(values)];
 const planningRoadHours = (edge: RouteLeg) => round(edge.hours * (edge.evSupport === "limited" ? 1.2 : /G4217|G4218|G5|S9/.test(edge.road) ? 1.1 : 1.15));
 const planningDetourHours = (hours: number) => round(hours * 1.15);
@@ -122,33 +123,35 @@ function evPlanFrom(value: ReturnType<typeof summarize>, input: PlannerInput): E
   const status = chargeStops.length > 0 ? (chargeStops.every((stop) => stop.chargerCount > 0) ? "ok" : "verify") : destinationTopUpMinutes > 0 ? "arrival" : "ok";
   return { safeBudgetKm, usagePercent, status, chargeStops, travelLegs, destinationTopUpMinutes };
 }
-function agendaFrom(tasks: Task[], segment: Segment, input: PlannerInput, restHours: number, mealHours: number): DayAgendaItem[] {
-  const agenda: DayAgendaItem[] = []; const slice = tasks.slice(segment.start, segment.end); let current = timeToHours(input.departureTime); let restRemaining = restHours; let lunchRemaining = mealHours; let driveSinceRest = 0; let currentAnchor = slice[0]?.fromAnchorId ?? input.startAnchorId;
+function agendaFrom(tasks: Task[], segment: Segment, input: PlannerInput, mealHours: number): DayAgendaItem[] {
+  const agenda: DayAgendaItem[] = []; const slice = tasks.slice(segment.start, segment.end); let current = timeToHours(input.departureTime); let lunchRemaining = mealHours; let driveSinceRest = 0; let lastRestEnd = -Infinity; let currentAnchor = slice[0]?.fromAnchorId ?? input.startAnchorId;
   const addPause = (kind: "rest" | "lunch", duration: number, context: Partial<Pick<DayAgendaItem, "attractionId" | "road" | "fromAnchorId" | "toAnchorId">> = {}) => {
     if (duration <= 0) return;
     const startTime = hoursToTime(current); current += duration; const endTime = hoursToTime(current); const previous = agenda.at(-1);
     if (previous && previous.anchorId === currentAnchor && previous.endTime === startTime && previous.attractionId === context.attractionId && previous.road === context.road && (previous.kind === "rest" || previous.kind === "lunch")) {
       previous.kind = previous.kind === "lunch" || kind === "lunch" ? "lunch" : "rest"; previous.endTime = endTime;
     } else agenda.push({ kind, startTime, endTime, anchorId: currentAnchor, ...context });
-    driveSinceRest = 0;
+    driveSinceRest = 0; if (kind === "rest") lastRestEnd = current;
   };
   const addDrive = (task: Task, duration: number, distanceKm: number, options: Partial<Pick<DayAgendaItem, "attractionId" | "detourDirection" | "driveContinuation">> = {}) => {
     if (duration <= 0) return;
     const startTime = hoursToTime(current); current += duration;
-    agenda.push({ kind: "drive", startTime, endTime: hoursToTime(current), anchorId: task.toAnchorId, fromAnchorId: task.fromAnchorId, toAnchorId: task.toAnchorId, road: task.road ?? "景点支线 / Attraction branch", driveHours: round(duration), distanceKm: Math.round(distanceKm), ...options });
+    agenda.push({ kind: "drive", startTime, endTime: hoursToTime(current), anchorId: task.toAnchorId, fromAnchorId: task.fromAnchorId, toAnchorId: task.toAnchorId, road: task.road ?? "景点支线 / Attraction branch", driveHours: duration < 0.2 ? round2(duration) : round(duration), distanceKm: Math.round(distanceKm), ...options });
     driveSinceRest += duration;
   };
   const addVisit = (task: Task, duration: number) => {
     if (duration <= 0 || !task.attractionId) return;
     const startTime = hoursToTime(current); current += duration;
     agenda.push({ kind: "visit", startTime, endTime: hoursToTime(current), anchorId: task.toAnchorId, attractionId: task.attractionId });
+    if (duration >= 0.25) driveSinceRest = 0;
   };
-  for (const task of slice) {
+  for (let taskIndex = 0; taskIndex < slice.length; taskIndex += 1) {
+    const task = slice[taskIndex]; const nextTask = slice[taskIndex + 1];
     const duration = task.driveHours + task.activityHours;
     if (task.kind === "visit" && task.attractionId) {
       currentAnchor = task.toAnchorId;
-      const outboundHours = round(task.driveHours / 2); const returnHours = Math.max(0, round(task.driveHours - outboundHours));
-      const outboundKm = task.distanceKm / 2; const returnKm = task.distanceKm - outboundKm;
+      const outboundHours = task.driveHours / 2; const returnHours = Math.max(0, task.driveHours - outboundHours);
+      const outboundKm = Math.ceil(task.distanceKm / 2); const returnKm = task.distanceKm - outboundKm;
       if (lunchRemaining > 0 && current >= 11.25 && current <= 13.5 && current + duration > 12.5) { addPause("lunch", lunchRemaining); lunchRemaining = 0; }
       addDrive(task, outboundHours, outboundKm, { attractionId: task.attractionId, detourDirection: "outbound" });
       if (lunchRemaining > 0 && current < 12 && current + task.activityHours > 13) {
@@ -160,25 +163,38 @@ function agendaFrom(tasks: Task[], segment: Segment, input: PlannerInput, restHo
         addVisit(task, task.activityHours);
       }
       addDrive(task, returnHours, returnKm, { attractionId: task.attractionId, detourDirection: "return" });
-      if (restRemaining > 0 && driveSinceRest >= 1.75) { const pause = Math.min(0.25, restRemaining); addPause("rest", pause); restRemaining = Math.max(0, restRemaining - pause); }
       continue;
     }
-    if (lunchRemaining > 0 && current >= 10.75 && current + duration > 13.25) { addPause("lunch", lunchRemaining); lunchRemaining = 0; }
+    if (lunchRemaining > 0 && current >= 11.5 && current + duration > 13.25) { addPause("lunch", lunchRemaining); lunchRemaining = 0; }
     if (task.kind === "travel") {
-      const splitAfter = Math.max(0.5, 1.75 - driveSinceRest);
-      if (restRemaining > 0 && driveSinceRest + task.driveHours > 2 && splitAfter < task.driveHours - 0.1) {
-        const firstRatio = splitAfter / task.driveHours;
-        addDrive(task, splitAfter, task.distanceKm * firstRatio);
-        addPause("rest", Math.min(0.25, restRemaining), { road: task.road, fromAnchorId: task.fromAnchorId, toAnchorId: task.toAnchorId }); restRemaining = Math.max(0, restRemaining - 0.25);
-        addDrive(task, task.driveHours - splitAfter, task.distanceKm * (1 - firstRatio), { driveContinuation: true });
-      } else addDrive(task, task.driveHours, task.distanceKm);
+      let remainingHours = task.driveHours; let remainingKm = task.distanceKm; let consumedHours = 0;
+      const addRequiredPause = () => {
+        if (lunchRemaining > 0 && current >= 11.5 && current <= 13.25) { addPause("lunch", lunchRemaining, { road: task.road, fromAnchorId: task.fromAnchorId, toAnchorId: task.toAnchorId }); lunchRemaining = 0; }
+        else addPause("rest", 0.25, { road: task.road, fromAnchorId: task.fromAnchorId, toAnchorId: task.toAnchorId });
+      };
+      while (remainingHours > 0.001) {
+        const continuousAtArrival = driveSinceRest + remainingHours; const arrivalTime = current + remainingHours;
+        const naturalStopSoon = continuousAtArrival <= 2.15 && (
+          (lunchRemaining > 0 && arrivalTime >= 11.5 && arrivalTime <= 13.75)
+          || (nextTask?.kind === "visit" && nextTask.activityHours >= 0.25)
+        );
+        if (continuousAtArrival <= 2 || naturalStopSoon) {
+          addDrive(task, remainingHours, remainingKm, { driveContinuation: consumedHours > 0 }); remainingHours = 0; remainingKm = 0; break;
+        }
+        if (driveSinceRest >= 1.6) { addRequiredPause(); continue; }
+        const chunkHours = Math.min(remainingHours, Math.max(0.1, 1.75 - driveSinceRest));
+        const chunkKm = chunkHours >= remainingHours - 0.001 ? remainingKm : Math.round(remainingKm * chunkHours / remainingHours);
+        addDrive(task, chunkHours, chunkKm, { driveContinuation: consumedHours > 0 }); consumedHours += chunkHours; remainingHours -= chunkHours; remainingKm -= chunkKm;
+        if (remainingHours > 0.001) addRequiredPause();
+      }
       currentAnchor = task.toAnchorId;
     }
-    if (restRemaining > 0 && driveSinceRest >= 1.75) { const pause = Math.min(0.25, restRemaining); addPause("rest", pause); restRemaining = Math.max(0, restRemaining - pause); }
-    if (lunchRemaining > 0 && current >= 11.75 && current <= 14.5) { addPause("lunch", lunchRemaining); lunchRemaining = 0; }
+    if (lunchRemaining > 0 && current >= 11.5 && current <= 14.25) {
+      const canDeferPastRecentRest = current - lastRestEnd < 0.75 && nextTask?.kind === "travel" && current + nextTask.driveHours <= 14.25;
+      if (!canDeferPastRecentRest) { addPause("lunch", lunchRemaining); lunchRemaining = 0; }
+    }
   }
-  while (restRemaining > 0) { const duration = Math.min(0.25, restRemaining); addPause("rest", duration); restRemaining = Math.max(0, restRemaining - duration); }
-  if (lunchRemaining > 0) addPause("lunch", lunchRemaining);
+  if (lunchRemaining > 0 && current >= 11.25) addPause("lunch", lunchRemaining);
   return agenda;
 }
 function segmentCost(tasks: Task[], start: number, end: number, day: number, input: PlannerInput, strategy: Strategy, target: number): number {
@@ -194,8 +210,8 @@ function partition(tasks: Task[], input: PlannerInput, strategy: Strategy): Segm
 }
 function scheduleFrom(tasks: Task[], segments: Segment[], input: PlannerInput): PlanDay[] {
   return segments.map((segment, index) => {
-    const value = summarize(tasks, segment.start, segment.end); const date = addDays(input.startDate, index); const coordinate = anchorCoordinates[value.endAnchorId]; const light = daylight(date, coordinate.latitude, coordinate.longitude); const breaks = plannedBreaks(value.driveHours, value.activityHours); const dutyHours = round(value.driveHours + value.activityHours + breaks.restHours + breaks.mealHours); const safeSunset = timeToHours(light.sunset) - 0.5; const availableHours = input.avoidNight ? Math.max(0, safeSunset - timeToHours(input.departureTime)) : 10.5; const agenda = agendaFrom(tasks, segment, input, breaks.restHours, breaks.mealHours); const estimatedArrivalTime = agenda.at(-1)?.endTime ?? hoursToTime(timeToHours(input.departureTime) + dutyHours); const arrivalHours = timeToHours(estimatedArrivalTime); const evPlan = input.vehicle === "ev" ? evPlanFrom(value, input) : undefined;
-    return { day: index + 1, date, sunrise: light.sunrise, sunset: light.sunset, daylightHours: light.hours, departureTime: input.departureTime, estimatedArrivalTime, daylightMarginMinutes: Math.round((safeSunset - arrivalHours) * 60), startAnchorId: value.startAnchorId, endAnchorId: value.endAnchorId, viaAnchorIds: value.viaAnchorIds, routeSteps: value.routeSteps, agenda, driveHours: round(value.driveHours), distanceKm: Math.round(value.distanceKm), activityHours: round(value.activityHours), restHours: breaks.restHours, mealHours: breaks.mealHours, dutyHours, freeHours: round(Math.max(0, availableHours - dutyHours)), sleepAltitude: routeAnchors[value.endAnchorId].altitude, attractionIds: value.attractionIds, roads: value.roads, legIds: value.legIds, ...(evPlan ? { evPlan } : {}) };
+    const value = summarize(tasks, segment.start, segment.end); const date = addDays(input.startDate, index); const coordinate = anchorCoordinates[value.endAnchorId]; const light = daylight(date, coordinate.latitude, coordinate.longitude); const breaks = plannedBreaks(value.driveHours, value.activityHours); const safeSunset = timeToHours(light.sunset) - 0.5; const availableHours = input.avoidNight ? Math.max(0, safeSunset - timeToHours(input.departureTime)) : 10.5; const agenda = agendaFrom(tasks, segment, input, breaks.mealHours); const itemHours = (item: DayAgendaItem) => (timeToHours(item.endTime) - timeToHours(item.startTime) + 24) % 24; const restHours = round2(agenda.filter((item) => item.kind === "rest").reduce((sum, item) => sum + itemHours(item), 0)); const mealHours = round2(agenda.filter((item) => item.kind === "lunch").reduce((sum, item) => sum + itemHours(item), 0)); const dutyHours = round(agenda.reduce((sum, item) => sum + itemHours(item), 0)); const estimatedArrivalTime = agenda.at(-1)?.endTime ?? input.departureTime; const arrivalHours = timeToHours(estimatedArrivalTime); const evPlan = input.vehicle === "ev" ? evPlanFrom(value, input) : undefined;
+    return { day: index + 1, date, sunrise: light.sunrise, sunset: light.sunset, daylightHours: light.hours, departureTime: input.departureTime, estimatedArrivalTime, daylightMarginMinutes: Math.round((safeSunset - arrivalHours) * 60), startAnchorId: value.startAnchorId, endAnchorId: value.endAnchorId, viaAnchorIds: value.viaAnchorIds, routeSteps: value.routeSteps, agenda, driveHours: round(value.driveHours), distanceKm: Math.round(value.distanceKm), activityHours: round(value.activityHours), restHours, mealHours, dutyHours, freeHours: round(Math.max(0, availableHours - dutyHours)), sleepAltitude: routeAnchors[value.endAnchorId].altitude, attractionIds: value.attractionIds, roads: value.roads, legIds: value.legIds, ...(evPlan ? { evPlan } : {}) };
   });
 }
 function warningsFor(schedule: PlanDay[], input: PlannerInput): PlanWarning[] {

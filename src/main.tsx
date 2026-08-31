@@ -85,7 +85,7 @@ const ui = {
     eyebrow: `${attractions.length}个可选停留 · 多走廊道路图 · 中英双语`,
     heading: "由你选择想看的地方，规划器负责判断怎样走得完。",
     intro: "路线网已覆盖红原、若尔盖、九寨沟、黄龙、莲宝叶则及雅江—理塘—稻城亚丁走廊。规划器根据任意起终点、日期日照、驾驶上限、游玩时长、海拔和住宿节点动态连线。",
-    updated: "V0.7.1时间表修复 · 支线驾驶与途中休息清晰分段",
+    updated: "V0.7.2时间表兼容修复 · 游玩、休息与午餐协同规划",
     controls: "设定旅行约束",
     days: "旅行天数",
     dates: "出发 / 返程",
@@ -235,7 +235,7 @@ const ui = {
     eyebrow: `${attractions.length} selectable stops · Multi-corridor graph · Bilingual`,
     heading: "Choose what you want to see. Let the planner decide what can actually fit.",
     intro: "The graph covers Hongyuan, Ruoergai, Jiuzhaigou, Huanglong, Lianbaoyeze and the Yajiang–Litang–Daocheng Yading corridor. Start/end points, dates, daylight, driving caps, visit time, altitude and overnight nodes all affect the route.",
-    updated: "V0.7.1 timeline fix · Explicit branch drives and en-route rests",
+    updated: "V0.7.2 timeline compatibility · Coordinated visits, rests and lunch",
     controls: "Set trip constraints",
     days: "Trip length",
     dates: "Departure / return",
@@ -858,10 +858,11 @@ function App() {
                         </div>
                         {day.agenda.map((item, index) => {
                           const attraction = item.attractionId ? getAttraction(item.attractionId) : undefined;
-                          const splitVisit = Boolean(item.attractionId && day.agenda.filter((candidate) => candidate.attractionId === item.attractionId).length > 1);
-                          const firstVisitSegment = !item.attractionId || day.agenda.findIndex((candidate) => candidate.attractionId === item.attractionId) === index;
+                          const visitSegments = item.attractionId ? day.agenda.filter((candidate) => candidate.kind === "visit" && candidate.attractionId === item.attractionId) : [];
+                          const splitVisit = item.kind === "visit" && visitSegments.length > 1;
+                          const firstVisitSegment = item.kind !== "visit" || visitSegments[0] === item;
                           const segmentHours = agendaDuration(item.startTime, item.endTime);
-                          const phase = item.kind === "lunch" ? copy.lunchBlock : isMorning(item.startTime) ? copy.morning : copy.afternoon;
+                          const phase = item.kind === "lunch" ? "" : isMorning(item.startTime) ? copy.morning : copy.afternoon;
                           const kind = item.kind === "drive" ? copy.driveBlock : item.kind === "visit" ? copy.visitBlock : item.kind === "rest" ? copy.restBlock : copy.lunchBlock;
                           const title = item.kind === "drive" && attraction && item.detourDirection
                             ? item.detourDirection === "outbound"
@@ -871,10 +872,11 @@ function App() {
                               ? `${text(routeAnchors[item.fromAnchorId].name, locale)} → ${text(routeAnchors[item.toAnchorId].name, locale)}${item.driveContinuation ? (locale === "zh" ? "（继续）" : " (continued)") : ""}`
                             : item.kind === "visit" && attraction ? text(attraction.name, locale)
                               : (item.kind === "rest" && item.road) ? `${item.road}${locale === "zh" ? "沿线正规休息点" : " formal roadside rest"}`
+                                : (item.kind === "lunch" && item.road) ? `${item.road}${locale === "zh" ? "沿线午餐停靠" : " en-route lunch stop"}`
                                 : (item.kind === "lunch" && attraction) ? text(attraction.name, locale)
                               : text(routeAnchors[item.anchorId].name, locale);
                           const detail = item.kind === "drive"
-                            ? `${item.detourDirection ? (locale === "zh" ? "景点支线" : "Attraction branch") : item.road} · ${item.distanceKm}km · ${item.driveHours}h`
+                            ? `${item.detourDirection ? (locale === "zh" ? "景点支线" : "Attraction branch") : item.road} · ${item.distanceKm}km · ${(item.driveHours ?? 0) < 0.2 ? `${Math.max(1, Math.round((item.driveHours ?? 0) * 60))}${locale === "zh" ? "分钟" : " min"}` : `${item.driveHours}h`}`
                             : item.kind === "visit" && attraction
                               ? splitVisit
                                 ? `${locale === "zh" ? (firstVisitSegment ? "本段游玩" : "午餐后继续游玩") : (firstVisitSegment ? "Visit segment" : "Continue visiting after lunch")} ${segmentHours}h · ${locale === "zh" ? "全天游玩合计" : "full-day visit total"} ${attraction.visitHours}h`
@@ -885,7 +887,7 @@ function App() {
                           return <div className={`agenda-item ${item.kind}`} key={`${day.day}-agenda-${index}`}>
                             <time>{item.startTime}–{item.endTime}</time>
                             <span className="agenda-dot">{item.kind === "drive" ? <Navigation size={14} /> : item.kind === "visit" ? <Sparkles size={14} /> : item.kind === "rest" ? <Coffee size={14} /> : <Utensils size={14} />}</span>
-                            <div><span className="agenda-phase">{phase} · {kind}</span><b>{title}</b><p>{detail}</p></div>
+                            <div><span className="agenda-phase">{phase ? `${phase} · ${kind}` : kind}</span><b>{title}</b><p>{detail}</p></div>
                           </div>;
                         })}
                         <div className="agenda-item meal-item">
@@ -1013,7 +1015,7 @@ function App() {
         </section>
       </div>}
 
-      <footer><span>{copy.footer}</span><span>v0.7.1 · 2026</span></footer>
+      <footer><span>{copy.footer}</span><span>v0.7.2 · 2026</span></footer>
     </div>
   );
 }

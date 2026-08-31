@@ -1,5 +1,16 @@
 # Release notes
 
+## V0.7.2 — timeline compatibility fixes
+
+- Visit labels now count only actual visit segments, so attraction-branch drives
+  cannot produce a false “continue after lunch” message.
+- Visits of at least 15 minutes reset continuous-driving time. A due road break
+  can merge into lunch, and breaks close to a road-node boundary move to the node.
+- Very short attraction detours retain both outbound and return legs with
+  minute-level display and distance totals that match the daily summary.
+- Lunch headings no longer repeat the same label twice, and an en-route lunch
+  states the road corridor instead of pretending to be at the destination town.
+
 ## V0.7.1 — clearer drive and visit timelines
 
 - Attraction detours are now shown as separate outbound drive, visit and return
