@@ -1,4 +1,4 @@
-import React, { FormEvent, useMemo, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   AlertTriangle,
@@ -85,7 +85,7 @@ const ui = {
     eyebrow: `${attractions.length}个可选停留 · 多走廊道路图 · 中英双语`,
     heading: "由你选择想看的地方，规划器负责判断怎样走得完。",
     intro: "路线网已覆盖红原、若尔盖、九寨沟、黄龙、莲宝叶则及雅江—理塘—稻城亚丁走廊。规划器根据任意起终点、日期日照、驾驶上限、游玩时长、海拔和住宿节点动态连线。",
-    updated: "V0.7.2时间表兼容修复 · 游玩、休息与午餐协同规划",
+    updated: "V0.8.0 · 144个景点、逐次充电路书与海拔可视化",
     controls: "设定旅行约束",
     days: "旅行天数",
     dates: "出发 / 返程",
@@ -142,6 +142,7 @@ const ui = {
     activities: "游玩",
     plannedBreak: "休息",
     mealBreak: "用餐",
+    evChargeTime: "补能",
     distance: "约",
     sleepAltitude: "住宿海拔",
     roads: "道路基线",
@@ -167,6 +168,8 @@ const ui = {
     evUsage: "预计使用",
     evCharge: "到达后建议补能",
     evRequired: "途中必须补能",
+    evChargeBlock: "充电补能",
+    evAllListed: "所有计划充电均已列入上方当天时间表，并计入预计结束时间。",
     evLegs: "当天电量分段",
     evStopUnverified: "周快照未核验到具体充电站，必须先用运营商或合规导航确认",
     evBlocked: "保守续航内没有可落脚的途中补能节点，本日方案不可直接执行",
@@ -177,7 +180,7 @@ const ui = {
     suggestedStop: "建议",
     selectedStop: "必去",
     agendaTitle: "当天时间表（估算）",
-    agendaIntro: "驾驶时间已加入道路规划余量；午餐和途中休息已计入当天总时长。",
+    agendaIntro: "驾驶时间已加入道路规划余量；午餐、途中休息和计划充电均计入当天总时长。",
     breakfast: "早餐",
     breakfastHint: "在住宿地附近完成早餐，并在计划出发前预留装车和检查车辆时间。",
     morning: "上午",
@@ -206,6 +209,15 @@ const ui = {
     save: "保存到本机",
     share: "复制分享链接",
     print: "打印 / PDF",
+    insights: "行程可视化",
+    insightsTitle: "海拔与每日负荷",
+    insightsIntro: "集中查看路线节点海拔、每日时间构成和住宿海拔变化，不挤占主路书空间。",
+    elevationProfile: "路线节点海拔剖面",
+    elevationNote: "按规划器道路节点连接的海拔示意，不是连续地形、坡度或导航级高程；实际道路会在节点之间起伏。",
+    dailyLoad: "每日时间构成",
+    sleepTrend: "住宿海拔变化",
+    loadLegend: "驾驶 / 游玩 / 休息与用餐 / 充电",
+    profileDistance: "道路节点链里程",
     saved: "已保存",
     shared: "链接已复制",
     lodgingTitle: "每日住宿落点",
@@ -221,8 +233,8 @@ const ui = {
     close: "关闭",
     weeklyStatus: "统一周更新状态",
     weeklyStatusBody: updateStatus.sourceResults.length > 0
-      ? `最近一次记录检查了 ${updateStatus.successfulSources}/${updateStatus.totalSources} 个官方入口；定时运行可能延迟，候选信息须审核后生效。`
-      : `统一周任务已配置，共 ${updateStatus.totalSources} 个官方入口；首次检查结果将在审核合并后显示。`,
+      ? `最近一次记录检查了 ${updateStatus.successfulSources}/${updateStatus.totalSources} 个数据入口；定时运行可能延迟，候选信息须审核后生效。`
+      : `统一周任务已配置，共 ${updateStatus.totalSources} 个数据入口；首次检查结果将在审核合并后显示。`,
     footer: "数据与产品维护：colfeng · 安全约束优先于景点数量",
   },
   en: {
@@ -235,7 +247,7 @@ const ui = {
     eyebrow: `${attractions.length} selectable stops · Multi-corridor graph · Bilingual`,
     heading: "Choose what you want to see. Let the planner decide what can actually fit.",
     intro: "The graph covers Hongyuan, Ruoergai, Jiuzhaigou, Huanglong, Lianbaoyeze and the Yajiang–Litang–Daocheng Yading corridor. Start/end points, dates, daylight, driving caps, visit time, altitude and overnight nodes all affect the route.",
-    updated: "V0.7.2 timeline compatibility · Coordinated visits, rests and lunch",
+    updated: "V0.8.0 · 144 places, timed charging and elevation visuals",
     controls: "Set trip constraints",
     days: "Trip length",
     dates: "Departure / return",
@@ -292,6 +304,7 @@ const ui = {
     activities: "Activities",
     plannedBreak: "Rest",
     mealBreak: "Meals",
+    evChargeTime: "Charging",
     distance: "Approx.",
     sleepAltitude: "Sleep altitude",
     roads: "Road baseline",
@@ -317,6 +330,8 @@ const ui = {
     evUsage: "Planned use",
     evCharge: "Suggested top-up after arrival",
     evRequired: "Required en-route charge",
+    evChargeBlock: "EV charging",
+    evAllListed: "Every planned charge is listed in the day timeline above and included in the estimated finish time.",
     evLegs: "Day's battery legs",
     evStopUnverified: "No specific charger is verified in the weekly snapshot; confirm first with the operator or a licensed navigation service",
     evBlocked: "No reachable en-route charging node fits the conservative range; do not use this day plan as-is",
@@ -327,7 +342,7 @@ const ui = {
     suggestedStop: "Suggested",
     selectedStop: "Must-see",
     agendaTitle: "Estimated day timeline",
-    agendaIntro: "Driving includes a road-planning margin; lunch and road rests are included in the day's total time.",
+    agendaIntro: "Driving includes a road-planning margin; lunch, road rests and planned charging are included in the day's total time.",
     breakfast: "Breakfast",
     breakfastHint: "Eat near the overnight area and leave time for loading and a vehicle check before departure.",
     morning: "Morning",
@@ -356,6 +371,15 @@ const ui = {
     save: "Save locally",
     share: "Copy share link",
     print: "Print / PDF",
+    insights: "Trip visuals",
+    insightsTitle: "Elevation & daily load",
+    insightsIntro: "Inspect route-node elevation, daily time allocation and sleeping-altitude changes without crowding the roadbook.",
+    elevationProfile: "Route-node elevation profile",
+    elevationNote: "A schematic joining planner road nodes—not continuous terrain, gradient or navigation-grade elevation. The real road rises and falls between nodes.",
+    dailyLoad: "Daily time allocation",
+    sleepTrend: "Sleeping-altitude trend",
+    loadLegend: "Drive / visit / rest & meals / charging",
+    profileDistance: "Road-node chain distance",
     saved: "Saved",
     shared: "Link copied",
     lodgingTitle: "Daily overnight stop",
@@ -371,8 +395,8 @@ const ui = {
     close: "Close",
     weeklyStatus: "Unified weekly update status",
     weeklyStatusBody: updateStatus.sourceResults.length > 0
-      ? `The latest recorded run checked ${updateStatus.successfulSources}/${updateStatus.totalSources} official entry points. Scheduled runs may be delayed and candidates require review.`
-      : `The unified weekly job is configured for ${updateStatus.totalSources} official entry points. Its first result will appear after review and merge.`,
+      ? `The latest recorded run checked ${updateStatus.successfulSources}/${updateStatus.totalSources} data entry points. Scheduled runs may be delayed and candidates require review.`
+      : `The unified weekly job is configured for ${updateStatus.totalSources} data entry points. Its first result will appear after review and merge.`,
     footer: "Data and product maintained by colfeng · Safety constraints outrank attraction count",
   },
 };
@@ -435,6 +459,7 @@ function App() {
   const [notice, setNotice] = useState(false);
   const [actionNotice, setActionNotice] = useState("");
   const [detailAttractionId, setDetailAttractionId] = useState<string | null>(null);
+  const [insightsOpen, setInsightsOpen] = useState(false);
   const copy = ui[locale];
   const dirty = !sameInput(draft, applied);
   const heroImage = `${import.meta.env.BASE_URL}images/mount-siguniang-road.jpg`;
@@ -444,6 +469,30 @@ function App() {
   const selectedSet = useMemo(() => new Set(draft.selectedAttractionIds), [draft.selectedAttractionIds]);
   const activeSuggestedSet = useMemo(() => new Set(activePlan.suggestedAttractionIds), [activePlan.suggestedAttractionIds]);
   const activeSelectedSet = useMemo(() => new Set(activePlan.selectedAttractionIds), [activePlan.selectedAttractionIds]);
+  const elevationPoints = useMemo(() => {
+    const points: Array<{ anchorId: string; distanceKm: number; day: number }> = [];
+    let distanceKm = 0;
+    activePlan.schedule.forEach((day) => {
+      if (points.length === 0) points.push({ anchorId: day.startAnchorId, distanceKm, day: day.day });
+      day.routeSteps.forEach((step) => {
+        distanceKm += step.distanceKm;
+        const previous = points.at(-1);
+        if (previous?.anchorId === step.toAnchorId) previous.distanceKm = distanceKm;
+        else points.push({ anchorId: step.toAnchorId, distanceKm, day: day.day });
+      });
+      if (points.at(-1)?.anchorId !== day.endAnchorId) points.push({ anchorId: day.endAnchorId, distanceKm, day: day.day });
+    });
+    return points;
+  }, [activePlan]);
+
+  useEffect(() => {
+    if (!detailAttractionId && !insightsOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const close = (event: KeyboardEvent) => { if (event.key === "Escape") { setDetailAttractionId(null); setInsightsOpen(false); } };
+    document.addEventListener("keydown", close);
+    return () => { document.removeEventListener("keydown", close); document.body.style.overflow = previousOverflow; };
+  }, [detailAttractionId, insightsOpen]);
 
   const visibleAttractions = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -777,6 +826,7 @@ function App() {
             </div>
 
             <div className="plan-actions">
+              <button type="button" aria-expanded={insightsOpen} onClick={() => setInsightsOpen(true)}><MountainSnow size={15} />{copy.insights}</button>
               <button type="button" onClick={savePlan}><Save size={15} />{copy.save}</button>
               <button type="button" onClick={sharePlan}><Share2 size={15} />{copy.share}</button>
               <button type="button" onClick={() => window.print()}><Printer size={15} />{copy.print}</button>
@@ -841,6 +891,7 @@ function App() {
                       <span><Sparkles size={15} /> {copy.activities} {day.activityHours}h</span>
                       {day.restHours > 0 && <span><Coffee size={15} /> {copy.plannedBreak} {day.restHours}h</span>}
                       {day.mealHours > 0 && <span><Utensils size={15} /> {copy.mealBreak} {day.mealHours}h</span>}
+                      {day.chargeHours > 0 && <span><BatteryCharging size={15} /> {copy.evChargeTime} {day.chargeHours}h</span>}
                       <span><Gauge size={15} /> {copy.distance} {day.distanceKm}km</span>
                       <span><Sun size={15} /> {copy.daylight} {day.sunrise}–{day.sunset}</span>
                       <span><Clock3 size={15} /> {copy.estimatedWindow} {day.departureTime}–{day.estimatedArrivalTime}</span>
@@ -863,7 +914,7 @@ function App() {
                           const firstVisitSegment = item.kind !== "visit" || visitSegments[0] === item;
                           const segmentHours = agendaDuration(item.startTime, item.endTime);
                           const phase = item.kind === "lunch" ? "" : isMorning(item.startTime) ? copy.morning : copy.afternoon;
-                          const kind = item.kind === "drive" ? copy.driveBlock : item.kind === "visit" ? copy.visitBlock : item.kind === "rest" ? copy.restBlock : copy.lunchBlock;
+                          const kind = item.kind === "drive" ? copy.driveBlock : item.kind === "visit" ? copy.visitBlock : item.kind === "rest" ? copy.restBlock : item.kind === "charge" ? copy.evChargeBlock : copy.lunchBlock;
                           const title = item.kind === "drive" && attraction && item.detourDirection
                             ? item.detourDirection === "outbound"
                               ? `${text(routeAnchors[item.anchorId].name, locale)} → ${text(attraction.name, locale)}`
@@ -874,6 +925,7 @@ function App() {
                               : (item.kind === "rest" && item.road) ? `${item.road}${locale === "zh" ? "沿线正规休息点" : " formal roadside rest"}`
                                 : (item.kind === "lunch" && item.road) ? `${item.road}${locale === "zh" ? "沿线午餐停靠" : " en-route lunch stop"}`
                                 : (item.kind === "lunch" && attraction) ? text(attraction.name, locale)
+                                  : item.kind === "charge" ? text(routeAnchors[item.anchorId].name, locale)
                               : text(routeAnchors[item.anchorId].name, locale);
                           const detail = item.kind === "drive"
                             ? `${item.detourDirection ? (locale === "zh" ? "景点支线" : "Attraction branch") : item.road} · ${item.distanceKm}km · ${(item.driveHours ?? 0) < 0.2 ? `${Math.max(1, Math.round((item.driveHours ?? 0) * 60))}${locale === "zh" ? "分钟" : " min"}` : `${item.driveHours}h`}`
@@ -883,10 +935,12 @@ function App() {
                                 : `${locale === "zh" ? "游玩" : "Visit"} ${attraction.visitHours}h`
                               : item.kind === "rest"
                                 ? (locale === "zh" ? "进入正规服务区或停车区休息，不在路肩停车。" : "Use a formal service or parking area; never stop on the shoulder.")
+                                : item.kind === "charge"
+                                  ? `${item.chargeKind === "destination" ? copy.evCharge : copy.evRequired} · ${item.chargeMinutes}min · ${item.chargerCount && item.chargerCount > 0 ? (locale === "zh" ? `周快照${item.chargerCount}个候选点` : `${item.chargerCount} weekly-snapshot candidate(s)`) : copy.evStopUnverified}`
                                 : copy.lunchHint;
                           return <div className={`agenda-item ${item.kind}`} key={`${day.day}-agenda-${index}`}>
                             <time>{item.startTime}–{item.endTime}</time>
-                            <span className="agenda-dot">{item.kind === "drive" ? <Navigation size={14} /> : item.kind === "visit" ? <Sparkles size={14} /> : item.kind === "rest" ? <Coffee size={14} /> : <Utensils size={14} />}</span>
+                            <span className="agenda-dot">{item.kind === "drive" ? <Navigation size={14} /> : item.kind === "visit" ? <Sparkles size={14} /> : item.kind === "rest" ? <Coffee size={14} /> : item.kind === "charge" ? <BatteryCharging size={14} /> : <Utensils size={14} />}</span>
                             <div><span className="agenda-phase">{phase ? `${phase} · ${kind}` : kind}</span><b>{title}</b><p>{detail}</p></div>
                           </div>;
                         })}
@@ -925,14 +979,16 @@ function App() {
 
                     {day.evPlan && <section className={`ev-day-plan ev-${day.evPlan.status}`}>
                       <div className="ev-title"><BatteryCharging size={20} /><div><b>{copy.evTitle}</b><small>{copy.evEstimate}</small></div></div>
-                      <div className="ev-numbers"><span><b>{day.evPlan.safeBudgetKm} km</b><small>{copy.evSafeBudget}</small></span><span><b>{day.evPlan.usagePercent}%</b><small>{copy.evUsage}</small></span><span><b>{day.evPlan.chargeStops.length} {locale === "zh" ? "次" : day.evPlan.chargeStops.length === 1 ? "stop" : "stops"}</b><small>{day.evPlan.chargeStops.length > 0 ? copy.evRequired : copy.evCharge}</small></span></div>
+                      <div className="ev-numbers"><span><b>{day.evPlan.safeBudgetKm} km</b><small>{copy.evSafeBudget}</small></span><span><b>{day.evPlan.usagePercent}%</b><small>{copy.evUsage}</small></span><span><b>{day.evPlan.chargeStops.length + (day.evPlan.destinationTopUpMinutes > 0 ? 1 : 0)} {locale === "zh" ? "次" : day.evPlan.chargeStops.length + (day.evPlan.destinationTopUpMinutes > 0 ? 1 : 0) === 1 ? "stop" : "stops"}</b><small>{copy.evChargeTime} · {day.chargeHours}h</small></span></div>
                       <div className="ev-meter"><i style={{ width: `${Math.min(100, day.evPlan.usagePercent)}%` }} /></div>
                       <b className="ev-leg-title">{copy.evLegs}</b>
                       <ol className="ev-leg-list">{day.evPlan.travelLegs.map((leg, legIndex) => {
                         const stop = day.evPlan!.chargeStops[legIndex];
-                        return <li key={`${leg.fromAnchorId}-${leg.toAnchorId}-${legIndex}`}><span>{text(routeAnchors[leg.fromAnchorId].name, locale)} → {text(routeAnchors[leg.toAnchorId].name, locale)} · {leg.distanceKm}km</span>{stop && <small><BatteryCharging size={13} />{copy.evRequired}：<a href={amapSearchUrl(stop.anchorId, locale === "zh" ? "充电站" : "charging station")} target="_blank" rel="noreferrer">{text(routeAnchors[stop.anchorId].name, locale)}</a> · {stop.estimatedChargeMinutes}min{stop.chargerCount > 0 ? ` · ${locale === "zh" ? `周快照${stop.chargerCount}个候选` : `${stop.chargerCount} weekly-snapshot candidate(s)`}` : ` · ${copy.evStopUnverified}`}</small>}</li>;
+                        const candidates = stop ? servicesNearAnchors([stop.anchorId], ["charging"], 3) : [];
+                        return <li key={`${leg.fromAnchorId}-${leg.toAnchorId}-${legIndex}`}><span>{text(routeAnchors[leg.fromAnchorId].name, locale)} → {text(routeAnchors[leg.toAnchorId].name, locale)} · {leg.distanceKm}km</span>{stop && <><small><BatteryCharging size={13} />{copy.evRequired}：<a href={amapSearchUrl(stop.anchorId, locale === "zh" ? "充电站" : "charging station")} target="_blank" rel="noreferrer">{text(routeAnchors[stop.anchorId].name, locale)}</a> · {stop.estimatedChargeMinutes}min{stop.chargerCount === 0 ? ` · ${copy.evStopUnverified}` : ""}</small>{candidates.length > 0 && <div className="ev-candidates">{candidates.map((point) => <a key={point.id} href={point.sourceUrl} target="_blank" rel="noreferrer">{text(point.name, locale)}</a>)}</div>}</>}</li>;
                       })}</ol>
-                      {day.evPlan.destinationTopUpMinutes > 0 && <p><BatteryCharging size={14} />{copy.evCharge}：<b>{text(routeAnchors[day.endAnchorId].name, locale)}</b> · {day.evPlan.destinationTopUpMinutes}min；{locale === "zh" ? "这不是当天唯一一次充电，途中必充点见上方。" : "This is not the day's only charge; required en-route stops are listed above."}</p>}
+                      {day.evPlan.destinationTopUpMinutes > 0 && <><p><BatteryCharging size={14} />{copy.evCharge}：<a href={amapSearchUrl(day.endAnchorId, locale === "zh" ? "充电站" : "charging station")} target="_blank" rel="noreferrer"><b>{text(routeAnchors[day.endAnchorId].name, locale)}</b></a> · {day.evPlan.destinationTopUpMinutes}min{day.evPlan.destinationChargerCount === 0 ? ` · ${copy.evStopUnverified}` : ""}</p>{servicesNearAnchors([day.endAnchorId], ["charging"], 3).length > 0 && <div className="ev-candidates">{servicesNearAnchors([day.endAnchorId], ["charging"], 3).map((point) => <a key={point.id} href={point.sourceUrl} target="_blank" rel="noreferrer">{text(point.name, locale)}</a>)}</div>}</>}
+                      {(day.evPlan.chargeStops.length > 0 || day.evPlan.destinationTopUpMinutes > 0) && <p><ShieldCheck size={14} />{copy.evAllListed}</p>}
                       {day.evPlan.status === "blocked" && <p className="ev-blocked"><AlertTriangle size={14} />{copy.evBlocked}：{text(routeAnchors[day.evPlan.unresolvedBeforeAnchorId ?? day.endAnchorId].name, locale)}</p>}
                       {day.evPlan.status === "verify" && <p><AlertTriangle size={14} />{copy.evStopUnverified}。</p>}
                       {day.evPlan.chargeStops.length === 0 && day.evPlan.destinationTopUpMinutes === 0 && <p><ShieldCheck size={14} />{locale === "zh" ? "本日不需要途中补能；仍应满电或按计划电量出发。" : "No en-route charge is needed today; still depart at the planned state of charge."}</p>}
@@ -992,6 +1048,51 @@ function App() {
         </section>
       </main>
 
+      {insightsOpen && <div className="detail-overlay" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) setInsightsOpen(false); }}>
+        <section className="detail-drawer insights-drawer" role="dialog" aria-modal="true" aria-labelledby="insights-title">
+          <button className="drawer-close" type="button" aria-label={copy.close} onClick={() => setInsightsOpen(false)}><X size={19} /></button>
+          <p className="mini-label">TRIP INSIGHTS / 行程可视化</p>
+          <h2 id="insights-title">{copy.insightsTitle}</h2>
+          <p className="drawer-summary">{copy.insightsIntro}</p>
+
+          <section className="insight-card elevation-card">
+            <div className="insight-heading"><div><b>{copy.elevationProfile}</b><small>{elevationPoints.length} {locale === "zh" ? "个路线节点" : "route nodes"}</small></div><MountainSnow size={19} /></div>
+            {elevationPoints.length > 0 && (() => {
+              const altitudes = elevationPoints.map((point) => routeAnchors[point.anchorId].altitude);
+              const minAltitude = Math.min(...altitudes); const maxAltitude = Math.max(...altitudes);
+              const range = Math.max(500, maxAltitude - minAltitude); const totalDistance = Math.max(1, elevationPoints.at(-1)?.distanceKm ?? 1);
+              const coordinates = elevationPoints.map((point) => ({ ...point, x: 34 + point.distanceKm / totalDistance * 532, y: 186 - (routeAnchors[point.anchorId].altitude - minAltitude) / range * 132 }));
+              const line = coordinates.map((point) => `${point.x},${point.y}`).join(" ");
+              const area = `34,190 ${line} 566,190`;
+              const labeled = new Set([0, coordinates.length - 1, altitudes.indexOf(maxAltitude), altitudes.indexOf(minAltitude), ...activePlan.schedule.map((day) => coordinates.findIndex((point) => point.anchorId === day.endAnchorId)).filter((index) => index >= 0)]);
+              return <>
+                <div className="elevation-svg-wrap"><svg viewBox="0 0 600 230" role="img" aria-label={`${copy.elevationProfile}: ${minAltitude}–${maxAltitude}m`}>
+                  {[0, .5, 1].map((ratio) => { const y = 186 - ratio * 132; const altitude = Math.round(minAltitude + ratio * range); return <g key={ratio}><line x1="34" y1={y} x2="566" y2={y} className="elevation-grid" /><text x="2" y={y + 4} className="elevation-axis">{altitude}m</text></g>; })}
+                  <polygon points={area} className="elevation-area" /><polyline points={line} className="elevation-line" />
+                  {coordinates.map((point, index) => <g key={`${point.anchorId}-${index}`}><circle cx={point.x} cy={point.y} r={labeled.has(index) ? 4 : 2.4} className={labeled.has(index) ? "elevation-dot labeled" : "elevation-dot"}><title>{text(routeAnchors[point.anchorId].name, locale)} · {routeAnchors[point.anchorId].altitude}m · {Math.round(point.distanceKm)}km</title></circle>{labeled.has(index) && <text x={point.x} y={index % 2 === 0 ? 211 : 224} textAnchor="middle" className="elevation-label">{text(routeAnchors[point.anchorId].name, locale)}</text>}</g>)}
+                </svg></div>
+                <div className="profile-stats"><span><b>{minAltitude}m</b><small>{locale === "zh" ? "最低节点" : "Lowest node"}</small></span><span><b>{maxAltitude}m</b><small>{locale === "zh" ? "最高节点" : "Highest node"}</small></span><span><b>{Math.round(totalDistance)}km</b><small>{copy.profileDistance}</small></span></div>
+              </>;
+            })()}
+            <p className="insight-note"><Info size={14} />{copy.elevationNote}</p>
+          </section>
+
+          <section className="insight-card">
+            <div className="insight-heading"><div><b>{copy.dailyLoad}</b><small>{copy.loadLegend}</small></div><Clock3 size={19} /></div>
+            <div className="load-chart">{activePlan.schedule.map((day) => {
+              const restMeal = day.restHours + day.mealHours; const total = Math.max(1, day.dutyHours);
+              return <div className="load-row" key={`load-${day.day}`}><b>D{day.day}</b><div className="load-bar" title={`${day.dutyHours}h`}><i className="load-drive" style={{ width: `${day.driveHours / total * 100}%` }} /><i className="load-visit" style={{ width: `${day.activityHours / total * 100}%` }} /><i className="load-rest" style={{ width: `${restMeal / total * 100}%` }} />{day.chargeHours > 0 && <i className="load-charge" style={{ width: `${day.chargeHours / total * 100}%` }} />}</div><span>{day.dutyHours}h</span></div>;
+            })}</div>
+            <div className="load-legend"><span className="drive">{copy.pureDrive}</span><span className="visit">{copy.activities}</span><span className="rest">{copy.plannedBreak} + {copy.mealBreak}</span><span className="charge">{copy.evChargeTime}</span></div>
+          </section>
+
+          <section className="insight-card">
+            <div className="insight-heading"><div><b>{copy.sleepTrend}</b><small>{locale === "zh" ? "用于观察逐日住宿海拔，不构成高反医学判断" : "Shows overnight progression; not a medical altitude-risk assessment"}</small></div><BedDouble size={19} /></div>
+            <div className="sleep-chart">{activePlan.schedule.map((day) => <div className="sleep-column" key={`sleep-${day.day}`}><span>{day.sleepAltitude}m</span><i style={{ height: `${Math.max(10, day.sleepAltitude / 4500 * 100)}%` }} /><b>D{day.day}</b></div>)}</div>
+          </section>
+        </section>
+      </div>}
+
       {detailAttraction && <div className="detail-overlay" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) setDetailAttractionId(null); }}>
         <section className="detail-drawer" role="dialog" aria-modal="true" aria-labelledby="attraction-detail-title">
           <button className="drawer-close" type="button" aria-label={copy.close} onClick={() => setDetailAttractionId(null)}><X size={20} /></button>
@@ -1015,7 +1116,7 @@ function App() {
         </section>
       </div>}
 
-      <footer><span>{copy.footer}</span><span>v0.7.2 · 2026</span></footer>
+      <footer><span>{copy.footer}</span><span>v0.8.0 · 2026</span></footer>
     </div>
   );
 }
