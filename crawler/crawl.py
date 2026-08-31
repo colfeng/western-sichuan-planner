@@ -21,7 +21,7 @@ OUTPUT_PATH = ROOT / "data" / "pending-updates.json"
 STATUS_PATH = ROOT / "data" / "update-status.json"
 OSM_SERVICES_PATH = ROOT / "data" / "osm-service-points.json"
 ROAD_SEGMENTS_PATH = ROOT / "crawler" / "road-segments.json"
-USER_AGENT = "WesternSichuanPlanner/0.7.0 (+https://github.com/colfeng/western-sichuan-planner)"
+USER_AGENT = "WesternSichuanPlanner/0.8.0 (+https://github.com/colfeng/western-sichuan-planner)"
 
 
 class LinkParser(HTMLParser):
@@ -153,6 +153,8 @@ def analyse_road_candidate(title: str, url: str) -> dict[str, object]:
 def discover(source: dict[str, object]) -> list[dict[str, object]]:
     parser = LinkParser()
     parser.feed(fetch(str(source["list_url"])))
+    if not parser.links:
+        raise RuntimeError("official page returned no parseable links; preserving the previous snapshot")
     allowed = set(source["allowed_domains"])
     keywords = tuple(source["keywords"])
     results: list[dict[str, object]] = []
@@ -259,6 +261,17 @@ def refresh_osm_services(attempted_at: str) -> int:
         point.pop("_distanceSq", None)
         nearby_points.append(point)
     points = nearby_points
+    if not points:
+        raise RuntimeError("OpenStreetMap returned no usable nearby facilities; preserving the previous snapshot")
+    previous_count = 0
+    if OSM_SERVICES_PATH.exists():
+        try:
+            previous_count = len(json.loads(OSM_SERVICES_PATH.read_text(encoding="utf-8")).get("points", []))
+        except (OSError, ValueError, TypeError):
+            previous_count = 0
+    minimum_safe_count = max(10, previous_count // 4) if previous_count >= 40 else 1
+    if len(points) < minimum_safe_count:
+        raise RuntimeError(f"OpenStreetMap facility count fell from {previous_count} to {len(points)}; preserving the previous snapshot")
     OSM_SERVICES_PATH.write_text(json.dumps({
         "schemaVersion": 1,
         "updatedAt": attempted_at,
@@ -323,7 +336,7 @@ def main() -> int:
         if item.get("sourceId") not in successful_source_ids or item.get("lastSeenAt") == attempted_at
     ), key=lambda item: (item.get("lastSeenAt", ""), item.get("discoveredAt", "")), reverse=True)
     OUTPUT_PATH.write_text(json.dumps(events, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {len(events)} pending candidates and checked {successful}/{len(sources)} sources")
+    print(f"Wrote {len(events)} pending candidates and checked {successful}/{len(sources) + 1} data sources")
     return 0
 
 

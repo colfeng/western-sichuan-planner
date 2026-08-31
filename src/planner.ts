@@ -8,10 +8,10 @@ export type PlannerInput = { days: number; maxDrive: number; priority: Strategy;
 export type PlanWarning = { code: string; severity: "warn" | "block"; day?: number; message: Copy };
 export type EvChargeStop = { anchorId: string; legDistanceKm: number; estimatedChargeMinutes: number; chargerCount: number; required: boolean };
 export type EvTravelLeg = { fromAnchorId: string; toAnchorId: string; distanceKm: number };
-export type EvDayPlan = { safeBudgetKm: number; usagePercent: number; status: "ok" | "arrival" | "verify" | "blocked"; chargeStops: EvChargeStop[]; travelLegs: EvTravelLeg[]; destinationTopUpMinutes: number; unresolvedBeforeAnchorId?: string };
+export type EvDayPlan = { safeBudgetKm: number; usagePercent: number; status: "ok" | "arrival" | "verify" | "blocked"; chargeStops: EvChargeStop[]; travelLegs: EvTravelLeg[]; destinationTopUpMinutes: number; destinationChargerCount: number; unresolvedBeforeAnchorId?: string };
 export type DayRouteStep = { legId: string; fromAnchorId: string; toAnchorId: string; road: string; driveHours: number; distanceKm: number };
-export type DayAgendaItem = { kind: "drive" | "visit" | "rest" | "lunch"; startTime: string; endTime: string; anchorId: string; fromAnchorId?: string; toAnchorId?: string; attractionId?: string; road?: string; driveHours?: number; distanceKm?: number; detourDirection?: "outbound" | "return"; driveContinuation?: boolean };
-export type PlanDay = { day: number; date: string; sunrise: string; sunset: string; daylightHours: number; departureTime: string; estimatedArrivalTime: string; daylightMarginMinutes: number; startAnchorId: string; endAnchorId: string; viaAnchorIds: string[]; routeSteps: DayRouteStep[]; agenda: DayAgendaItem[]; driveHours: number; distanceKm: number; activityHours: number; restHours: number; mealHours: number; dutyHours: number; freeHours: number; sleepAltitude: number; attractionIds: string[]; roads: string[]; legIds: string[]; evPlan?: EvDayPlan };
+export type DayAgendaItem = { kind: "drive" | "visit" | "rest" | "lunch" | "charge"; startTime: string; endTime: string; anchorId: string; fromAnchorId?: string; toAnchorId?: string; attractionId?: string; road?: string; driveHours?: number; distanceKm?: number; detourDirection?: "outbound" | "return"; driveContinuation?: boolean; chargeKind?: "enroute" | "destination"; chargeMinutes?: number; chargerCount?: number };
+export type PlanDay = { day: number; date: string; sunrise: string; sunset: string; daylightHours: number; departureTime: string; estimatedArrivalTime: string; daylightMarginMinutes: number; startAnchorId: string; endAnchorId: string; viaAnchorIds: string[]; routeSteps: DayRouteStep[]; agenda: DayAgendaItem[]; driveHours: number; distanceKm: number; activityHours: number; restHours: number; mealHours: number; chargeHours: number; dutyHours: number; freeHours: number; sleepAltitude: number; attractionIds: string[]; roads: string[]; legIds: string[]; evPlan?: EvDayPlan };
 export type PlanOption = { id: Strategy; title: Copy; subtitle: Copy; routeKind: "network"; routeAnchorIds: string[]; schedule: PlanDay[]; warnings: PlanWarning[]; feasible: boolean; score: number; selectedAttractionIds: string[]; suggestedAttractionIds: string[]; minimumDays: number | null; totalDriveHours: number; totalDistanceKm: number; activeRoadEventCount: number };
 type Task = { kind: "travel" | "visit"; fromAnchorId: string; toAnchorId: string; driveHours: number; distanceKm: number; activityHours: number; road?: string; legId?: string; evLimited?: boolean; attractionId?: string; effort?: Attraction["effort"] };
 type Segment = { start: number; end: number };
@@ -100,28 +100,34 @@ function evPlanFrom(value: ReturnType<typeof summarize>, input: PlannerInput): E
   const totalKm = Math.max(value.distanceKm, cumulative);
   const chargeStops: EvChargeStop[] = [];
   const travelLegs: EvTravelLeg[] = [];
+  const chargerCountAt = (anchorId: string) => osmServicePoints.filter((point) => point.anchorId === anchorId && point.types.includes("charging")).length;
   let startIndex = 0;
   let startDistance = 0;
   while (totalKm - startDistance > safeBudgetKm) {
-    let candidateIndex = -1;
+    let candidateIndex = -1; let verifiedCandidateIndex = -1;
     for (let index = startIndex + 1; index < nodes.length - 1; index += 1) {
-      if (nodes[index].distanceKm - startDistance <= safeBudgetKm && routeAnchors[nodes[index].anchorId]?.canStay) candidateIndex = index;
+      if (nodes[index].distanceKm - startDistance <= safeBudgetKm && routeAnchors[nodes[index].anchorId]?.canStay) {
+        candidateIndex = index; if (chargerCountAt(nodes[index].anchorId) > 0) verifiedCandidateIndex = index;
+      }
     }
+    if (verifiedCandidateIndex >= 0) candidateIndex = verifiedCandidateIndex;
     if (candidateIndex < 0) {
       const next = nodes.find((node) => node.distanceKm > startDistance + safeBudgetKm);
-      return { safeBudgetKm, usagePercent, status: "blocked", chargeStops, travelLegs, destinationTopUpMinutes: 0, unresolvedBeforeAnchorId: next?.anchorId ?? value.endAnchorId };
+      return { safeBudgetKm, usagePercent, status: "blocked", chargeStops, travelLegs, destinationTopUpMinutes: 0, destinationChargerCount: 0, unresolvedBeforeAnchorId: next?.anchorId ?? value.endAnchorId };
     }
     const stop = nodes[candidateIndex]; const legDistanceKm = Math.round(stop.distanceKm - startDistance);
     travelLegs.push({ fromAnchorId: nodes[startIndex].anchorId, toAnchorId: stop.anchorId, distanceKm: legDistanceKm });
-    const chargerCount = osmServicePoints.filter((point) => point.anchorId === stop.anchorId && point.types.includes("charging")).length;
+    const chargerCount = chargerCountAt(stop.anchorId);
     chargeStops.push({ anchorId: stop.anchorId, legDistanceKm, estimatedChargeMinutes: Math.max(20, Math.ceil(legDistanceKm * 0.22 / 10) * 10), chargerCount, required: true });
     startIndex = candidateIndex; startDistance = stop.distanceKm;
   }
   const finalDistance = Math.round(totalKm - startDistance);
   travelLegs.push({ fromAnchorId: nodes[startIndex].anchorId, toAnchorId: value.endAnchorId, distanceKm: finalDistance });
   const destinationTopUpMinutes = finalDistance >= safeBudgetKm * 0.55 ? Math.max(20, Math.ceil(finalDistance * 0.22 / 10) * 10) : 0;
-  const status = chargeStops.length > 0 ? (chargeStops.every((stop) => stop.chargerCount > 0) ? "ok" : "verify") : destinationTopUpMinutes > 0 ? "arrival" : "ok";
-  return { safeBudgetKm, usagePercent, status, chargeStops, travelLegs, destinationTopUpMinutes };
+  const destinationChargerCount = destinationTopUpMinutes > 0 ? chargerCountAt(value.endAnchorId) : 0;
+  const unverified = chargeStops.some((stop) => stop.chargerCount === 0) || (destinationTopUpMinutes > 0 && destinationChargerCount === 0);
+  const status = unverified ? "verify" : chargeStops.length > 0 ? "ok" : destinationTopUpMinutes > 0 ? "arrival" : "ok";
+  return { safeBudgetKm, usagePercent, status, chargeStops, travelLegs, destinationTopUpMinutes, destinationChargerCount };
 }
 function agendaFrom(tasks: Task[], segment: Segment, input: PlannerInput, mealHours: number): DayAgendaItem[] {
   const agenda: DayAgendaItem[] = []; const slice = tasks.slice(segment.start, segment.end); let current = timeToHours(input.departureTime); let lunchRemaining = mealHours; let driveSinceRest = 0; let lastRestEnd = -Infinity; let currentAnchor = slice[0]?.fromAnchorId ?? input.startAnchorId;
@@ -197,8 +203,28 @@ function agendaFrom(tasks: Task[], segment: Segment, input: PlannerInput, mealHo
   if (lunchRemaining > 0 && current >= 11.25) addPause("lunch", lunchRemaining);
   return agenda;
 }
+function agendaWithEvCharges(agenda: DayAgendaItem[], evPlan: EvDayPlan, endAnchorId: string, departureTime: string): DayAgendaItem[] {
+  const result = agenda.map((item) => ({ ...item }));
+  let searchFrom = 0;
+  for (const stop of evPlan.chargeStops) {
+    const arrivalIndexes = result.flatMap((item, index) => index >= searchFrom && item.kind === "drive" && !item.detourDirection && item.toAnchorId === stop.anchorId ? [index] : []);
+    const arrivalIndex = arrivalIndexes.at(-1);
+    if (arrivalIndex === undefined) continue;
+    let insertIndex = arrivalIndex + 1;
+    if (result[insertIndex]?.kind === "rest") result.splice(insertIndex, 1);
+    result.splice(insertIndex, 0, { kind: "charge", startTime: "00:00", endTime: "00:00", anchorId: stop.anchorId, chargeKind: "enroute", chargeMinutes: stop.estimatedChargeMinutes, chargerCount: stop.chargerCount });
+    searchFrom = insertIndex + 1;
+  }
+  if (evPlan.destinationTopUpMinutes > 0) result.push({ kind: "charge", startTime: "00:00", endTime: "00:00", anchorId: endAnchorId, chargeKind: "destination", chargeMinutes: evPlan.destinationTopUpMinutes, chargerCount: evPlan.destinationChargerCount });
+  let current = timeToHours(departureTime);
+  return result.map((item) => {
+    const duration = item.kind === "charge" ? (item.chargeMinutes ?? 0) / 60 : (timeToHours(item.endTime) - timeToHours(item.startTime) + 24) % 24;
+    const startTime = hoursToTime(current); current += duration;
+    return { ...item, startTime, endTime: hoursToTime(current) };
+  });
+}
 function segmentCost(tasks: Task[], start: number, end: number, day: number, input: PlannerInput, strategy: Strategy, target: number): number {
-  const value = summarize(tasks, start, end); const coordinate = anchorCoordinates[value.endAnchorId]; const light = daylight(addDays(input.startDate, day), coordinate.latitude, coordinate.longitude); const breaks = plannedBreaks(value.driveHours, value.activityHours); const duty = value.driveHours + value.activityHours + breaks.restHours + breaks.mealHours; const daylightLimit = timeToHours(light.sunset) - 0.5 - timeToHours(input.departureTime); const dutyLimit = input.avoidNight ? Math.max(0.5, daylightLimit) : 10.5; const gain = routeAnchors[value.endAnchorId].altitude - routeAnchors[value.startAnchorId].altitude;
+  const value = summarize(tasks, start, end); const coordinate = anchorCoordinates[value.endAnchorId]; const light = daylight(addDays(input.startDate, day), coordinate.latitude, coordinate.longitude); const breaks = plannedBreaks(value.driveHours, value.activityHours); const evPlan = input.vehicle === "ev" ? evPlanFrom(value, input) : undefined; const chargeHours = evPlan ? (evPlan.chargeStops.reduce((sum, stop) => sum + stop.estimatedChargeMinutes, 0) + evPlan.destinationTopUpMinutes) / 60 : 0; const duty = value.driveHours + value.activityHours + breaks.restHours + breaks.mealHours + chargeHours; const daylightLimit = timeToHours(light.sunset) - 0.5 - timeToHours(input.departureTime); const dutyLimit = input.avoidNight ? Math.max(0.5, daylightLimit) : 10.5; const gain = routeAnchors[value.endAnchorId].altitude - routeAnchors[value.startAnchorId].altitude;
   let cost = Math.pow(duty - target, 2) * 1.5; cost += Math.pow(Math.max(0, value.driveHours - input.maxDrive), 2) * (strategy === "comfort" ? 180 : 140); cost += Math.pow(Math.max(0, duty - dutyLimit), 2) * 150;
   if (day === 0 && routeAnchors[input.startAnchorId].altitude < 2000 && routeAnchors[value.endAnchorId].altitude > 2800) cost += 140; if (gain > 1500 && routeAnchors[value.endAnchorId].altitude > 2600) cost += 80; cost += value.highEffort * (strategy === "comfort" ? 50 : 22); return cost;
 }
@@ -210,8 +236,8 @@ function partition(tasks: Task[], input: PlannerInput, strategy: Strategy): Segm
 }
 function scheduleFrom(tasks: Task[], segments: Segment[], input: PlannerInput): PlanDay[] {
   return segments.map((segment, index) => {
-    const value = summarize(tasks, segment.start, segment.end); const date = addDays(input.startDate, index); const coordinate = anchorCoordinates[value.endAnchorId]; const light = daylight(date, coordinate.latitude, coordinate.longitude); const breaks = plannedBreaks(value.driveHours, value.activityHours); const safeSunset = timeToHours(light.sunset) - 0.5; const availableHours = input.avoidNight ? Math.max(0, safeSunset - timeToHours(input.departureTime)) : 10.5; const agenda = agendaFrom(tasks, segment, input, breaks.mealHours); const itemHours = (item: DayAgendaItem) => (timeToHours(item.endTime) - timeToHours(item.startTime) + 24) % 24; const restHours = round2(agenda.filter((item) => item.kind === "rest").reduce((sum, item) => sum + itemHours(item), 0)); const mealHours = round2(agenda.filter((item) => item.kind === "lunch").reduce((sum, item) => sum + itemHours(item), 0)); const dutyHours = round(agenda.reduce((sum, item) => sum + itemHours(item), 0)); const estimatedArrivalTime = agenda.at(-1)?.endTime ?? input.departureTime; const arrivalHours = timeToHours(estimatedArrivalTime); const evPlan = input.vehicle === "ev" ? evPlanFrom(value, input) : undefined;
-    return { day: index + 1, date, sunrise: light.sunrise, sunset: light.sunset, daylightHours: light.hours, departureTime: input.departureTime, estimatedArrivalTime, daylightMarginMinutes: Math.round((safeSunset - arrivalHours) * 60), startAnchorId: value.startAnchorId, endAnchorId: value.endAnchorId, viaAnchorIds: value.viaAnchorIds, routeSteps: value.routeSteps, agenda, driveHours: round(value.driveHours), distanceKm: Math.round(value.distanceKm), activityHours: round(value.activityHours), restHours, mealHours, dutyHours, freeHours: round(Math.max(0, availableHours - dutyHours)), sleepAltitude: routeAnchors[value.endAnchorId].altitude, attractionIds: value.attractionIds, roads: value.roads, legIds: value.legIds, ...(evPlan ? { evPlan } : {}) };
+    const value = summarize(tasks, segment.start, segment.end); const date = addDays(input.startDate, index); const coordinate = anchorCoordinates[value.endAnchorId]; const light = daylight(date, coordinate.latitude, coordinate.longitude); const breaks = plannedBreaks(value.driveHours, value.activityHours); const safeSunset = timeToHours(light.sunset) - 0.5; const availableHours = input.avoidNight ? Math.max(0, safeSunset - timeToHours(input.departureTime)) : 10.5; const evPlan = input.vehicle === "ev" ? evPlanFrom(value, input) : undefined; const baseAgenda = agendaFrom(tasks, segment, input, breaks.mealHours); const agenda = evPlan ? agendaWithEvCharges(baseAgenda, evPlan, value.endAnchorId, input.departureTime) : baseAgenda; const itemHours = (item: DayAgendaItem) => (timeToHours(item.endTime) - timeToHours(item.startTime) + 24) % 24; const restHours = round2(agenda.filter((item) => item.kind === "rest").reduce((sum, item) => sum + itemHours(item), 0)); const mealHours = round2(agenda.filter((item) => item.kind === "lunch").reduce((sum, item) => sum + itemHours(item), 0)); const chargeHours = round2(agenda.filter((item) => item.kind === "charge").reduce((sum, item) => sum + itemHours(item), 0)); const dutyHours = round(agenda.reduce((sum, item) => sum + itemHours(item), 0)); const estimatedArrivalTime = agenda.at(-1)?.endTime ?? input.departureTime; const arrivalHours = timeToHours(estimatedArrivalTime);
+    return { day: index + 1, date, sunrise: light.sunrise, sunset: light.sunset, daylightHours: light.hours, departureTime: input.departureTime, estimatedArrivalTime, daylightMarginMinutes: Math.round((safeSunset - arrivalHours) * 60), startAnchorId: value.startAnchorId, endAnchorId: value.endAnchorId, viaAnchorIds: value.viaAnchorIds, routeSteps: value.routeSteps, agenda, driveHours: round(value.driveHours), distanceKm: Math.round(value.distanceKm), activityHours: round(value.activityHours), restHours, mealHours, chargeHours, dutyHours, freeHours: round(Math.max(0, availableHours - dutyHours)), sleepAltitude: routeAnchors[value.endAnchorId].altitude, attractionIds: value.attractionIds, roads: value.roads, legIds: value.legIds, ...(evPlan ? { evPlan } : {}) };
   });
 }
 function warningsFor(schedule: PlanDay[], input: PlannerInput): PlanWarning[] {

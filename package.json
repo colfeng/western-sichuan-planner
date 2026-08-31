@@ -1,12 +1,13 @@
 {
   "name": "western-sichuan-planner",
   "private": true,
-  "version": "0.7.2",
+  "version": "0.8.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit -p tsconfig.app.json && vite build",
     "test": "node --test tests/planner.test.ts",
+    "test:crawler": "python3 -m unittest discover -s crawler/tests -p 'test_*.py'",
     "preview": "vite preview",
     "check:data": "python3 crawler/validate.py"
   },

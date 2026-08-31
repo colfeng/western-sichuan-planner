@@ -4,10 +4,10 @@ A bilingual, safety-first self-driving itinerary planner for Western Sichuan.
 
 一个中英双语、以安全约束为核心的川西自驾行程规划器。
 
-## V0.7.2 scope / V0.7.2 范围
+## V0.8.0 scope / V0.8.0 范围
 
 - Static React site deployed with GitHub Pages
-- 123 selectable stops across 10 regions, including Hongyuan, Ruoergai,
+- 144 selectable stops across 10 regions, including Hongyuan, Ruoergai,
   Jiuzhaigou, Huanglong, Lianbaoyeze and Daocheng Yading
 - 34 planning anchors and 40 bidirectional road edges instead of fixed loops
 - User-selectable start and end anchors, planned daily departure time, estimated
@@ -20,9 +20,9 @@ A bilingual, safety-first self-driving itinerary planner for Western Sichuan.
 - Explicit conflict messages instead of silently dropping must-see places
 - Chinese and English interface
 - Curated route graph and explainable planning rules
-- One GitHub Actions workflow: push builds/deploys; one weekly scheduled run checks
-  official road and attraction entry points, validates data, tests, builds and
-  deploys display-only official-update candidates
+- One GitHub Actions workflow: pushes to `main` build/deploy; one weekly scheduled
+  run checks official road and attraction entry points, validates data, tests and
+  opens or updates a review pull request without deploying unmerged data
 - One stable weekly review branch and pull request instead of accumulating PRs
 - Human review through pull requests before road events affect plans
 - Reviewed closures exclude mapped road edges; restrictions and delays add route weight
@@ -44,13 +44,17 @@ A bilingual, safety-first self-driving itinerary planner for Western Sichuan.
 - External Amap URI links for route rechecking; no embedded map SDK or visitor key
 - Each day names an overnight town/area, meal location, formal rest points and
   lodging criteria without endorsing an individual hotel or restaurant
-- Rest and meal time are included in the daylight and finish-time calculation
+- Rest, meal and planned EV charging time are included in the daylight and
+  finish-time calculation and shown as separate chronological roadbook entries
 - Government-published road rest areas are mapped to route segments
 - A weekly ODbL-attributed OpenStreetMap/Overpass snapshot discovers fuel,
   charging, toilet and medical facilities
 - EV plans split each day into battery legs and name every required charging town.
   A day is blocked when no reachable charging town fits the conservative budget;
   snapshot candidates remain explicitly unverified until checked live
+- An accessible side drawer shows a schematic route-node elevation profile,
+  daily drive/visit/rest/charge allocation and sleeping-altitude progression;
+  it is explicitly not continuous terrain or navigation-grade elevation
 - Road notices receive suggested edge IDs, impact type, dates and confidence;
   human review is still mandatory before a notice changes a route
 - Local save, shareable URL, printing and browser PDF export
@@ -84,10 +88,12 @@ The unified weekly crawler writes minimal road and attraction candidates to
 A maintainer must verify the original official page. The crawler suggests dates,
 impact type and affected edge IDs, but they must be reviewed before copying an event into
 `data/reviewed-road-events.json`. Pending attraction records may be displayed as
-clearly labelled, unreviewed official-update links after the weekly deployment,
-but never affect routes or become opening-status claims automatically. The Ngawa road feed keeps only
+clearly labelled, unreviewed official-update links only after the weekly review
+pull request is merged, but never affect routes or become opening-status claims automatically. The Ngawa road feed keeps only
 links dated within the last 180 days when a publication date can be read, so an
 archive page cannot refill the review pull request with stale notices.
+Empty official pages, empty Overpass results and suspiciously large facility-count
+drops preserve the previous snapshot instead of silently replacing it.
 
 The facility snapshot in `data/osm-service-points.json` is derived from
 OpenStreetMap and remains subject to ODbL 1.0. Presence in the snapshot is not a

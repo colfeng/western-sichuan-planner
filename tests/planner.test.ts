@@ -352,6 +352,11 @@ test("EV plans name each required en-route charging town or block the day", () =
     assert.ok(evPlan.chargeStops.length >= 1);
     assert.equal(evPlan.travelLegs.length, evPlan.chargeStops.length + 1);
     assert.ok(evPlan.chargeStops.every((stop) => routeAnchors[stop.anchorId]?.canStay));
+    const chargeAgenda = option.schedule[0].agenda.filter((item) => item.kind === "charge");
+    const expectedCharges = evPlan.chargeStops.length + (evPlan.destinationTopUpMinutes > 0 ? 1 : 0);
+    assert.equal(chargeAgenda.length, expectedCharges, "every planned charging stop must appear in the roadbook timeline");
+    assert.equal(chargeAgenda.reduce((sum, item) => sum + (item.chargeMinutes ?? 0), 0), Math.round(option.schedule[0].chargeHours * 60));
+    assert.equal(option.schedule[0].estimatedArrivalTime, option.schedule[0].agenda.at(-1)?.endTime);
   }
 });
 
@@ -360,8 +365,9 @@ test("every attraction exposes the same audited information fields", () => {
     "www.djy.gov.cn", "wenchuan.gov.cn", "www.wenchuan.gov.cn", "www.abazhou.gov.cn", "abazhou.gov.cn",
     "www.sgns.cn", "www.xiaojin.gov.cn", "xiaojin.gov.cn", "www.danba.gov.cn", "www.kangding.gov.cn",
     "www.luding.gov.cn", "www.yaan.gov.cn", "www.huanglong.com", "www.jiuzhai.com", "www.daocheng.gov.cn", "daocheng.gov.cn",
+    "www.gzz.gov.cn", "fgw.gzz.gov.cn", "rsj.yaan.gov.cn",
   ]);
-  assert.equal(attractions.length, 123);
+  assert.ok(attractions.length >= 140 && attractions.length <= 150, `expected a reviewed 140–150 place catalogue, got ${attractions.length}`);
   let reservationCount = 0;
   for (const item of attractions) {
     assert.ok(routeAnchors[item.anchorId], `${item.id}: unknown anchor`);

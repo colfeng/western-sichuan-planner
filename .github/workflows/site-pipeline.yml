@@ -27,6 +27,7 @@ concurrency:
 jobs:
   quality-and-build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,9 +40,11 @@ jobs:
         with:
           python-version: "3.12"
       - run: npm ci
+      - name: Test weekly updater
+        run: npm run test:crawler
 
       - name: Discover official update candidates once
-        if: ${{ github.event_name == 'schedule' || inputs.refresh_data == true || (github.event_name == 'push' && contains(github.event.head_commit.message, '[refresh-data]')) }}
+        if: ${{ github.event_name == 'schedule' || inputs.refresh_data == true }}
         run: python3 crawler/crawl.py
 
       - name: Validate data
@@ -52,7 +55,7 @@ jobs:
         run: npm run build
 
       - name: Maintain one weekly review pull request
-        if: ${{ github.event_name == 'schedule' || inputs.refresh_data == true || (github.event_name == 'push' && contains(github.event.head_commit.message, '[refresh-data]')) }}
+        if: ${{ github.event_name == 'schedule' || inputs.refresh_data == true }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -78,13 +81,16 @@ jobs:
           fi
 
       - uses: actions/configure-pages@v5
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
           path: dist
 
   deploy:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     needs: quality-and-build
     environment:
       name: github-pages
