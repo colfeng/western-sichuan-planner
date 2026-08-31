@@ -85,7 +85,7 @@ const ui = {
     eyebrow: `${attractions.length}个可选停留 · 多走廊道路图 · 中英双语`,
     heading: "由你选择想看的地方，规划器负责判断怎样走得完。",
     intro: "路线网已覆盖红原、若尔盖、九寨沟、黄龙、莲宝叶则及雅江—理塘—稻城亚丁走廊。规划器根据任意起终点、日期日照、驾驶上限、游玩时长、海拔和住宿节点动态连线。",
-    updated: "V0.7.0稻城亚丁走廊 · 驾驶时间含保守规划余量",
+    updated: "V0.7.1时间表修复 · 支线驾驶与途中休息清晰分段",
     controls: "设定旅行约束",
     days: "旅行天数",
     dates: "出发 / 返程",
@@ -235,7 +235,7 @@ const ui = {
     eyebrow: `${attractions.length} selectable stops · Multi-corridor graph · Bilingual`,
     heading: "Choose what you want to see. Let the planner decide what can actually fit.",
     intro: "The graph covers Hongyuan, Ruoergai, Jiuzhaigou, Huanglong, Lianbaoyeze and the Yajiang–Litang–Daocheng Yading corridor. Start/end points, dates, daylight, driving caps, visit time, altitude and overnight nodes all affect the route.",
-    updated: "V0.7.0 Daocheng Yading corridor · Conservative driving-time margins",
+    updated: "V0.7.1 timeline fix · Explicit branch drives and en-route rests",
     controls: "Set trip constraints",
     days: "Trip length",
     dates: "Departure / return",
@@ -863,16 +863,22 @@ function App() {
                           const segmentHours = agendaDuration(item.startTime, item.endTime);
                           const phase = item.kind === "lunch" ? copy.lunchBlock : isMorning(item.startTime) ? copy.morning : copy.afternoon;
                           const kind = item.kind === "drive" ? copy.driveBlock : item.kind === "visit" ? copy.visitBlock : item.kind === "rest" ? copy.restBlock : copy.lunchBlock;
-                          const title = item.kind === "drive" && item.fromAnchorId && item.toAnchorId
-                            ? `${text(routeAnchors[item.fromAnchorId].name, locale)} → ${text(routeAnchors[item.toAnchorId].name, locale)}`
+                          const title = item.kind === "drive" && attraction && item.detourDirection
+                            ? item.detourDirection === "outbound"
+                              ? `${text(routeAnchors[item.anchorId].name, locale)} → ${text(attraction.name, locale)}`
+                              : `${text(attraction.name, locale)} → ${text(routeAnchors[item.anchorId].name, locale)}`
+                            : item.kind === "drive" && item.fromAnchorId && item.toAnchorId
+                              ? `${text(routeAnchors[item.fromAnchorId].name, locale)} → ${text(routeAnchors[item.toAnchorId].name, locale)}${item.driveContinuation ? (locale === "zh" ? "（继续）" : " (continued)") : ""}`
                             : item.kind === "visit" && attraction ? text(attraction.name, locale)
+                              : (item.kind === "rest" && item.road) ? `${item.road}${locale === "zh" ? "沿线正规休息点" : " formal roadside rest"}`
+                                : (item.kind === "lunch" && attraction) ? text(attraction.name, locale)
                               : text(routeAnchors[item.anchorId].name, locale);
                           const detail = item.kind === "drive"
-                            ? `${item.road} · ${item.distanceKm}km · ${item.driveHours}h`
+                            ? `${item.detourDirection ? (locale === "zh" ? "景点支线" : "Attraction branch") : item.road} · ${item.distanceKm}km · ${item.driveHours}h`
                             : item.kind === "visit" && attraction
                               ? splitVisit
-                                ? `${locale === "zh" ? (firstVisitSegment ? "本段安排" : "午餐后继续") : (firstVisitSegment ? "This segment" : "Continue after lunch")} ${segmentHours}h · ${locale === "zh" ? "全天游玩合计" : "full-day visit total"} ${attraction.visitHours}h${firstVisitSegment && attraction.detourHours > 0 ? ` · ${locale === "zh" ? "另含支线驾驶" : "plus branch driving"} ${attraction.detourHours}h` : ""}`
-                                : `${locale === "zh" ? "游玩" : "Visit"} ${attraction.visitHours}h${attraction.detourHours > 0 ? ` · ${locale === "zh" ? "含支线往返驾驶" : "branch driving"} ${attraction.detourHours}h` : ""}`
+                                ? `${locale === "zh" ? (firstVisitSegment ? "本段游玩" : "午餐后继续游玩") : (firstVisitSegment ? "Visit segment" : "Continue visiting after lunch")} ${segmentHours}h · ${locale === "zh" ? "全天游玩合计" : "full-day visit total"} ${attraction.visitHours}h`
+                                : `${locale === "zh" ? "游玩" : "Visit"} ${attraction.visitHours}h`
                               : item.kind === "rest"
                                 ? (locale === "zh" ? "进入正规服务区或停车区休息，不在路肩停车。" : "Use a formal service or parking area; never stop on the shoulder.")
                                 : copy.lunchHint;
@@ -1007,7 +1013,7 @@ function App() {
         </section>
       </div>}
 
-      <footer><span>{copy.footer}</span><span>v0.7.0 · 2026</span></footer>
+      <footer><span>{copy.footer}</span><span>v0.7.1 · 2026</span></footer>
     </div>
   );
 }

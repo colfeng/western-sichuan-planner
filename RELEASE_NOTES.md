@@ -1,5 +1,14 @@
 # Release notes
 
+## V0.7.1 — clearer drive and visit timelines
+
+- Attraction detours are now shown as separate outbound drive, visit and return
+  drive blocks instead of hiding branch-road time inside the visit.
+- Lunch is scheduled at the route anchor before a long attraction detour when
+  appropriate, avoiding implausible back-and-forth timeline displays.
+- Road legs longer than about two hours now place the planned rest along the
+  route and visibly continue the drive afterwards, rather than resting only on arrival.
+
 ## V0.7.0 — executable timelines, EV legs, and Daocheng Yading
 
 - A visit split by lunch now shows the duration of each timeline segment and the

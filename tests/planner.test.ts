@@ -232,7 +232,7 @@ test("connects the new Daocheng Yading corridor through Yajiang and Litang", () 
   assert.ok(option.schedule.flatMap((day) => day.attractionIds).includes("yading-scenic-area"));
 });
 
-test("a lunch-split attraction reports two timeline segments, not two visits", () => {
+test("an attraction branch is explicit and lunch happens before setting out", () => {
   const option = buildPlanOptions(base({
     days: 1,
     maxDrive: 8,
@@ -243,9 +243,34 @@ test("a lunch-split attraction reports two timeline segments, not two visits", (
     departureTime: "11:27",
     selectedAttractionIds: ["moon-bay"],
   }))[0];
-  const segments = option.schedule[0].agenda.filter((item) => item.attractionId === "moon-bay");
-  assert.equal(segments.length, 2);
+  const agenda = option.schedule[0].agenda;
+  const segments = agenda.filter((item) => item.attractionId === "moon-bay");
+  assert.deepEqual(segments.map((item) => item.kind), ["drive", "visit", "drive"]);
+  assert.deepEqual(segments.filter((item) => item.kind === "drive").map((item) => item.detourDirection), ["outbound", "return"]);
+  assert.ok(agenda.findIndex((item) => item.kind === "lunch") < agenda.findIndex((item) => item.detourDirection === "outbound"));
   assert.equal(option.schedule[0].attractionIds.filter((id) => id === "moon-bay").length, 1);
+});
+
+test("a long road leg gets a real mid-route rest before arrival", () => {
+  const option = buildPlanOptions(base({
+    days: 1,
+    maxDrive: 12,
+    avoidNight: false,
+    autoSuggest: false,
+    startAnchorId: "songpan",
+    endAnchorId: "ruoergai",
+    selectedAttractionIds: ["flower-lake"],
+  }))[0];
+  const agenda = option.schedule[0].agenda;
+  const roadDrives = agenda.filter((item) => item.kind === "drive" && item.road === "G213");
+  const restIndex = agenda.findIndex((item) => item.kind === "rest" && item.road === "G213");
+  assert.equal(roadDrives.length, 2);
+  assert.ok(restIndex > 0 && restIndex < agenda.findIndex((item) => item.driveContinuation));
+  assert.ok(roadDrives.every((item) => (item.driveHours ?? 0) <= 2));
+  assert.deepEqual(
+    agenda.filter((item) => item.attractionId === "flower-lake").map((item) => item.kind),
+    ["drive", "visit", "drive"],
+  );
 });
 
 test("EV plans name each required en-route charging town or block the day", () => {
