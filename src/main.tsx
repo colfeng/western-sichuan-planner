@@ -1,4 +1,4 @@
-import React, { FormEvent, useEffect, useMemo, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   AlertTriangle,
@@ -48,7 +48,9 @@ import {
 } from "./data";
 import { amapSearchUrl, serviceSnapshot, servicesForLegs, servicesNearAnchors } from "./services";
 import type { PlannerInput, Strategy } from "./planner";
-import { buildPlanOptions, getAttraction, getReturnDate } from "./planner";
+import { buildPlanOptions, getAttraction, getReturnDate, normalizeAttractionIds } from "./planner";
+import { selectAttractionUpdate } from "./notices";
+import type { PendingAttractionUpdate } from "./notices";
 import reviewedRoadEvents from "../data/reviewed-road-events.json";
 import updateStatus from "../data/update-status.json";
 import pendingUpdates from "../data/pending-updates.json";
@@ -85,7 +87,7 @@ const ui = {
     eyebrow: `${attractions.length}个可选停留 · 多走廊道路图 · 中英双语`,
     heading: "由你选择想看的地方，规划器负责判断怎样走得完。",
     intro: "路线网已覆盖红原、若尔盖、九寨沟、黄龙、莲宝叶则及雅江—理塘—稻城亚丁走廊。规划器根据任意起终点、日期日照、驾驶上限、游玩时长、海拔和住宿节点动态连线。",
-    updated: "V0.8.0 · 144个景点、逐次充电路书与海拔可视化",
+    updated: `V0.8.1 · ${attractions.length}个景点、公告精确匹配与无障碍修复`,
     controls: "设定旅行约束",
     days: "旅行天数",
     dates: "出发 / 返程",
@@ -213,7 +215,8 @@ const ui = {
     insightsTitle: "海拔与每日负荷",
     insightsIntro: "集中查看路线节点海拔、每日时间构成和住宿海拔变化，不挤占主路书空间。",
     elevationProfile: "路线节点海拔剖面",
-    elevationNote: "按规划器道路节点连接的海拔示意，不是连续地形、坡度或导航级高程；实际道路会在节点之间起伏。",
+    elevationNote: "绿线按规划器道路节点连接；橙点表示行程内景点的活动海拔。它不是连续地形、坡度或导航级高程，实际道路会在节点之间起伏。",
+    peakExposure: "景点最高活动海拔",
     dailyLoad: "每日时间构成",
     sleepTrend: "住宿海拔变化",
     loadLegend: "驾驶 / 游玩 / 休息与用餐 / 充电",
@@ -247,7 +250,7 @@ const ui = {
     eyebrow: `${attractions.length} selectable stops · Multi-corridor graph · Bilingual`,
     heading: "Choose what you want to see. Let the planner decide what can actually fit.",
     intro: "The graph covers Hongyuan, Ruoergai, Jiuzhaigou, Huanglong, Lianbaoyeze and the Yajiang–Litang–Daocheng Yading corridor. Start/end points, dates, daylight, driving caps, visit time, altitude and overnight nodes all affect the route.",
-    updated: "V0.8.0 · 144 places, timed charging and elevation visuals",
+    updated: `V0.8.1 · ${attractions.length} places, precise notices and accessibility fixes`,
     controls: "Set trip constraints",
     days: "Trip length",
     dates: "Departure / return",
@@ -375,7 +378,8 @@ const ui = {
     insightsTitle: "Elevation & daily load",
     insightsIntro: "Inspect route-node elevation, daily time allocation and sleeping-altitude changes without crowding the roadbook.",
     elevationProfile: "Route-node elevation profile",
-    elevationNote: "A schematic joining planner road nodes—not continuous terrain, gradient or navigation-grade elevation. The real road rises and falls between nodes.",
+    elevationNote: "The green line joins planner road nodes; orange dots show activity altitude at planned attractions. This is not continuous terrain, gradient or navigation-grade elevation.",
+    peakExposure: "Highest attraction exposure",
     dailyLoad: "Daily time allocation",
     sleepTrend: "Sleeping-altitude trend",
     loadLegend: "Drive / visit / rest & meals / charging",
@@ -412,10 +416,7 @@ const agendaDuration = (start: string, end: string) => {
   const minutes = (value: string) => Number(value.slice(0, 2)) * 60 + Number(value.slice(3, 5));
   return Math.round(((minutes(end) - minutes(start) + 1440) % 1440) / 6) / 10;
 };
-type PendingAttractionUpdate = { sourceId: string; candidateType: string; titleZh: string; url: string; discoveredAt?: string; reviewStatus?: string; suggestedStatus?: "closed" | "reopened" | "reservation" | "notice" };
 const attractionUpdates = pendingUpdates as PendingAttractionUpdate[];
-const updateSourceFor = (url: string) => url.includes("jiuzhai.com") ? "jiuzhaigou-notices" : url.includes("huanglong.com") ? "huanglong-official" : url.includes("daocheng.gov.cn") ? "daocheng-notices" : url.includes("sgns.cn") ? "siguniang-notices" : null;
-const updatePriority = (item: PendingAttractionUpdate) => ({ closed: 4, reopened: 3, reservation: 2, notice: 1 }[item.suggestedStatus ?? "notice"] * 1000 + item.titleZh.length);
 
 function loadInitialInput(): PlannerInput {
   try {
@@ -424,7 +425,7 @@ function loadInitialInput(): PlannerInput {
     if (!raw) return initialInput;
     const value = JSON.parse(raw) as Partial<PlannerInput>;
     if (!Array.isArray(value.selectedAttractionIds)) return initialInput;
-    return { ...initialInput, ...value, selectedAttractionIds: value.selectedAttractionIds.filter((id) => typeof id === "string") };
+    return { ...initialInput, ...value, selectedAttractionIds: normalizeAttractionIds(value.selectedAttractionIds.filter((id) => typeof id === "string")) };
   } catch {
     return initialInput;
   }
@@ -460,9 +461,12 @@ function App() {
   const [actionNotice, setActionNotice] = useState("");
   const [detailAttractionId, setDetailAttractionId] = useState<string | null>(null);
   const [insightsOpen, setInsightsOpen] = useState(false);
+  const insightsDialogRef = useRef<HTMLElement>(null);
+  const attractionDialogRef = useRef<HTMLElement>(null);
+  const dialogTriggerRef = useRef<HTMLElement | null>(null);
   const copy = ui[locale];
   const dirty = !sameInput(draft, applied);
-  const heroImage = `${import.meta.env.BASE_URL}images/mount-siguniang-road.jpg`;
+  const heroImage = `${import.meta.env.BASE_URL}images/western-sichuan-original.svg`;
 
   const options = useMemo(() => buildPlanOptions(applied), [applied]);
   const activePlan = options.find((option) => option.id === activeStrategy) ?? options[0];
@@ -485,13 +489,38 @@ function App() {
     return points;
   }, [activePlan]);
 
+  const attractionExposurePoints = useMemo(() => {
+    const highestByAnchor = new Map<string, { attractionId: string; altitude: number; day: number }>();
+    activePlan.schedule.forEach((day) => day.attractionIds.forEach((attractionId) => {
+      const item = getAttraction(attractionId);
+      if (!item) return;
+      const existing = highestByAnchor.get(item.anchorId);
+      if (!existing || item.altitude > existing.altitude) highestByAnchor.set(item.anchorId, { attractionId: item.id, altitude: item.altitude, day: day.day });
+    }));
+    return [...highestByAnchor.entries()].map(([anchorId, value]) => ({ anchorId, ...value }));
+  }, [activePlan]);
+
   useEffect(() => {
     if (!detailAttractionId && !insightsOpen) return;
     const previousOverflow = document.body.style.overflow;
+    const dialog = detailAttractionId ? attractionDialogRef.current : insightsDialogRef.current;
+    const trigger = dialogTriggerRef.current;
     document.body.style.overflow = "hidden";
-    const close = (event: KeyboardEvent) => { if (event.key === "Escape") { setDetailAttractionId(null); setInsightsOpen(false); } };
+    const focusableSelector = "button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])";
+    const focusable = () => dialog ? [...dialog.querySelectorAll<HTMLElement>(focusableSelector)] : [];
+    window.requestAnimationFrame(() => (focusable()[0] ?? dialog)?.focus());
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { setDetailAttractionId(null); setInsightsOpen(false); return; }
+      if (event.key !== "Tab" || !dialog) return;
+      const items = focusable();
+      if (items.length === 0) { event.preventDefault(); dialog.focus(); return; }
+      const first = items[0]; const last = items.at(-1)!;
+      if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+      else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
     document.addEventListener("keydown", close);
-    return () => { document.removeEventListener("keydown", close); document.body.style.overflow = previousOverflow; };
+    return () => { document.removeEventListener("keydown", close); document.body.style.overflow = previousOverflow; if (trigger?.isConnected) trigger.focus(); };
   }, [detailAttractionId, insightsOpen]);
 
   const visibleAttractions = useMemo(() => {
@@ -539,12 +568,14 @@ function App() {
   };
 
   const toggleAttraction = (id: string) => {
-    setDraft((current) => ({
-      ...current,
-      selectedAttractionIds: current.selectedAttractionIds.includes(id)
-        ? current.selectedAttractionIds.filter((item) => item !== id)
-        : [...current.selectedAttractionIds, id],
-    }));
+    setDraft((current) => {
+      if (current.selectedAttractionIds.includes(id)) return { ...current, selectedAttractionIds: current.selectedAttractionIds.filter((item) => item !== id) };
+      const selectedItem = getAttraction(id);
+      const withoutSamePlace = selectedItem?.placeGroupId
+        ? current.selectedAttractionIds.filter((item) => getAttraction(item)?.placeGroupId !== selectedItem.placeGroupId)
+        : current.selectedAttractionIds;
+      return { ...current, selectedAttractionIds: [...withoutSamePlace, id] };
+    });
   };
 
   const amapNavigationUrl = (startAnchorId: string, endAnchorId: string) => {
@@ -556,7 +587,7 @@ function App() {
   };
 
   const detailAttraction = detailAttractionId ? getAttraction(detailAttractionId) : undefined;
-  const detailWeeklyUpdate = detailAttraction ? attractionUpdates.filter((item) => item.candidateType === "attraction" && item.sourceId === updateSourceFor(detailAttraction.sourceUrl)).sort((left, right) => updatePriority(right) - updatePriority(left))[0] : undefined;
+  const detailWeeklyUpdate = selectAttractionUpdate(attractionUpdates, detailAttraction);
   const overnightAnchors = Object.values(routeAnchors).filter((anchor) => anchor.canStay);
 
   return (
@@ -586,7 +617,7 @@ function App() {
             <span className="data-stamp"><RefreshCw size={14} /> {copy.updated}</span>
           </div>
           <div className="image-panel">
-            <img src={heroImage} alt={locale === "zh" ? "四姑娘山雪峰与川西高原公路" : "Mount Siguniang peaks and an alpine road in Western Sichuan"} />
+            <img src={heroImage} alt={locale === "zh" ? "原创矢量绘制的川西雪峰、河谷与高原公路" : "Original vector illustration of Western Sichuan peaks, valley and alpine road"} />
             <div className="route-badge"><MountainSnow size={19} /><span>Mount Siguniang<br /><b>四姑娘山 · 巴朗山 · 川西公路</b></span></div>
           </div>
         </section>
@@ -782,7 +813,7 @@ function App() {
                       </span>
                       <span className={`effort effort-${item.effort}`}>{text(effortNames[item.effort], locale)}</span>
                     </button>
-                    <button className="detail-button" type="button" onClick={() => setDetailAttractionId(item.id)}><Info size={14} />{copy.details}</button>
+                    <button className="detail-button" type="button" aria-haspopup="dialog" onClick={(event) => { dialogTriggerRef.current = event.currentTarget; setDetailAttractionId(item.id); }}><Info size={14} />{copy.details}</button>
                   </article>
                 );
               })}
@@ -826,7 +857,7 @@ function App() {
             </div>
 
             <div className="plan-actions">
-              <button type="button" aria-expanded={insightsOpen} onClick={() => setInsightsOpen(true)}><MountainSnow size={15} />{copy.insights}</button>
+              <button type="button" aria-haspopup="dialog" aria-controls="trip-insights-dialog" aria-expanded={insightsOpen} onClick={(event) => { dialogTriggerRef.current = event.currentTarget; setInsightsOpen(true); }}><MountainSnow size={15} />{copy.insights}</button>
               <button type="button" onClick={savePlan}><Save size={15} />{copy.save}</button>
               <button type="button" onClick={sharePlan}><Share2 size={15} />{copy.share}</button>
               <button type="button" onClick={() => window.print()}><Printer size={15} />{copy.print}</button>
@@ -1049,7 +1080,7 @@ function App() {
       </main>
 
       {insightsOpen && <div className="detail-overlay" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) setInsightsOpen(false); }}>
-        <section className="detail-drawer insights-drawer" role="dialog" aria-modal="true" aria-labelledby="insights-title">
+        <section ref={insightsDialogRef} id="trip-insights-dialog" className="detail-drawer insights-drawer" role="dialog" aria-modal="true" aria-labelledby="insights-title" tabIndex={-1}>
           <button className="drawer-close" type="button" aria-label={copy.close} onClick={() => setInsightsOpen(false)}><X size={19} /></button>
           <p className="mini-label">TRIP INSIGHTS / 行程可视化</p>
           <h2 id="insights-title">{copy.insightsTitle}</h2>
@@ -1059,19 +1090,23 @@ function App() {
             <div className="insight-heading"><div><b>{copy.elevationProfile}</b><small>{elevationPoints.length} {locale === "zh" ? "个路线节点" : "route nodes"}</small></div><MountainSnow size={19} /></div>
             {elevationPoints.length > 0 && (() => {
               const altitudes = elevationPoints.map((point) => routeAnchors[point.anchorId].altitude);
-              const minAltitude = Math.min(...altitudes); const maxAltitude = Math.max(...altitudes);
-              const range = Math.max(500, maxAltitude - minAltitude); const totalDistance = Math.max(1, elevationPoints.at(-1)?.distanceKm ?? 1);
-              const coordinates = elevationPoints.map((point) => ({ ...point, x: 34 + point.distanceKm / totalDistance * 532, y: 186 - (routeAnchors[point.anchorId].altitude - minAltitude) / range * 132 }));
+              const exposureAltitudes = attractionExposurePoints.map((point) => point.altitude);
+              const minRoadAltitude = Math.min(...altitudes); const maxRoadAltitude = Math.max(...altitudes); const minExposureAltitude = exposureAltitudes.length ? Math.min(...exposureAltitudes) : minRoadAltitude; const maxExposureAltitude = exposureAltitudes.length ? Math.max(...exposureAltitudes) : maxRoadAltitude; const chartMinAltitude = Math.min(minRoadAltitude, minExposureAltitude); const chartMaxAltitude = Math.max(maxRoadAltitude, maxExposureAltitude);
+              const range = Math.max(500, chartMaxAltitude - chartMinAltitude); const axisMaxAltitude = chartMinAltitude + range; const displayDistance = elevationPoints.at(-1)?.distanceKm ?? 0; const distanceDivisor = Math.max(1, displayDistance);
+              const coordinates = elevationPoints.map((point) => ({ ...point, x: 34 + point.distanceKm / distanceDivisor * 532, y: 186 - (routeAnchors[point.anchorId].altitude - chartMinAltitude) / range * 132 }));
               const line = coordinates.map((point) => `${point.x},${point.y}`).join(" ");
               const area = `34,190 ${line} 566,190`;
-              const labeled = new Set([0, coordinates.length - 1, altitudes.indexOf(maxAltitude), altitudes.indexOf(minAltitude), ...activePlan.schedule.map((day) => coordinates.findIndex((point) => point.anchorId === day.endAnchorId)).filter((index) => index >= 0)]);
+              const labeled = new Set([0, coordinates.length - 1, altitudes.indexOf(maxRoadAltitude), altitudes.indexOf(minRoadAltitude), ...activePlan.schedule.map((day) => coordinates.findIndex((point) => point.anchorId === day.endAnchorId)).filter((index) => index >= 0)]);
+              const exposures = attractionExposurePoints.flatMap((point) => { const node = coordinates.find((value) => value.anchorId === point.anchorId); if (!node) return []; return [{ ...point, x: node.x, roadY: node.y, y: 186 - (point.altitude - chartMinAltitude) / range * 132 }]; });
+              const peakExposure = attractionExposurePoints.find((point) => point.altitude === maxExposureAltitude);
               return <>
-                <div className="elevation-svg-wrap"><svg viewBox="0 0 600 230" role="img" aria-label={`${copy.elevationProfile}: ${minAltitude}–${maxAltitude}m`}>
-                  {[0, .5, 1].map((ratio) => { const y = 186 - ratio * 132; const altitude = Math.round(minAltitude + ratio * range); return <g key={ratio}><line x1="34" y1={y} x2="566" y2={y} className="elevation-grid" /><text x="2" y={y + 4} className="elevation-axis">{altitude}m</text></g>; })}
+                <div className="elevation-svg-wrap"><svg viewBox="0 0 600 230" role="img" aria-label={`${copy.elevationProfile}: ${chartMinAltitude}–${axisMaxAltitude}m`}>
+                  {[0, .5, 1].map((ratio) => { const y = 186 - ratio * 132; const altitude = Math.round(chartMinAltitude + ratio * range); return <g key={ratio}><line x1="34" y1={y} x2="566" y2={y} className="elevation-grid" /><text x="2" y={y + 4} className="elevation-axis">{altitude}m</text></g>; })}
                   <polygon points={area} className="elevation-area" /><polyline points={line} className="elevation-line" />
                   {coordinates.map((point, index) => <g key={`${point.anchorId}-${index}`}><circle cx={point.x} cy={point.y} r={labeled.has(index) ? 4 : 2.4} className={labeled.has(index) ? "elevation-dot labeled" : "elevation-dot"}><title>{text(routeAnchors[point.anchorId].name, locale)} · {routeAnchors[point.anchorId].altitude}m · {Math.round(point.distanceKm)}km</title></circle>{labeled.has(index) && <text x={point.x} y={index % 2 === 0 ? 211 : 224} textAnchor="middle" className="elevation-label">{text(routeAnchors[point.anchorId].name, locale)}</text>}</g>)}
+                  {exposures.map((point) => <g key={`exposure-${point.attractionId}`}><line x1={point.x} y1={point.roadY} x2={point.x} y2={point.y} className="exposure-line" /><circle cx={point.x} cy={point.y} r="4" className="exposure-dot"><title>{text(getAttraction(point.attractionId)!.name, locale)} · {point.altitude}m · D{point.day}</title></circle></g>)}
                 </svg></div>
-                <div className="profile-stats"><span><b>{minAltitude}m</b><small>{locale === "zh" ? "最低节点" : "Lowest node"}</small></span><span><b>{maxAltitude}m</b><small>{locale === "zh" ? "最高节点" : "Highest node"}</small></span><span><b>{Math.round(totalDistance)}km</b><small>{copy.profileDistance}</small></span></div>
+                <div className="profile-stats"><span><b>{minRoadAltitude}m</b><small>{locale === "zh" ? "最低道路节点" : "Lowest road node"}</small></span><span><b>{maxRoadAltitude}m</b><small>{locale === "zh" ? "最高道路节点" : "Highest road node"}</small></span><span><b>{maxExposureAltitude}m</b><small>{copy.peakExposure}{peakExposure ? ` · ${text(getAttraction(peakExposure.attractionId)!.name, locale)}` : ""}</small></span><span><b>{Math.round(displayDistance)}km</b><small>{copy.profileDistance}</small></span></div>
               </>;
             })()}
             <p className="insight-note"><Info size={14} />{copy.elevationNote}</p>
@@ -1094,7 +1129,7 @@ function App() {
       </div>}
 
       {detailAttraction && <div className="detail-overlay" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) setDetailAttractionId(null); }}>
-        <section className="detail-drawer" role="dialog" aria-modal="true" aria-labelledby="attraction-detail-title">
+        <section ref={attractionDialogRef} className="detail-drawer" role="dialog" aria-modal="true" aria-labelledby="attraction-detail-title" tabIndex={-1}>
           <button className="drawer-close" type="button" aria-label={copy.close} onClick={() => setDetailAttractionId(null)}><X size={20} /></button>
           <p className="mini-label">PLACE DATA / 景点资料</p>
           <h2 id="attraction-detail-title">{text(detailAttraction.name, locale)}</h2>
@@ -1116,7 +1151,7 @@ function App() {
         </section>
       </div>}
 
-      <footer><span>{copy.footer}</span><span>v0.8.0 · 2026</span></footer>
+      <footer><span>{copy.footer}</span><span>v0.8.1 · 2026</span></footer>
     </div>
   );
 }

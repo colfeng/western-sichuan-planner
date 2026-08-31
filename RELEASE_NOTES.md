@@ -1,5 +1,25 @@
 # Release notes
 
+## V0.8.1 — notice integrity, provenance, and accessibility
+
+- Attraction updates now carry explicit attraction IDs and are ordered by
+  publication time; county-wide notices are no longer attached to every place on
+  the same domain, and date-specific capacity notices expire automatically.
+- Weekly refreshes inherit an open review PR snapshot and retain temporarily
+  missing candidates for 21 days, preventing a partial source response from
+  silently erasing unmerged review data.
+- Pull requests now run crawler, data, planner and production-build checks before
+  merge; scheduled runs still do not deploy unreviewed data.
+- Replaced two raster files with undocumented provenance with original,
+  project-authored SVG artwork and added explicit copyright/provenance records.
+- Merged two duplicate attraction records, preserved legacy saved-plan aliases,
+  and made overlapping Kangding urban walks mutually exclusive in planning. The
+  curated catalogue now contains 142 selectable records without those duplicate
+  entries.
+- The trip drawer now transfers and traps keyboard focus, restores the opening
+  control on close, displays 0 km for a zero-distance plan, and adds planned
+  attraction exposure altitude to the route-node profile.
+
 ## V0.8.0 — charging timeline, 144 places, and trip visuals
 
 - Every planned en-route and destination EV charge is now a timed roadbook item;

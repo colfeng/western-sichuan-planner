@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { PlannerInput } from "../src/planner.ts";
-import { buildPlanOptions } from "../src/planner.ts";
+import { buildPlanOptions, normalizeAttractionIds } from "../src/planner.ts";
 import { anchorCoordinates, attractions, roadLegs, routeAnchors } from "../src/data.ts";
+import { selectAttractionUpdate } from "../src/notices.ts";
 
 const base = (overrides: Partial<PlannerInput> = {}): PlannerInput => ({
   days: 7,
@@ -20,6 +21,46 @@ const base = (overrides: Partial<PlannerInput> = {}): PlannerInput => ({
   lockOrder: false,
   roadEvents: [],
   ...overrides,
+});
+
+test("catalogue stays within the published range and legacy duplicate IDs migrate", () => {
+  assert.ok(attractions.length >= 140 && attractions.length <= 150);
+  assert.equal(attractions.some((item) => item.id === "fuyang-old-town"), false);
+  assert.equal(attractions.some((item) => item.id === "suochong-pheasant"), false);
+  assert.deepEqual(normalizeAttractionIds(["fuyang-old-town", "songpan-old-town", "suochong-pheasant"]), ["songpan-old-town", "sangdui-red-grass"]);
+});
+
+test("mutually exclusive representations of the same place cannot both enter a plan", () => {
+  const option = buildPlanOptions(base({
+    days: 3,
+    startAnchorId: "kangding",
+    endAnchorId: "kangding",
+    selectedAttractionIds: ["kangding-old-town", "liuliu-city"],
+  }))[0];
+  assert.equal(option.selectedAttractionIds.length, 1);
+  assert.equal(option.schedule.flatMap((day) => day.attractionIds).filter((id) => ["kangding-old-town", "liuliu-city"].includes(id)).length, 1);
+});
+
+test("attraction notices require an explicit target and newest publication wins", () => {
+  const yading = attractions.find((item) => item.id === "yading-scenic-area");
+  const updates = [
+    { sourceId: "daocheng-notices", candidateType: "attraction", titleZh: "旧闭园", url: "https://example/1", suggestedStatus: "closed" as const, publishedAt: "2026-08-01", suggestedAttractionIds: ["yading-scenic-area"] },
+    { sourceId: "daocheng-notices", candidateType: "attraction", titleZh: "新恢复", url: "https://example/2", suggestedStatus: "reopened" as const, publishedAt: "2026-08-20", suggestedAttractionIds: ["yading-scenic-area"] },
+    { sourceId: "daocheng-notices", candidateType: "attraction", titleZh: "全县公告", url: "https://example/3", suggestedStatus: "notice" as const, publishedAt: "2026-08-30", suggestedAttractionIds: [] },
+  ];
+  assert.equal(selectAttractionUpdate(updates, yading, Date.parse("2026-08-31"))?.titleZh, "新恢复");
+});
+
+test("expired date-specific notice is not displayed", () => {
+  const jiuzhaigou = attractions.find((item) => item.id === "jiuzhaigou");
+  const updates = [{ sourceId: "jiuzhaigou-notices", candidateType: "attraction", titleZh: "8月14日售罄", url: "https://example/1", suggestedStatus: "reservation" as const, publishedAt: "2026-08-13", expiresAt: "2026-08-15", suggestedAttractionIds: ["jiuzhaigou"] }];
+  assert.equal(selectAttractionUpdate(updates, jiuzhaigou, Date.parse("2026-08-31")), undefined);
+});
+
+test("an old undated state cannot remain public indefinitely", () => {
+  const jiuzhaigou = attractions.find((item) => item.id === "jiuzhaigou");
+  const updates = [{ sourceId: "jiuzhaigou-notices", candidateType: "attraction", titleZh: "旧闭园", url: "https://example/1", suggestedStatus: "closed" as const, discoveredAt: "2026-01-01", suggestedAttractionIds: ["jiuzhaigou"] }];
+  assert.equal(selectAttractionUpdate(updates, jiuzhaigou, Date.parse("2026-08-31")), undefined);
 });
 
 test("builds three options on the northern road graph", () => {

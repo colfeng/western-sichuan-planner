@@ -8,7 +8,7 @@ import math
 import re
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlencode, urljoin, urlparse
@@ -21,7 +21,8 @@ OUTPUT_PATH = ROOT / "data" / "pending-updates.json"
 STATUS_PATH = ROOT / "data" / "update-status.json"
 OSM_SERVICES_PATH = ROOT / "data" / "osm-service-points.json"
 ROAD_SEGMENTS_PATH = ROOT / "crawler" / "road-segments.json"
-USER_AGENT = "WesternSichuanPlanner/0.8.0 (+https://github.com/colfeng/western-sichuan-planner)"
+USER_AGENT = "WesternSichuanPlanner/0.8.1 (+https://github.com/colfeng/western-sichuan-planner)"
+MISSING_CANDIDATE_GRACE_DAYS = 21
 
 
 class LinkParser(HTMLParser):
@@ -93,13 +94,48 @@ def publication_date(title: str, url: str) -> datetime | None:
             return datetime(year, month, day, tzinfo=timezone.utc)
         except ValueError:
             return None
-    path_match = re.search(r"/(20\d{2})(\d{2})/", urlparse(url).path)
-    if path_match:
-        year, month = (int(value) for value in path_match.groups())
+    path = urlparse(url).path
+    for pattern, day_default in (
+        (r"(?:^|[-_/])(20\d{2})[-_/](\d{1,2})[-_/](\d{1,2})(?:[-_/]|$)", None),
+        (r"/(20\d{2})(\d{2})/", 1),
+    ):
+        path_match = re.search(pattern, path)
+        if not path_match:
+            continue
+        values = [int(value) for value in path_match.groups()]
+        year, month, day = (*values, day_default) if len(values) == 2 else values
         try:
-            return datetime(year, month, 1, tzinfo=timezone.utc)
+            return datetime(year, month, int(day), tzinfo=timezone.utc)
         except ValueError:
             return None
+    return None
+
+
+def iso_date(value: datetime) -> str:
+    return value.date().isoformat()
+
+
+def attraction_status(title: str) -> str:
+    if re.search(r"闭园|暂停开放|临时关闭", title):
+        return "closed"
+    if re.search(r"恢复开放|重新开放", title):
+        return "reopened"
+    if re.search(r"预约|售罄|限流|票务|最大承载量", title):
+        return "reservation"
+    return "notice"
+
+
+def attraction_targets(source: dict[str, object], title: str) -> list[str]:
+    targets: list[str] = []
+    for rule in source.get("attraction_targets", []):
+        if any(keyword in title for keyword in rule.get("keywords", [])):
+            targets.extend(str(value) for value in rule.get("ids", []))
+    return list(dict.fromkeys(targets))
+
+
+def candidate_expiry(title: str, published: datetime | None) -> str | None:
+    if published and re.search(r"售罄|最大承载量", title):
+        return iso_date(published + timedelta(days=2))
     return None
 
 
@@ -164,7 +200,9 @@ def discover(source: dict[str, object]) -> list[dict[str, object]]:
         absolute_url = urljoin(str(source["list_url"]), link["href"])
         if urlparse(absolute_url).hostname not in allowed:
             continue
-        if not is_recent_candidate(link["title"], absolute_url, source.get("max_age_days")):
+        published = publication_date(link["title"], absolute_url)
+        max_age_days = 14 if re.search(r"售罄|最大承载量", link["title"]) else source.get("max_age_days")
+        if not is_recent_candidate(link["title"], absolute_url, max_age_days):
             continue
         candidate: dict[str, object] = {
             "sourceId": str(source["id"]),
@@ -176,13 +214,13 @@ def discover(source: dict[str, object]) -> list[dict[str, object]]:
         }
         if source["category"] == "attraction":
             title = link["title"]
-            candidate["suggestedStatus"] = (
-                "closed" if re.search(r"闭园|暂停开放|临时关闭", title)
-                else "reopened" if re.search(r"恢复开放|重新开放", title)
-                else "reservation" if re.search(r"预约|售罄|限流|票务", title)
-                else "notice"
-            )
+            candidate["suggestedStatus"] = attraction_status(title)
+            candidate["suggestedAttractionIds"] = attraction_targets(source, title)
             candidate["requiresHumanReview"] = True
+            if published:
+                candidate["publishedAt"] = iso_date(published)
+            if expiry := candidate_expiry(title, published):
+                candidate["expiresAt"] = expiry
         if source["category"] == "road" and len(results) < 20:
             candidate.update(analyse_road_candidate(link["title"], absolute_url))
         results.append(candidate)
@@ -283,6 +321,27 @@ def refresh_osm_services(attempted_at: str) -> int:
     return len(points)
 
 
+def should_keep_candidate(item: dict[str, object], successful_source_ids: set[str], attempted_at: str) -> bool:
+    if item.get("sourceId") not in successful_source_ids or item.get("lastSeenAt") == attempted_at:
+        return True
+    now = datetime.fromisoformat(attempted_at.replace("Z", "+00:00"))
+    expiry = item.get("expiresAt")
+    if isinstance(expiry, str):
+        try:
+            if datetime.fromisoformat(expiry).replace(tzinfo=timezone.utc) < now:
+                return False
+        except ValueError:
+            pass
+    last_seen = item.get("lastSeenAt") or item.get("discoveredAt")
+    if not isinstance(last_seen, str):
+        return False
+    try:
+        seen_at = datetime.fromisoformat(last_seen.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return now - seen_at <= timedelta(days=MISSING_CANDIDATE_GRACE_DAYS)
+
+
 def main() -> int:
     sources = json.loads(SOURCES_PATH.read_text(encoding="utf-8"))
     existing = json.loads(OUTPUT_PATH.read_text(encoding="utf-8")) if OUTPUT_PATH.exists() else []
@@ -331,10 +390,11 @@ def main() -> int:
         print("All official-source checks failed; preserving existing candidates.", file=sys.stderr)
         return 1
 
-    events = sorted((
-        item for item in by_url.values()
-        if item.get("sourceId") not in successful_source_ids or item.get("lastSeenAt") == attempted_at
-    ), key=lambda item: (item.get("lastSeenAt", ""), item.get("discoveredAt", "")), reverse=True)
+    events = sorted(
+        (item for item in by_url.values() if should_keep_candidate(item, successful_source_ids, attempted_at)),
+        key=lambda item: (item.get("publishedAt", ""), item.get("lastSeenAt", ""), item.get("discoveredAt", "")),
+        reverse=True,
+    )
     OUTPUT_PATH.write_text(json.dumps(events, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {len(events)} pending candidates and checked {successful}/{len(sources) + 1} data sources")
     return 0

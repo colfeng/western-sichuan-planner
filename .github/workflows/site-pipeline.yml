@@ -3,6 +3,8 @@ name: Western Sichuan site pipeline
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
       refresh_data:
@@ -43,6 +45,20 @@ jobs:
       - name: Test weekly updater
         run: npm run test:crawler
 
+      - name: Reuse the unmerged weekly review snapshot
+        if: ${{ github.event_name == 'schedule' || inputs.refresh_data == true }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="automation/weekly-data-refresh"
+          if [ -n "$(gh pr list --base main --head "$branch" --state open --json number --jq '.[0].number')" ]; then
+            git fetch origin "$branch:refs/remotes/origin/$branch"
+            git checkout "origin/$branch" -- data/pending-updates.json data/update-status.json data/osm-service-points.json
+            echo "Reused the current open weekly PR snapshot before refreshing."
+          else
+            echo "No open weekly PR snapshot to reuse."
+          fi
+
       - name: Discover official update candidates once
         if: ${{ github.event_name == 'schedule' || inputs.refresh_data == true }}
         run: python3 crawler/crawl.py
@@ -59,11 +75,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if git diff --quiet -- data/pending-updates.json data/update-status.json data/osm-service-points.json; then
+          if git diff --quiet HEAD -- data/pending-updates.json data/update-status.json data/osm-service-points.json; then
             echo "No source or candidate changes."
             exit 0
           fi
           branch="automation/weekly-data-refresh"
+          git fetch origin "$branch:refs/remotes/origin/$branch" || true
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$branch"

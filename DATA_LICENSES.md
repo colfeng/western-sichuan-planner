@@ -1,5 +1,14 @@
 # Data licences and provenance
 
+## Original interface artwork
+
+`public/images/western-sichuan-original.svg` is original vector artwork created
+specifically for this repository on 2026-08-31 from geometric SVG paths. It
+does not contain a copied photograph, map tile, third-party logo, font, or
+stock-asset component. Copyright © 2026 colfeng. The two earlier raster files
+with undocumented provenance were removed in V0.8.1 and are not distributed by
+the site.
+
 ## OpenStreetMap facility snapshot
 
 `data/osm-service-points.json` is a weekly, minimal extract derived from
@@ -28,3 +37,10 @@ Attraction records retain an official source URL. The weekly notice crawler
 stores titles, URLs, discovery time and machine-generated mapping suggestions;
 it does not republish complete articles. Machine suggestions require human
 review before affecting a route.
+
+Attraction notices carry explicit suggested attraction IDs. A notice discovered
+on a county-wide or source-wide page is not displayed on an individual
+attraction merely because it shares the same government domain. Date-specific
+capacity notices may also carry an expiry date and disappear from the public
+detail view automatically; this does not substitute for a same-day official
+check.
