@@ -1,5 +1,11 @@
 # Release notes
 
+## V0.6.2 — rest and meal scheduling
+
+- Lunch now substitutes for one short driving break instead of duplicating it.
+- Adjacent rest and meal blocks at the same place are merged into one stop.
+- Consecutive short rest blocks are shown as one continuous rest period.
+
 ## V0.6.1 — English mobile layout
 
 - Long English version, route, status and lodging text can wrap without forcing

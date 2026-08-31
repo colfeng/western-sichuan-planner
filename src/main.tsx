@@ -84,7 +84,7 @@ const ui = {
     eyebrow: `${attractions.length}个可选停留 · 多走廊道路图 · 中英双语`,
     heading: "由你选择想看的地方，规划器负责判断怎样走得完。",
     intro: "路线网已覆盖红原、若尔盖、九寨沟、黄龙、黑水、阿坝县、莲宝叶则及川西南部走廊。规划器根据任意起终点、日期日照、驾驶上限、游玩时长、海拔和住宿节点动态连线。",
-    updated: "V0.6.1移动端排版优化 · 规划基线并非实时导航",
+    updated: "V0.6.2休息与用餐排程优化 · 规划基线并非实时导航",
     controls: "设定旅行约束",
     days: "旅行天数",
     dates: "出发 / 返程",
@@ -229,7 +229,7 @@ const ui = {
     eyebrow: `${attractions.length} selectable stops · Multi-corridor graph · Bilingual`,
     heading: "Choose what you want to see. Let the planner decide what can actually fit.",
     intro: "The graph now covers Hongyuan, Ruoergai, Jiuzhaigou, Huanglong, Heishui, Ngawa County, Lianbaoyeze and the southern corridors. Any start/end, dates, daylight, driving caps, visit time, altitude and overnight nodes affect the route.",
-    updated: "V0.6.1 mobile layout update · Planning baseline, not live navigation",
+    updated: "V0.6.2 rest and meal scheduling update · Planning baseline, not live navigation",
     controls: "Set trip constraints",
     days: "Trip length",
     dates: "Departure / return",
@@ -973,7 +973,7 @@ function App() {
         </section>
       </div>}
 
-      <footer><span>{copy.footer}</span><span>v0.6.1 · 2026</span></footer>
+      <footer><span>{copy.footer}</span><span>v0.6.2 · 2026</span></footer>
     </div>
   );
 }

@@ -78,10 +78,22 @@ function buildTasks(legs: RouteLeg[], attractionIds: string[], startAnchorId: st
 function summarize(tasks: Task[], start: number, end: number) {
   const slice = tasks.slice(start, end); return { startAnchorId: slice[0].fromAnchorId, endAnchorId: slice.at(-1)!.toAnchorId, viaAnchorIds: unique(slice.filter((task) => task.kind === "travel").map((task) => task.toAnchorId)), routeSteps: slice.flatMap((task): DayRouteStep[] => task.kind === "travel" && task.legId && task.road ? [{ legId: task.legId, fromAnchorId: task.fromAnchorId, toAnchorId: task.toAnchorId, road: task.road, driveHours: task.driveHours, distanceKm: task.distanceKm }] : []), driveHours: slice.reduce((sum, task) => sum + task.driveHours, 0), distanceKm: slice.reduce((sum, task) => sum + task.distanceKm, 0), activityHours: slice.reduce((sum, task) => sum + task.activityHours, 0), attractionIds: slice.flatMap((task) => task.attractionId ? [task.attractionId] : []), roads: unique(slice.flatMap((task) => task.road ? [task.road] : [])), legIds: unique(slice.flatMap((task) => task.legId ? [task.legId] : [])), hasLimitedEvLeg: slice.some((task) => task.evLimited), highEffort: slice.filter((task) => task.effort === "high").length };
 }
-function plannedBreaks(driveHours: number, activityHours: number) { const restHours = driveHours >= 1.5 ? Math.ceil(driveHours / 2) * 0.25 : 0; const mealHours = driveHours + activityHours >= 2.5 ? 0.75 : 0; return { restHours: round(restHours), mealHours }; }
+function plannedBreaks(driveHours: number, activityHours: number) {
+  const mealHours = driveHours + activityHours >= 2.5 ? 0.75 : 0;
+  const baseRestHours = driveHours >= 1.5 ? Math.max(1, Math.floor(driveHours / 2)) * 0.25 : 0;
+  const restHours = Math.max(0, baseRestHours - (mealHours > 0 ? 0.25 : 0));
+  return { restHours, mealHours };
+}
 function agendaFrom(tasks: Task[], segment: Segment, input: PlannerInput, restHours: number, mealHours: number): DayAgendaItem[] {
   const agenda: DayAgendaItem[] = []; const slice = tasks.slice(segment.start, segment.end); let current = timeToHours(input.departureTime); let restRemaining = restHours; let lunchRemaining = mealHours; let driveSinceRest = 0; let currentAnchor = slice[0]?.fromAnchorId ?? input.startAnchorId;
-  const addPause = (kind: "rest" | "lunch", duration: number) => { const startTime = hoursToTime(current); current += duration; agenda.push({ kind, startTime, endTime: hoursToTime(current), anchorId: currentAnchor }); };
+  const addPause = (kind: "rest" | "lunch", duration: number) => {
+    if (duration <= 0) return;
+    const startTime = hoursToTime(current); current += duration; const endTime = hoursToTime(current); const previous = agenda.at(-1);
+    if (previous && previous.anchorId === currentAnchor && previous.endTime === startTime && (previous.kind === "rest" || previous.kind === "lunch")) {
+      previous.kind = previous.kind === "lunch" || kind === "lunch" ? "lunch" : "rest"; previous.endTime = endTime;
+    } else agenda.push({ kind, startTime, endTime, anchorId: currentAnchor });
+    driveSinceRest = 0;
+  };
   for (const task of slice) {
     const duration = task.driveHours + task.activityHours;
     if (lunchRemaining > 0 && task.kind === "visit" && task.attractionId && current < 12 && current + duration > 13) {
@@ -91,7 +103,7 @@ function agendaFrom(tasks: Task[], segment: Segment, input: PlannerInput, restHo
       const afternoonDuration = duration - morningDuration; const afternoonStart = hoursToTime(current); current += afternoonDuration;
       agenda.push({ kind: "visit", startTime: afternoonStart, endTime: hoursToTime(current), anchorId: task.toAnchorId, attractionId: task.attractionId });
       driveSinceRest += task.driveHours;
-      if (restRemaining > 0 && driveSinceRest >= 1.5) { const pause = Math.min(0.25, restRemaining); addPause("rest", pause); restRemaining = round(restRemaining - pause); driveSinceRest = 0; }
+      if (restRemaining > 0 && driveSinceRest >= 1.5) { const pause = Math.min(0.25, restRemaining); addPause("rest", pause); restRemaining = Math.max(0, restRemaining - pause); driveSinceRest = 0; }
       continue;
     }
     if (lunchRemaining > 0 && current >= 10.75 && current + duration > 13.25) { addPause("lunch", lunchRemaining); lunchRemaining = 0; }
@@ -103,10 +115,10 @@ function agendaFrom(tasks: Task[], segment: Segment, input: PlannerInput, restHo
       agenda.push({ kind: "visit", startTime, endTime: hoursToTime(current), anchorId: task.toAnchorId, attractionId: task.attractionId, driveHours: task.driveHours, distanceKm: task.distanceKm });
       driveSinceRest += task.driveHours;
     }
-    if (restRemaining > 0 && driveSinceRest >= 1.5) { const duration = Math.min(0.25, restRemaining); addPause("rest", duration); restRemaining = round(restRemaining - duration); driveSinceRest = 0; }
+    if (restRemaining > 0 && driveSinceRest >= 1.5) { const duration = Math.min(0.25, restRemaining); addPause("rest", duration); restRemaining = Math.max(0, restRemaining - duration); driveSinceRest = 0; }
     if (lunchRemaining > 0 && current >= 11.75 && current <= 14.5) { addPause("lunch", lunchRemaining); lunchRemaining = 0; }
   }
-  while (restRemaining > 0) { const duration = Math.min(0.25, restRemaining); addPause("rest", duration); restRemaining = round(restRemaining - duration); }
+  while (restRemaining > 0) { const duration = Math.min(0.25, restRemaining); addPause("rest", duration); restRemaining = Math.max(0, restRemaining - duration); }
   if (lunchRemaining > 0) addPause("lunch", lunchRemaining);
   return agenda;
 }

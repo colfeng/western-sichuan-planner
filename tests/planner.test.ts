@@ -118,6 +118,13 @@ test("records departure, estimated finish and sunset margin for every day", () =
     assert.ok(Array.isArray(day.agenda));
     assert.ok(day.freeHours >= 0);
     if (day.agenda.length > 0) assert.equal(day.agenda.at(-1)?.endTime, day.estimatedArrivalTime);
+    for (let index = 1; index < day.agenda.length; index += 1) {
+      const previous = day.agenda[index - 1];
+      const current = day.agenda[index];
+      const previousIsPause = previous.kind === "rest" || previous.kind === "lunch";
+      const currentIsPause = current.kind === "rest" || current.kind === "lunch";
+      assert.ok(!(previousIsPause && currentIsPause), `day ${day.day}: adjacent rest/meal blocks should be merged`);
+    }
     for (const step of day.routeSteps) {
       assert.ok(step.road);
       assert.ok(step.distanceKm > 0);
