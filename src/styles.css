@@ -533,3 +533,46 @@ footer { width: min(1440px, calc(100% - 48px)); margin: 0 auto; padding: 23px 0 
   html { scroll-behavior: auto; }
   .attraction-card { transition: none; }
 }
+
+/* V0.9: optional nightly reference, kept separate from the driving agenda. */
+.sky-card { margin: 22px 0; padding: 20px; border: 1px solid #cdd7e1; border-radius: 16px; background: #f1f5f9; color: #283d53; min-width: 0; }
+.sky-card-heading { display: flex; gap: 12px; align-items: flex-start; }
+.sky-card-heading > svg { flex-shrink: 0; margin-top: 3px; }
+.sky-card p { line-height: 1.65; margin: 8px 0; }
+.sky-window { font-weight: 650; font-variant-numeric: tabular-nums; }
+.sky-caption { font-size: 13px; line-height: 1.7; color: #506174; overflow-wrap: anywhere; }
+.sky-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
+.sky-actions button, .sky-actions a { display: inline-flex; align-items: center; gap: 7px; white-space: normal; text-align: left; overflow-wrap: anywhere; }
+.sky-actions button { background: #293e59; color: #fff; border: 0; border-radius: 8px; padding: 10px 14px; cursor: pointer; }
+.sky-actions a { color: #293e59; font-size: 14px; }
+.sky-dialog { position: fixed; inset: 0 0 0 auto; box-sizing: border-box; width: min(680px, 100%); max-width: 100%; height: 100dvh; max-height: 100dvh; margin: 0; border: 0; padding: 54px 28px 32px; background: var(--paper); color: #283d53; overflow-y: auto; overflow-wrap: anywhere; }
+.sky-dialog::backdrop { background: #081b1780; }
+.sky-dialog h2 { font-size: 26px; padding-right: 30px; margin: 12px 0; }
+.sky-dialog h3 { font-size: 18px; margin: 24px 0 12px; }
+.sky-dialog p { line-height: 1.7; }
+.sky-dialog a { color: #255976; text-decoration: underline; }
+.sky-status { padding: 12px; background: #e9eef5; border-radius: 8px; }
+.sky-facts { margin: 0; }
+.sky-facts > div { padding: 12px 0; border-bottom: 1px solid #d9dee2; }
+.sky-facts dt { font-size: 13px; color: #526478; }
+.sky-facts dd { margin: 4px 0 0; font-variant-numeric: tabular-nums; }
+.sky-chart-section svg { width: 100%; height: auto; display: block; }
+.sky-chart-section svg text { font-family: sans-serif; font-size: 12px; fill: #526478; }
+.sky-grid { stroke: #d3dce4; stroke-width: 1; }
+.sky-line { fill: none; stroke-width: 2.4; }
+.sky-line.core { stroke: #394f9a; }
+.sky-line.moon { stroke: #a36924; stroke-dasharray: 7 4; }
+.sky-line.sun { stroke: #677881; stroke-dasharray: 2 4; }
+.sky-band { fill: #347366; }
+.sky-legend { font-size: 12px; color: #526478; }
+.sky-slider { display: grid; gap: 8px; }
+.sky-slider input { width: 100%; accent-color: #394f9a; }
+.sky-reading { font-size: 14px; font-variant-numeric: tabular-nums; }
+.sky-light-bars > div { margin-bottom: 16px; }
+.sky-light-bars span, .sky-light-bars b { display: block; font-size: 14px; margin: 5px 0; }
+.sky-light-bars small { font-weight: normal; }
+.sky-bar-track { height: 8px; border-radius: 4px; background: #e2e7ed; overflow: hidden; }
+.sky-bar-track i { display: block; height: 100%; background: #5369a1; }
+.sky-card button:focus-visible, .sky-dialog button:focus-visible, .sky-dialog input:focus-visible { outline: 3px solid #aa691b; outline-offset: 3px; }
+@media (max-width: 540px) { .sky-dialog { padding: 60px 18px 28px; } .sky-card { padding: 16px; } .sky-actions { align-items: stretch; flex-direction: column; } }
+@media print { .sky-dialog, .sky-actions { display: none !important; } .sky-card { break-inside: avoid; background: white; } }

@@ -55,6 +55,7 @@ import reviewedRoadEvents from "../data/reviewed-road-events.json";
 import updateStatus from "../data/update-status.json";
 import pendingUpdates from "../data/pending-updates.json";
 import "./styles.css";
+import { StargazingCard } from "./StargazingCard";
 
 const text = (copy: Copy, locale: Locale) => copy[locale];
 const defaultStartDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
@@ -87,7 +88,7 @@ const ui = {
     eyebrow: `${attractions.length}个可选停留 · 多走廊道路图 · 中英双语`,
     heading: "由你选择想看的地方，规划器负责判断怎样走得完。",
     intro: "路线网已覆盖红原、若尔盖、九寨沟、黄龙、莲宝叶则及雅江—理塘—稻城亚丁走廊。规划器根据任意起终点、日期日照、驾驶上限、游玩时长、海拔和住宿节点动态连线。",
-    updated: `V0.8.1 · ${attractions.length}个景点、公告精确匹配与无障碍修复`,
+    updated: `V0.9.0 · ${attractions.length}个景点、本地观星窗口与夜光背景`,
     controls: "设定旅行约束",
     days: "旅行天数",
     dates: "出发 / 返程",
@@ -250,7 +251,7 @@ const ui = {
     eyebrow: `${attractions.length} selectable stops · Multi-corridor graph · Bilingual`,
     heading: "Choose what you want to see. Let the planner decide what can actually fit.",
     intro: "The graph covers Hongyuan, Ruoergai, Jiuzhaigou, Huanglong, Lianbaoyeze and the Yajiang–Litang–Daocheng Yading corridor. Start/end points, dates, daylight, driving caps, visit time, altitude and overnight nodes all affect the route.",
-    updated: `V0.8.1 · ${attractions.length} places, precise notices and accessibility fixes`,
+    updated: `V0.9.0 · ${attractions.length} places, offline sky windows and night-light context`,
     controls: "Set trip constraints",
     days: "Trip length",
     dates: "Departure / return",
@@ -900,7 +901,7 @@ function App() {
             )}
 
             <div className="timeline">
-              {activePlan.schedule.map((day) => {
+              {activePlan.schedule.map((day, dayIndex) => {
                 const guide = overnightGuide(day.endAnchorId);
                 const startGuide = overnightGuide(day.startAnchorId);
                 const restPoints = servicesForLegs(day.legIds);
@@ -987,6 +988,8 @@ function App() {
                         </div>
                       </div>
                     </section>
+
+                    <StargazingCard key={`${day.date}-${day.endAnchorId}-${activePlan.id}`} day={day} locale={locale} nextDeparture={activePlan.schedule[dayIndex + 1]?.departureTime} />
 
                     <div className="roadbook-grid">
                       <article>
@@ -1151,7 +1154,7 @@ function App() {
         </section>
       </div>}
 
-      <footer><span>{copy.footer}</span><span>v0.8.1 · 2026</span></footer>
+      <footer><span>{copy.footer}</span><span>v0.9.0 · 2026</span></footer>
     </div>
   );
 }

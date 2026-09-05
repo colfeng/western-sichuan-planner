@@ -1,5 +1,19 @@
 # Release notes
 
+## V0.9.0 — optional nightly stargazing reference (2026-09-05)
+
+- Bilingual cards after each day's dinner/lodging, with an accessible native modal drawer.
+- Offline Moon illumination/rise/set and galactic-core altitude/azimuth curves;
+  explicit UTC+8 and next-day times, 10-minute sampling, no visibility guarantee.
+- Separate geometry, Moon-below-horizon and itinerary-compatible windows. The
+  latter reserve dinner/check-in time and an eight-hour interval before the next
+  planned departure. No night driving or activity is automatically added.
+- Real annual 2025 NASA Black Marble numeric extract for all 34 road nodes,
+  covering 0–5 km and 5–15 km backgrounds, with units, source, year and provenance.
+- Official weather lookup link; weather, local access and terrain remain unverified.
+- Existing weekly workflow stays weekly and does not download the annual raster.
+  Its existing npm test gate now also runs astronomy and snapshot regression tests.
+
 ## V0.8.1 — notice integrity, provenance, and accessibility
 
 - Attraction updates now carry explicit attraction IDs and are ordered by

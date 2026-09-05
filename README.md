@@ -4,7 +4,7 @@ A bilingual, safety-first self-driving itinerary planner for Western Sichuan.
 
 一个中英双语、以安全约束为核心的川西自驾行程规划器。
 
-## V0.8.1 scope / V0.8.1 范围
+## V0.9.0 scope / V0.9.0 范围
 
 - Static React site deployed with GitHub Pages
 - 142 selectable stops across 10 regions, including Hongyuan, Ruoergai,
@@ -109,3 +109,12 @@ See `DATA_LICENSES.md`.
 Road information is a planning baseline, not real-time navigation. Always verify
 weather, traffic-control notices, and navigation immediately before departure.
 Bilingual Western Sichuan self-driving trip planner
+
+### V0.9.0 观星参考 / Stargazing
+
+每日日程的住宿安排后可打开“今晚观星”。本地计算黑夜与银河核心窗口、
+月光条件和方向，并显示2025年NASA夜光区域比较。跨午夜标为次日，全部使用
+北京时间。候选窗口考虑晚餐入住和次日休息间隔；它不会自动增加夜间活动或
+改变驾驶路线。抽屉支持键盘、Escape关闭、焦点恢复和手机布局。
+天气仅提供官方查询入口，不宣称当晚适合观星；夜间场地开放、遮挡须现场核验。
+详见 DATA_LICENSES.md。周更任务保持不变，不重新下载年度夜光大文件。

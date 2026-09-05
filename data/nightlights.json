@@ -1,0 +1,493 @@
+{
+  "schemaVersion": 1,
+  "year": 2025,
+  "product": "NASA Black Marble VJ146A4 v2.0 · AllAngle_Composite_Snow_Free",
+  "unit": "nW/cm²/sr",
+  "resolutionDegrees": 0.004166666666666667,
+  "sourceUrl": "https://www2.lightpollutionmap.info/data/v2/viirs_2025_raw.zip",
+  "sourceHelp": "https://www.lightpollutionmap.info/help.html",
+  "license": "CC0-1.0 (NASA source data)",
+  "credit": "NASA Black Marble; raw GeoTIFF distribution: Jurij Stare, lightpollutionmap.info",
+  "retrievedOn": "2026-09-05",
+  "processedAt": "2026-09-05T03:36:50.238776+00:00",
+  "rasterSha256": "1d085195298ddb12c30d2f13e5799cf02f34845719cf14ff3807bca7b05102c3",
+  "method": "Area pixel mean within 0–5 km and 5–15 km circles around approximate planner nodes; negative/nodata excluded; >=80% valid coverage required. Not sky brightness or Bortle.",
+  "anchors": {
+    "chengdu": {
+      "longitude": 104.0665,
+      "latitude": 30.5728,
+      "near": {
+        "mean": 48.817,
+        "coverage": 1.0,
+        "pixels": 422
+      },
+      "surrounding": {
+        "mean": 37.461,
+        "coverage": 1.0,
+        "pixels": 3396
+      }
+    },
+    "dujiangyan": {
+      "longitude": 103.6469,
+      "latitude": 31.0015,
+      "near": {
+        "mean": 16.369,
+        "coverage": 1.0,
+        "pixels": 423
+      },
+      "surrounding": {
+        "mean": 1.779,
+        "coverage": 1.0,
+        "pixels": 3399
+      }
+    },
+    "yingxiu": {
+      "longitude": 103.485,
+      "latitude": 31.061,
+      "near": {
+        "mean": 0.444,
+        "coverage": 1.0,
+        "pixels": 426
+      },
+      "surrounding": {
+        "mean": 0.515,
+        "coverage": 1.0,
+        "pixels": 3413
+      }
+    },
+    "wenchuan": {
+      "longitude": 103.59,
+      "latitude": 31.476,
+      "near": {
+        "mean": 1.511,
+        "coverage": 1.0,
+        "pixels": 427
+      },
+      "surrounding": {
+        "mean": 0.024,
+        "coverage": 1.0,
+        "pixels": 3421
+      }
+    },
+    "wolong": {
+      "longitude": 103.17,
+      "latitude": 31.039,
+      "near": {
+        "mean": 0.101,
+        "coverage": 1.0,
+        "pixels": 423
+      },
+      "surrounding": {
+        "mean": 0.009,
+        "coverage": 1.0,
+        "pixels": 3409
+      }
+    },
+    "balang": {
+      "longitude": 102.95,
+      "latitude": 30.95,
+      "near": {
+        "mean": 0.0,
+        "coverage": 1.0,
+        "pixels": 428
+      },
+      "surrounding": {
+        "mean": 0.018,
+        "coverage": 1.0,
+        "pixels": 3398
+      }
+    },
+    "siguniang": {
+      "longitude": 102.84,
+      "latitude": 31,
+      "near": {
+        "mean": 0.125,
+        "coverage": 1.0,
+        "pixels": 424
+      },
+      "surrounding": {
+        "mean": 0.004,
+        "coverage": 1.0,
+        "pixels": 3390
+      }
+    },
+    "xiaojin": {
+      "longitude": 102.36,
+      "latitude": 30.999,
+      "near": {
+        "mean": 0.674,
+        "coverage": 1.0,
+        "pixels": 426
+      },
+      "surrounding": {
+        "mean": 0.002,
+        "coverage": 1.0,
+        "pixels": 3397
+      }
+    },
+    "lixian": {
+      "longitude": 103.17,
+      "latitude": 31.44,
+      "near": {
+        "mean": 0.552,
+        "coverage": 1.0,
+        "pixels": 426
+      },
+      "surrounding": {
+        "mean": 0.013,
+        "coverage": 1.0,
+        "pixels": 3420
+      }
+    },
+    "miyaluo": {
+      "longitude": 102.81,
+      "latitude": 31.66,
+      "near": {
+        "mean": 0.066,
+        "coverage": 1.0,
+        "pixels": 428
+      },
+      "surrounding": {
+        "mean": 0.007,
+        "coverage": 1.0,
+        "pixels": 3430
+      }
+    },
+    "maerkang": {
+      "longitude": 102.22,
+      "latitude": 31.9,
+      "near": {
+        "mean": 2.801,
+        "coverage": 1.0,
+        "pixels": 432
+      },
+      "surrounding": {
+        "mean": 0.058,
+        "coverage": 1.0,
+        "pixels": 3426
+      }
+    },
+    "aba-county": {
+      "longitude": 101.7,
+      "latitude": 32.9,
+      "near": {
+        "mean": 3.16,
+        "coverage": 1.0,
+        "pixels": 436
+      },
+      "surrounding": {
+        "mean": 0.014,
+        "coverage": 1.0,
+        "pixels": 3470
+      }
+    },
+    "lianbaoyeze": {
+      "longitude": 101.12,
+      "latitude": 33.1,
+      "near": {
+        "mean": 0.0,
+        "coverage": 1.0,
+        "pixels": 436
+      },
+      "surrounding": {
+        "mean": 0.0,
+        "coverage": 1.0,
+        "pixels": 3484
+      }
+    },
+    "hongyuan": {
+      "longitude": 102.55,
+      "latitude": 32.79,
+      "near": {
+        "mean": 1.983,
+        "coverage": 1.0,
+        "pixels": 434
+      },
+      "surrounding": {
+        "mean": 0.002,
+        "coverage": 1.0,
+        "pixels": 3472
+      }
+    },
+    "tangke": {
+      "longitude": 102.48,
+      "latitude": 33.42,
+      "near": {
+        "mean": 0.066,
+        "coverage": 1.0,
+        "pixels": 437
+      },
+      "surrounding": {
+        "mean": 0.003,
+        "coverage": 1.0,
+        "pixels": 3490
+      }
+    },
+    "ruoergai": {
+      "longitude": 102.96,
+      "latitude": 33.58,
+      "near": {
+        "mean": 2.471,
+        "coverage": 1.0,
+        "pixels": 438
+      },
+      "surrounding": {
+        "mean": 0.007,
+        "coverage": 1.0,
+        "pixels": 3501
+      }
+    },
+    "maoxian": {
+      "longitude": 103.85,
+      "latitude": 31.68,
+      "near": {
+        "mean": 5.21,
+        "coverage": 1.0,
+        "pixels": 432
+      },
+      "surrounding": {
+        "mean": 0.019,
+        "coverage": 1.0,
+        "pixels": 3430
+      }
+    },
+    "heishui": {
+      "longitude": 102.99,
+      "latitude": 32.06,
+      "near": {
+        "mean": 0.394,
+        "coverage": 1.0,
+        "pixels": 428
+      },
+      "surrounding": {
+        "mean": 0.007,
+        "coverage": 1.0,
+        "pixels": 3442
+      }
+    },
+    "songpan": {
+      "longitude": 103.6,
+      "latitude": 32.65,
+      "near": {
+        "mean": 0.509,
+        "coverage": 1.0,
+        "pixels": 436
+      },
+      "surrounding": {
+        "mean": 0.016,
+        "coverage": 1.0,
+        "pixels": 3464
+      }
+    },
+    "chuanzhusi": {
+      "longitude": 103.61,
+      "latitude": 32.78,
+      "near": {
+        "mean": 0.204,
+        "coverage": 1.0,
+        "pixels": 433
+      },
+      "surrounding": {
+        "mean": 0.037,
+        "coverage": 1.0,
+        "pixels": 3472
+      }
+    },
+    "huanglong": {
+      "longitude": 103.83,
+      "latitude": 32.74,
+      "near": {
+        "mean": 0.003,
+        "coverage": 1.0,
+        "pixels": 434
+      },
+      "surrounding": {
+        "mean": 0.0,
+        "coverage": 1.0,
+        "pixels": 3468
+      }
+    },
+    "jiuzhaigou": {
+      "longitude": 103.92,
+      "latitude": 33.26,
+      "near": {
+        "mean": 0.242,
+        "coverage": 1.0,
+        "pixels": 437
+      },
+      "surrounding": {
+        "mean": 0.075,
+        "coverage": 1.0,
+        "pixels": 3496
+      }
+    },
+    "danba": {
+      "longitude": 101.89,
+      "latitude": 30.88,
+      "near": {
+        "mean": 1.443,
+        "coverage": 1.0,
+        "pixels": 427
+      },
+      "surrounding": {
+        "mean": 0.006,
+        "coverage": 1.0,
+        "pixels": 3401
+      }
+    },
+    "bamei": {
+      "longitude": 101.5,
+      "latitude": 30.5,
+      "near": {
+        "mean": 2.146,
+        "coverage": 1.0,
+        "pixels": 424
+      },
+      "surrounding": {
+        "mean": 0.001,
+        "coverage": 1.0,
+        "pixels": 3382
+      }
+    },
+    "tagong": {
+      "longitude": 101.54,
+      "latitude": 30.32,
+      "near": {
+        "mean": 0.127,
+        "coverage": 1.0,
+        "pixels": 424
+      },
+      "surrounding": {
+        "mean": 0.009,
+        "coverage": 1.0,
+        "pixels": 3379
+      }
+    },
+    "xinduqiao": {
+      "longitude": 101.49,
+      "latitude": 30.04,
+      "near": {
+        "mean": 0.798,
+        "coverage": 1.0,
+        "pixels": 423
+      },
+      "surrounding": {
+        "mean": 0.078,
+        "coverage": 1.0,
+        "pixels": 3382
+      }
+    },
+    "yajiang": {
+      "longitude": 101.014,
+      "latitude": 30.032,
+      "near": {
+        "mean": 0.914,
+        "coverage": 1.0,
+        "pixels": 422
+      },
+      "surrounding": {
+        "mean": 0.031,
+        "coverage": 1.0,
+        "pixels": 3381
+      }
+    },
+    "litang": {
+      "longitude": 100.269,
+      "latitude": 29.996,
+      "near": {
+        "mean": 2.424,
+        "coverage": 1.0,
+        "pixels": 422
+      },
+      "surrounding": {
+        "mean": 0.007,
+        "coverage": 1.0,
+        "pixels": 3364
+      }
+    },
+    "sangdui": {
+      "longitude": 100.112,
+      "latitude": 29.278,
+      "near": {
+        "mean": 0.0,
+        "coverage": 1.0,
+        "pixels": 413
+      },
+      "surrounding": {
+        "mean": 0.002,
+        "coverage": 1.0,
+        "pixels": 3347
+      }
+    },
+    "daocheng": {
+      "longitude": 100.297,
+      "latitude": 29.038,
+      "near": {
+        "mean": 1.051,
+        "coverage": 1.0,
+        "pixels": 418
+      },
+      "surrounding": {
+        "mean": 0.002,
+        "coverage": 1.0,
+        "pixels": 3335
+      }
+    },
+    "shangrila": {
+      "longitude": 100.333,
+      "latitude": 28.57,
+      "near": {
+        "mean": 0.147,
+        "coverage": 1.0,
+        "pixels": 416
+      },
+      "surrounding": {
+        "mean": 0.001,
+        "coverage": 1.0,
+        "pixels": 3324
+      }
+    },
+    "kangding": {
+      "longitude": 101.96,
+      "latitude": 30.05,
+      "near": {
+        "mean": 2.613,
+        "coverage": 1.0,
+        "pixels": 422
+      },
+      "surrounding": {
+        "mean": 0.172,
+        "coverage": 1.0,
+        "pixels": 3370
+      }
+    },
+    "luding": {
+      "longitude": 102.23,
+      "latitude": 29.91,
+      "near": {
+        "mean": 1.937,
+        "coverage": 1.0,
+        "pixels": 419
+      },
+      "surrounding": {
+        "mean": 0.155,
+        "coverage": 1.0,
+        "pixels": 3368
+      }
+    },
+    "yaan": {
+      "longitude": 103,
+      "latitude": 30.01,
+      "near": {
+        "mean": 7.328,
+        "coverage": 1.0,
+        "pixels": 416
+      },
+      "surrounding": {
+        "mean": 2.115,
+        "coverage": 1.0,
+        "pixels": 3372
+      }
+    }
+  }
+}
