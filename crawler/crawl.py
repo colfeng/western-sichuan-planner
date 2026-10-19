@@ -21,7 +21,7 @@ OUTPUT_PATH = ROOT / "data" / "pending-updates.json"
 STATUS_PATH = ROOT / "data" / "update-status.json"
 OSM_SERVICES_PATH = ROOT / "data" / "osm-service-points.json"
 ROAD_SEGMENTS_PATH = ROOT / "crawler" / "road-segments.json"
-USER_AGENT = "WesternSichuanPlanner/0.8.1 (+https://github.com/colfeng/western-sichuan-planner)"
+USER_AGENT = "WesternSichuanPlanner/0.9.0 (+https://github.com/colfeng/western-sichuan-planner)"
 MISSING_CANDIDATE_GRACE_DAYS = 21
 
 
@@ -139,6 +139,39 @@ def candidate_expiry(title: str, published: datetime | None) -> str | None:
     return None
 
 
+def is_travel_notice(title: str) -> bool:
+    """Operational visitor notices only, not tenders or staffing announcements."""
+    return not re.search(r"采购|招标|投标|中标|成交|询价|比选|磋商|遴选|选聘|招聘|选调|录用", title)
+
+
+def normalize_existing_candidates(events: list[dict[str, object]], sources: list[dict[str, object]]) -> list[dict[str, object]]:
+    """Upgrade pre-0.8.1 snapshots without inventing a fresh observation or approval.
+
+    An unavailable source may retain legacy records, so migration must happen
+    before fetching. Only explicit source rules may supply missing target IDs.
+    """
+    source_by_id = {source["id"]: source for source in sources}
+    normalized = []
+    for old in events:
+        item = dict(old)
+        if item.get("reviewStatus", "pending") == "pending" and not is_travel_notice(str(item.get("titleZh", ""))):
+            continue
+        if item.get("candidateType") == "attraction":
+            source = source_by_id.get(item.get("sourceId"), {})
+            title, url = str(item.get("titleZh", "")), str(item.get("url", ""))
+            if not isinstance(item.get("suggestedAttractionIds"), list):
+                item["suggestedAttractionIds"] = attraction_targets(source, title)
+            item.setdefault("suggestedStatus", attraction_status(title))
+            item["requiresHumanReview"] = True
+            published = publication_date(title, url)
+            if published:
+                item.setdefault("publishedAt", iso_date(published))
+            if expiry := candidate_expiry(title, published):
+                item.setdefault("expiresAt", expiry)
+        normalized.append(item)
+    return normalized
+
+
 def is_recent_candidate(title: str, url: str, max_age_days: object) -> bool:
     if not isinstance(max_age_days, int) or max_age_days <= 0:
         return True
@@ -195,6 +228,8 @@ def discover(source: dict[str, object]) -> list[dict[str, object]]:
     keywords = tuple(source["keywords"])
     results: list[dict[str, object]] = []
     for link in parser.links:
+        if not is_travel_notice(link["title"]):
+            continue
         if not any(keyword in link["title"] for keyword in keywords):
             continue
         absolute_url = urljoin(str(source["list_url"]), link["href"])
@@ -345,7 +380,7 @@ def should_keep_candidate(item: dict[str, object], successful_source_ids: set[st
 def main() -> int:
     sources = json.loads(SOURCES_PATH.read_text(encoding="utf-8"))
     existing = json.loads(OUTPUT_PATH.read_text(encoding="utf-8")) if OUTPUT_PATH.exists() else []
-    by_url = {event["url"]: event for event in existing}
+    by_url = {event["url"]: event for event in normalize_existing_candidates(existing, sources)}
     attempted_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     source_results: list[dict[str, object]] = []
     successful_source_ids: set[str] = set()

@@ -2,7 +2,7 @@ name: Western Sichuan site pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, automation/run-weekly-refresh]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -23,13 +23,15 @@ permissions:
   id-token: write
 
 concurrency:
-  group: western-sichuan-${{ github.event_name == 'schedule' && 'weekly-refresh' || github.ref }}
+  group: western-sichuan-${{ (github.event_name == 'schedule' || inputs.refresh_data == true || github.ref == 'refs/heads/automation/run-weekly-refresh') && 'weekly-refresh' || github.ref }}
   cancel-in-progress: true
 
 jobs:
   quality-and-build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      REFRESH_DATA: ${{ github.event_name == 'schedule' || inputs.refresh_data == true || github.ref == 'refs/heads/automation/run-weekly-refresh' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,7 +48,7 @@ jobs:
         run: npm run test:crawler
 
       - name: Reuse the unmerged weekly review snapshot
-        if: ${{ github.event_name == 'schedule' || inputs.refresh_data == true }}
+        if: ${{ env.REFRESH_DATA == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -60,8 +62,20 @@ jobs:
           fi
 
       - name: Discover official update candidates once
-        if: ${{ github.event_name == 'schedule' || inputs.refresh_data == true }}
+        id: refresh
+        if: ${{ env.REFRESH_DATA == 'true' }}
         run: python3 crawler/crawl.py
+
+      - name: Preserve weekly snapshot and diagnostics
+        if: ${{ !cancelled() && env.REFRESH_DATA == 'true' && steps.refresh.outcome != 'skipped' && steps.refresh.outcome != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-data-snapshot
+          path: |
+            data/pending-updates.json
+            data/update-status.json
+            data/osm-service-points.json
+          retention-days: 14
 
       - name: Validate data
         run: python3 crawler/validate.py
@@ -71,7 +85,7 @@ jobs:
         run: npm run build
 
       - name: Maintain one weekly review pull request
-        if: ${{ github.event_name == 'schedule' || inputs.refresh_data == true }}
+        if: ${{ env.REFRESH_DATA == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

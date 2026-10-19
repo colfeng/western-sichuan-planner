@@ -1,5 +1,19 @@
 # Release notes
 
+## Maintenance — weekly refresh recovery (2026-10-19)
+
+- Freeze the capacity-notice fixture clock instead of allowing it to expire with
+  wall-clock time. Production expiry filtering remains enabled and has a test.
+- Normalize retained pre-0.8.1 attraction candidates before discovery, including
+  when a source is unavailable. Preserve review decisions and observation times;
+  infer missing targets only from explicit source rules.
+- Exclude procurement and staffing announcements from visitor-update candidates.
+- Use the existing single weekly workflow for on-demand refreshes from
+  `automation/run-weekly-refresh` as well as workflow_dispatch. All refresh entry
+  points share the same concurrency group and output one review branch.
+- Keep the fetched snapshot and source diagnostics as a 14-day Actions artifact
+  even if later validation or pull-request creation fails.
+
 ## V0.9.0 — optional nightly stargazing reference (2026-09-05)
 
 - Bilingual cards after each day's dinner/lodging, with an accessible native modal drawer.
