@@ -118,3 +118,12 @@ Bilingual Western Sichuan self-driving trip planner
 改变驾驶路线。抽屉支持键盘、Escape关闭、焦点恢复和手机布局。
 天气仅提供官方查询入口，不宣称当晚适合观星；夜间场地开放、遮挡须现场核验。
 详见 DATA_LICENSES.md。周更任务保持不变，不重新下载年度夜光大文件。
+
+### 周更维护 / Weekly maintenance
+
+周任务仍为每周一一次；GitHub 调度可能延迟，页面显示实际检查时间。
+可在 Actions 中选择本流水线，Run workflow，并勾选 refresh_data 立即补跑。
+维护工具也可以将 `automation/run-weekly-refresh` 推进到包含当前 main 的新提交，
+复用同一个抓取、校验、测试和审核 PR 流程；它不会直接部署或自动批准封路建议。
+失败时可下载 `weekly-data-snapshot` 查看本次候选、来源检查与设施快照，保留14天。
+旧数据会迁移到当前字段格式；测试时钟与生产日期分离，避免样例公告过期导致整个周任务停止。

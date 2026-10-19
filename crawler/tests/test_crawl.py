@@ -76,7 +76,7 @@ class WeeklyCrawlerTests(unittest.TestCase):
             "attraction_targets": [{"ids": ["park-a"], "keywords": ["甲景区"]}],
         }
         html = '<a href="/notice/9-2026-08-30-10-00-00">甲景区8月31日门票预约已达最大承载量公告</a><a href="/notice/general">全县旅游公告</a>'
-        with patch.object(crawl, "fetch", return_value=html):
+        with patch.object(crawl, "fetch", return_value=html), patch.object(crawl, "datetime", FrozenDateTime):
             candidates = crawl.discover(source)
         mapped = next(item for item in candidates if "甲景区" in item["titleZh"])
         general = next(item for item in candidates if "全县" in item["titleZh"])
@@ -84,6 +84,62 @@ class WeeklyCrawlerTests(unittest.TestCase):
         self.assertEqual(mapped["publishedAt"], "2026-08-30")
         self.assertEqual(mapped["expiresAt"], "2026-09-01")
         self.assertEqual(general["suggestedAttractionIds"], [])
+
+    def test_procurement_notices_are_not_presented_as_visitor_updates(self):
+        source = {
+            "id": "park", "category": "attraction", "agency_zh": "测试", "agency_en": "Test",
+            "list_url": "https://example.gov.cn/list", "allowed_domains": ["example.gov.cn"],
+            "keywords": ["公告", "开放"],
+        }
+        html = '<a href="/tender">甲景区栈道板采购公告</a><a href="/open">甲景区恢复开放公告</a>'
+        with patch.object(crawl, "fetch", return_value=html):
+            candidates = crawl.discover(source)
+        self.assertEqual([item["url"] for item in candidates], ["https://example.gov.cn/open"])
+        old = [{"sourceId": "park", "titleZh": "栈道板采购公告", "reviewStatus": "pending"}]
+        self.assertEqual(crawl.normalize_existing_candidates(old, [source]), [])
+
+    def test_expired_capacity_notice_is_still_filtered_in_production(self):
+        source = {
+            "id": "park", "category": "attraction", "agency_zh": "测试", "agency_en": "Test",
+            "list_url": "https://example.gov.cn/list", "allowed_domains": ["example.gov.cn"],
+            "keywords": ["公告"], "max_age_days": 180,
+        }
+        html = '<a href="/notice/9-2026-08-01-10-00-00">甲景区8月2日门票预约已达最大承载量公告</a>'
+        with patch.object(crawl, "fetch", return_value=html), patch.object(crawl, "datetime", FrozenDateTime):
+            self.assertEqual(crawl.discover(source), [])
+
+    def test_legacy_snapshot_migration_is_idempotent_and_preserves_review(self):
+        sources = [{"id": "park", "attraction_targets": [{"ids": ["park-a"], "keywords": ["甲景区"]}]}]
+        old = [
+            {"sourceId": "park", "candidateType": "attraction", "titleZh": "甲景区售罄公告", "url": "https://example.gov.cn/9-2026-08-30-10-00-00", "reviewStatus": "rejected", "discoveredAt": "2026-08-31T00:00:00+00:00", "affectsPlanner": False},
+            {"sourceId": "park", "candidateType": "attraction", "titleZh": "全县公告", "url": "https://example.gov.cn/general", "reviewStatus": "pending", "affectsPlanner": False},
+        ]
+        result = crawl.normalize_existing_candidates(old, sources)
+        self.assertEqual(result[0]["suggestedAttractionIds"], ["park-a"])
+        self.assertEqual(result[0]["publishedAt"], "2026-08-30")
+        self.assertEqual(result[0]["expiresAt"], "2026-09-01")
+        self.assertEqual(result[0]["reviewStatus"], "rejected")
+        self.assertEqual(result[0]["discoveredAt"], old[0]["discoveredAt"])
+        self.assertNotIn("lastSeenAt", result[0])
+        self.assertEqual(result[1]["suggestedAttractionIds"], [])
+        self.assertEqual(crawl.normalize_existing_candidates(result, sources), result)
+        self.assertNotIn("suggestedAttractionIds", old[0])
+
+    def test_main_migrates_legacy_snapshot_even_when_its_source_is_unavailable(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            sources = root / "sources.json"
+            output = root / "pending.json"
+            status = root / "status.json"
+            sources.write_text(json.dumps([{"id": "park", "attraction_targets": []}]), encoding="utf-8")
+            original = {"sourceId": "park", "candidateType": "attraction", "titleZh": "全县旅游公告", "url": "https://example.gov.cn/general", "discoveredAt": "2026-08-01T00:00:00+00:00", "reviewStatus": "pending", "affectsPlanner": False}
+            output.write_text(json.dumps([original]), encoding="utf-8")
+            with patch.object(crawl, "SOURCES_PATH", sources), patch.object(crawl, "OUTPUT_PATH", output), patch.object(crawl, "STATUS_PATH", status), patch.object(crawl, "discover", side_effect=RuntimeError("source unavailable")), patch.object(crawl, "refresh_osm_services", return_value=100), patch.object(crawl, "datetime", FrozenDateTime):
+                self.assertEqual(crawl.main(), 0)
+            result = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(result[0]["suggestedAttractionIds"], [])
+            self.assertNotIn("lastSeenAt", result[0])
+            self.assertEqual(json.loads(status.read_text())["sourceResults"][0]["ok"], False)
 
     def test_missing_candidate_is_retained_for_grace_period_but_not_forever(self):
         item = {"sourceId": "park", "discoveredAt": "2026-08-20T00:00:00+00:00"}
