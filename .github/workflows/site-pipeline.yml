@@ -5,6 +5,13 @@ on:
     branches: [main, automation/run-weekly-refresh]
   pull_request:
     branches: [main]
+    # These snapshots are already validated/tested/built in the refresh run.
+    # Avoid a duplicate bot-PR run that requires separate GitHub approval.
+    # Any code/config change still triggers PR CI; main is always checked.
+    paths-ignore:
+      - data/pending-updates.json
+      - data/update-status.json
+      - data/osm-service-points.json
   workflow_dispatch:
     inputs:
       refresh_data:

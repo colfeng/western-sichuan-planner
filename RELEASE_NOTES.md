@@ -11,6 +11,10 @@
 - Use the existing single weekly workflow for on-demand refreshes from
   `automation/run-weekly-refresh` as well as workflow_dispatch. All refresh entry
   points share the same concurrency group and output one review branch.
+- Do not start redundant PR runs for changes confined to the three weekly
+  snapshots. GitHub requires approval for GITHUB_TOKEN-created PR runs; the
+  actual data validation/test/build gate remains in the originating refresh run
+  and on main before deployment. All code/config PR changes retain CI.
 - Keep the fetched snapshot and source diagnostics as a 14-day Actions artifact
   even if later validation or pull-request creation fails.
 
