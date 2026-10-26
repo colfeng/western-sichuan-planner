@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "lastAttemptAt": "2026-10-19T09:16:39+00:00",
-  "successfulSources": 4,
+  "lastAttemptAt": "2026-10-26T08:51:45+00:00",
+  "successfulSources": 5,
   "totalSources": 7,
   "sourceResults": [
     {
@@ -17,7 +17,7 @@
     {
       "sourceId": "jiuzhaigou-notices",
       "ok": true,
-      "candidateCount": 6
+      "candidateCount": 5
     },
     {
       "sourceId": "huanglong-official",
@@ -36,8 +36,8 @@
     },
     {
       "sourceId": "openstreetmap-services",
-      "ok": false,
-      "error": "HTTP Error 502: Bad Gateway"
+      "ok": true,
+      "candidateCount": 189
     }
   ]
 }
