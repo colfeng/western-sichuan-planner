@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-31T09:42:43+00:00",
+  "updatedAt": "2026-10-26T08:51:45+00:00",
   "source": "OpenStreetMap contributors",
   "license": "ODbL-1.0",
   "attributionUrl": "https://www.openstreetmap.org/copyright",
@@ -266,6 +266,16 @@
       "osmUrl": "https://www.openstreetmap.org/way/486785042"
     },
     {
+      "id": "osm-way-1561368145",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 32.766472,
+      "longitude": 103.64816,
+      "nearestAnchorId": "chuanzhusi",
+      "osmUrl": "https://www.openstreetmap.org/way/1561368145"
+    },
+    {
       "id": "osm-node-6849038239",
       "name": "",
       "nameEn": "",
@@ -396,6 +406,16 @@
       "osmUrl": "https://www.openstreetmap.org/way/1030323384"
     },
     {
+      "id": "osm-node-14320034174",
+      "name": "",
+      "nameEn": "",
+      "type": "fuel",
+      "latitude": 31.023284,
+      "longitude": 103.66024,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/node/14320034174"
+    },
+    {
       "id": "osm-way-495281730",
       "name": "Shell",
       "nameEn": "",
@@ -404,16 +424,6 @@
       "longitude": 103.623018,
       "nearestAnchorId": "dujiangyan",
       "osmUrl": "https://www.openstreetmap.org/way/495281730"
-    },
-    {
-      "id": "osm-way-495281735",
-      "name": "Shell",
-      "nameEn": "",
-      "type": "fuel",
-      "latitude": 30.996696,
-      "longitude": 103.599023,
-      "nearestAnchorId": "dujiangyan",
-      "osmUrl": "https://www.openstreetmap.org/way/495281735"
     },
     {
       "id": "osm-node-4248004093",
@@ -434,6 +444,16 @@
       "longitude": 103.629853,
       "nearestAnchorId": "dujiangyan",
       "osmUrl": "https://www.openstreetmap.org/way/571195794"
+    },
+    {
+      "id": "osm-way-1554557893",
+      "name": "都江堰首嘉医院",
+      "nameEn": "",
+      "type": "hospital",
+      "latitude": 30.968358,
+      "longitude": 103.621239,
+      "nearestAnchorId": "dujiangyan",
+      "osmUrl": "https://www.openstreetmap.org/way/1554557893"
     },
     {
       "id": "osm-way-500826182",
@@ -894,6 +914,16 @@
       "longitude": 102.229119,
       "nearestAnchorId": "luding",
       "osmUrl": "https://www.openstreetmap.org/node/12553994477"
+    },
+    {
+      "id": "osm-node-14180032803",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 29.855534,
+      "longitude": 102.310272,
+      "nearestAnchorId": "luding",
+      "osmUrl": "https://www.openstreetmap.org/node/14180032803"
     },
     {
       "id": "osm-node-11578634667",
@@ -1384,6 +1414,16 @@
       "longitude": 101.426661,
       "nearestAnchorId": "tagong",
       "osmUrl": "https://www.openstreetmap.org/way/1360550756"
+    },
+    {
+      "id": "osm-node-14180029391",
+      "name": "",
+      "nameEn": "",
+      "type": "toilet",
+      "latitude": 30.386958,
+      "longitude": 101.661528,
+      "nearestAnchorId": "tagong",
+      "osmUrl": "https://www.openstreetmap.org/node/14180029391"
     },
     {
       "id": "osm-node-13003613882",
