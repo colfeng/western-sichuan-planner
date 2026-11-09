@@ -4,6 +4,41 @@
     "candidateType": "attraction",
     "agencyZh": "九寨沟景区官方网站",
     "agencyEn": "Jiuzhaigou official site",
+    "titleZh": "售罄通告",
+    "url": "https://www.jiuzhai.com/news/notice/11552-2026-11-09-10-08-46",
+    "suggestedStatus": "reservation",
+    "suggestedAttractionIds": [],
+    "requiresHumanReview": true,
+    "publishedAt": "2026-11-09",
+    "expiresAt": "2026-11-11",
+    "discoveredAt": "2026-11-09T11:27:18+00:00",
+    "reviewStatus": "pending",
+    "affectsPlanner": false,
+    "lastSeenAt": "2026-11-09T11:27:18+00:00"
+  },
+  {
+    "sourceId": "jiuzhaigou-notices",
+    "candidateType": "attraction",
+    "agencyZh": "九寨沟景区官方网站",
+    "agencyEn": "Jiuzhaigou official site",
+    "titleZh": "九寨沟风景名胜区管理局关于游客服务中心大厅设施维修项目承包单位的公告",
+    "url": "https://www.jiuzhai.com/dynamic/public/11396-2026-09-11-01-31-07",
+    "suggestedStatus": "notice",
+    "suggestedAttractionIds": [
+      "jiuzhaigou"
+    ],
+    "requiresHumanReview": true,
+    "publishedAt": "2026-09-11",
+    "discoveredAt": "2026-11-09T11:27:18+00:00",
+    "reviewStatus": "pending",
+    "affectsPlanner": false,
+    "lastSeenAt": "2026-11-09T11:27:18+00:00"
+  },
+  {
+    "sourceId": "jiuzhaigou-notices",
+    "candidateType": "attraction",
+    "agencyZh": "九寨沟景区官方网站",
+    "agencyEn": "Jiuzhaigou official site",
     "titleZh": "九寨沟景区关于全域恢复开放的通告",
     "url": "https://www.jiuzhai.com/news/notice/11290-2026-07-29-02-04-43",
     "suggestedStatus": "reopened",
@@ -11,7 +46,7 @@
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
     "affectsPlanner": false,
-    "lastSeenAt": "2026-10-19T09:16:39+00:00",
+    "lastSeenAt": "2026-11-09T11:27:18+00:00",
     "suggestedAttractionIds": [
       "jiuzhaigou"
     ],
@@ -29,29 +64,11 @@
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
     "affectsPlanner": false,
-    "lastSeenAt": "2026-10-19T09:16:39+00:00",
+    "lastSeenAt": "2026-10-26T08:51:45+00:00",
     "suggestedAttractionIds": [
       "jiuzhaigou"
     ],
     "publishedAt": "2026-07-26"
-  },
-  {
-    "sourceId": "jiuzhaigou-notices",
-    "candidateType": "attraction",
-    "agencyZh": "九寨沟景区官方网站",
-    "agencyEn": "Jiuzhaigou official site",
-    "titleZh": "九寨沟暑期“清凉一夏”旅游公告",
-    "url": "https://www.jiuzhai.com/news/notice/11241-2026-07-08-03-30-49",
-    "suggestedStatus": "notice",
-    "requiresHumanReview": true,
-    "discoveredAt": "2026-08-31T02:45:17+00:00",
-    "reviewStatus": "pending",
-    "affectsPlanner": false,
-    "lastSeenAt": "2026-10-19T09:16:39+00:00",
-    "suggestedAttractionIds": [
-      "jiuzhaigou"
-    ],
-    "publishedAt": "2026-07-08"
   },
   {
     "sourceId": "jiuzhaigou-notices",
@@ -65,7 +82,7 @@
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
     "affectsPlanner": false,
-    "lastSeenAt": "2026-10-19T09:16:39+00:00",
+    "lastSeenAt": "2026-11-09T11:27:18+00:00",
     "suggestedAttractionIds": []
   },
   {
@@ -80,7 +97,7 @@
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
     "affectsPlanner": false,
-    "lastSeenAt": "2026-10-19T09:16:39+00:00",
+    "lastSeenAt": "2026-11-09T11:27:18+00:00",
     "suggestedAttractionIds": []
   },
   {
@@ -95,7 +112,7 @@
     "discoveredAt": "2026-08-31T02:45:17+00:00",
     "reviewStatus": "pending",
     "affectsPlanner": false,
-    "lastSeenAt": "2026-10-19T09:16:39+00:00",
+    "lastSeenAt": "2026-11-09T11:27:18+00:00",
     "suggestedAttractionIds": []
   }
 ]

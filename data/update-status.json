@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "lastAttemptAt": "2026-10-19T09:16:39+00:00",
+  "lastAttemptAt": "2026-11-09T11:27:18+00:00",
   "successfulSources": 4,
   "totalSources": 7,
   "sourceResults": [
     {
       "sourceId": "ganzi-transport",
       "ok": false,
-      "error": "Remote end closed connection without response"
+      "error": "<urlopen error [Errno 101] Network is unreachable>"
     },
     {
       "sourceId": "aba-government",
@@ -26,8 +26,8 @@
     },
     {
       "sourceId": "daocheng-notices",
-      "ok": true,
-      "candidateCount": 0
+      "ok": false,
+      "error": "<urlopen error [Errno 101] Network is unreachable>"
     },
     {
       "sourceId": "aba-attractions",
@@ -36,8 +36,8 @@
     },
     {
       "sourceId": "openstreetmap-services",
-      "ok": false,
-      "error": "HTTP Error 502: Bad Gateway"
+      "ok": true,
+      "candidateCount": 189
     }
   ]
 }
